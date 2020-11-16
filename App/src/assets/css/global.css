@@ -17,6 +17,15 @@ body *:not(.v-icon) {
     cursor: not-allowed !important;
 }
 
+.v-btn.bt_red {
+    background-color: #ff6262 !important;
+    color: #fff !important;
+    transition: background-color 0.2s ease-in-out;
+}
+.v-btn.bt_red:hover {
+    background-color: #fc4141 !important;
+}
+
 .customModal .v-btn {
     background-color: #2ce263 !important;
     color: #fff;

@@ -23,7 +23,7 @@ export default new Vuex.Store({
         ],
 
         currentUser: {
-            id: '',
+            id_auth: '',
             role: null,
             firstName: '',
             lastName: ''
@@ -64,6 +64,7 @@ export default new Vuex.Store({
         nbEventsPerPage: 5,
         nbEventsFiltered: 0,
         nbAnimateursMax: 2,
+        nbParticipantsMaxParFormation: 30,
         selectedPage: 1,
         sortingParameters: {type: 'date', direction: 'asc'},
 
@@ -151,17 +152,29 @@ export default new Vuex.Store({
             state.closeModalAnimateur = true;
         },
 
-        fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
+        // Version au 06/11/20
+        /* fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
             state.currentUser = {
-                id: payload.id_auth,
+                id_auth: payload.id_auth,
                 role: payload.role,
                 firstName: payload.firstName,
                 lastName: payload.lastName
             }
+        }, */
+        // Nvelle version au 06/11/20
+        fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
+            state.currentUser = {
+                id_user: payload.id_user,
+                id_auth: payload.data.id_auth,
+                role: payload.data.role,
+                firstName: payload.data.firstName,
+                lastName: payload.data.lastName
+            }
         },
+
         signOut(state) {
             state.currentUser = {
-                id: '',
+                id_auth: '',
                 role: null,
                 firstName: '',
                 lastName: ''
@@ -188,6 +201,10 @@ export default new Vuex.Store({
         setSortingParameters(state, payload) {
             state.sortingParameters = payload;
         },
+        setEventNumParticipants(state, payload) {
+            const idx = state.evenements.findIndex(e => e.id_evenement == payload.id_ev);
+            state.evenements[idx].id_participants = payload.eventParticipants;
+        },
 
         // TEST
         FF_currentUser(state, payload) {
@@ -208,10 +225,12 @@ export default new Vuex.Store({
 
             const db = firebase.firestore();
             db.collection('utilisateurs')
-            .where("id_auth", "==", payload).get()
+            .where("id_auth", "==", payload)
+            .get()
             .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    commit('fillDataCurrentUser', doc.data());
+                querySnapshot.forEach((doc) => {    console.log(doc.id); //TEST
+                    //commit('fillDataCurrentUser', doc.data()); // Ancienne version au 06/11/20
+                    commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id }); // Nvelle version au 06/11/20
                 });
             })
             .catch((err) => { 
@@ -247,6 +266,7 @@ export default new Vuex.Store({
             // Quand User créé dans Firebase, Id créé et renvoyé dans la promesse, que l'on ajoute comme valeur de la propriété 'id' à l'objet
             commit('setLoading', true);
             commit('setMessageError', null);
+
             firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
             .then(u => {
                 const newParticipant = {
@@ -260,20 +280,25 @@ export default new Vuex.Store({
 
                 // Ici ajout des autres propriétés que que email et password dans outil
                 const db = firebase.firestore();
-                db.collection('utilisateurs').add({
+                db.collection('utilisateurs')
+                .add({
                     ...newParticipant,
                     evenements: []
                 })
                 .then(function(docRef) {
+                    const docRefId = docRef.id;
                     //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST
-                    db.collection('participants').add({
+                    db.collection('participants')
+                    .add({
                         id_utilisateur: docRef.id,
                         profession: payload.profession
                     })
                     .then(function(docRef) { 
                         console.log("Document écrit dans collection 'participants' avec l'ID: ", docRef.id); //TEST                       
                         commit('addParticipant', {...newParticipant, profession: payload.profession});
-                        commit('fillDataCurrentUser', {...newParticipant, profession: payload.profession}); // Mise à jour données utilisateur en cours
+                        // TODO: A-t-on besoin ci-dessous d'ajouter la propriété 'profession' à l'objet 'currentUser' dans 'fillDataCurrentUser' ???
+                        /* Ancienne version au 06/11/20 */ //commit('fillDataCurrentUser', {...newParticipant, profession: payload.profession}); // Mise à jour données utilisateur en cours
+                        /* Nvelle version au 06/11/20 */ commit('fillDataCurrentUser', { data: { ...newParticipant, profession: payload.profession }, id_user: docRefId }); // Mise à jour données utilisateur en cours
                     })
                     .catch(function(error) {
                         console.error("Error adding document dans collection 'participants' : ", error);
@@ -317,7 +342,8 @@ export default new Vuex.Store({
                 .then((querySnapshot) => {
                     querySnapshot.forEach(function (doc) {
                         console.log('signIn', doc.id, ' => ', doc.data()); //TEST
-                        commit('fillDataCurrentUser', doc.data());
+                        //commit('fillDataCurrentUser', doc.data()); // Ancienne version au 06/11/20
+                        commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id }); // Nvelle version au 06/11/20
                     });
                 });
             })
@@ -673,7 +699,7 @@ export default new Vuex.Store({
 
             const newEvenement = {
                 ...payload,
-                id_createurEvenement: state.currentUser.id,
+                id_createurEvenement: state.currentUser.id_auth,
                 id_participants: []
             };
 
@@ -708,6 +734,73 @@ export default new Vuex.Store({
             })
             .catch((error) => { commit('setMessageError', error.message) })
             .finally(() => { commit('setLoading', false) });
+        },
+
+
+        // Partie Participants : Inscription à une formation
+        registerEvent({ commit }, payload) {
+            // Dans collection 'evenements', ajout de l'id utilisateur (payload.id_user) dans la propriété 'id_participants' en vérifiant que l'id ne s'y trouve pas déjà (=> utilisateur déjà inscrit)
+            // Dans collection 'utilisateur', ajout de l'id evenement (payload.id_event) dans propriété 'evenements' (en vérifiant que l'id evenement ne s'y trouve pas déjà)
+            commit('setLoading', true);
+            commit('setMessageError', null);
+
+            const db = firebase.firestore();
+            const collectionEvenements = db.collection('evenements');
+            const collectionUtilisateurs = db.collection('utilisateurs');
+            const eventToModify = collectionEvenements.doc(payload.id_event);
+
+            return db.runTransaction(transaction => {
+                // This code may get re-run multiple times if there are conflicts.
+                return transaction.get(eventToModify).then(async querySnapshot => {
+                    if (!querySnapshot.exists) { throw "L'évènement à modifier n'existe pas ou plus."; }
+
+                    let event = querySnapshot.data();
+
+                    // Retrait/ajout id de l'evenement dans propriété 'evenements' de la collection 'utilisateurs'
+                    await collectionUtilisateurs
+                    .doc(payload.id_user)
+                    .get()
+                    .then(querySnapshot => {
+                        console.log("data utilisateur =>", querySnapshot.data()); //TEST
+                        let participant = querySnapshot.data();
+                        let evenementsParticipant = participant.evenements;
+                        if(payload.registry) { // Si demande d'inscription de la part du participant...
+                            evenementsParticipant.push(payload.id_event);
+                        } else { // ...Sinon si demande de désinscription
+                            evenementsParticipant.splice(evenementsParticipant.indexOf(payload.id_event), 1);
+                        }
+                        console.log("evenementsParticipant", evenementsParticipant); //TEST
+
+                        // Update prop 'evenements' de la collection 'utilisateurs'
+                        transaction.update(collectionUtilisateurs.doc(payload.id_user), { evenements: evenementsParticipant });
+                    })
+                    .catch(error => { throw error });
+                    
+
+
+                    //console.log(event, (payload.registry ? "Inscription" : "Désinscription")); //TEST
+                    // Si demande d'inscription, on ajoute le participant à la liste des participants de l'évènement...
+                    if(payload.registry) {
+                        event.id_participants.push(payload.id_user);
+                    } else { // ...et si désinscription, on le supprime.
+                        event.id_participants = [...event.id_participants].filter(e => e != payload.id_user);
+                    }
+
+                    // Modification de la liste des participants dans l'évènement : Mise à jour dans Firestore
+                    transaction.update(eventToModify, event);
+
+                    return event.id_participants;
+                });
+            }).then(eventParticipants => {
+                // Mise à jour du state
+                commit('setEventNumParticipants', { 
+                    id_ev: payload.id_event, 
+                    eventParticipants: eventParticipants 
+                });
+                console.log("Transaction successfully committed!");
+            })
+            .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
+            .finally(() => { commit('setLoading', false) });   
         },
 
 
@@ -757,7 +850,7 @@ export default new Vuex.Store({
                         
                         const animateurs_supprEvent = animateurs_bdd.map(a => { 
                             return { id_anim: a, action: "delete"};
-                        }); // Animateurs à qui il faut retrer la formation
+                        }); // Animateurs à qui il faut retirer la formation
                         const animateurs_changeEvent = animateurs_addEvent.concat(animateurs_supprEvent);
                         const id_animateurs_changeEvent = animateurs_changeEvent.map(a => a.id_anim);
                         //console.warn("animateurs_changeEvent", animateurs_changeEvent, "id_animateurs_changeEvent", id_animateurs_changeEvent); //TEST
@@ -1061,6 +1154,7 @@ export default new Vuex.Store({
 
         },
 
+
         /// TEST LISTENERS ///
         /* listener_addEvent() {
             const db = firebase.firestore();
@@ -1096,13 +1190,10 @@ export default new Vuex.Store({
     
     getters: {
         currentUser(state) {
-            const fullDataCurrentUser = state.utilisateurs.find(u => u.id_auth == state.currentUser.id);
+            const fullDataCurrentUser = state.utilisateurs.find(u => u.id_auth == state.currentUser.id_auth);
             return (typeof fullDataCurrentUser == 'undefined' ? state.currentUser : fullDataCurrentUser);
         },
-        currentUserRole(getters) { // TEST au 05/11/20
-            return getters.currentUser.role;
-        },
-        menu (state) {
+        menu(state) {
             return state.menuItems.filter((val) => {
                 return val.roles.indexOf(state.currentUser.role) > -1;
             });

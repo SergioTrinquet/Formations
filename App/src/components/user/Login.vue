@@ -5,7 +5,7 @@
         <!-- <app-errorMsg :message="msgError" v-if="msgError !== null"></app-errorMsg> -->
 
         <app-modal :display="displayModalWelcome">
-            <div>Heureux de vous retrouver {{ current_user.firstName + " " + current_user.lastName }}</div>
+            <div>Heureux de vous retrouver {{ currentUser.firstName + " " + currentUser.lastName }}</div>
             <v-btn @click="displayModalWelcome = !displayModalWelcome" depressed>Fermer</v-btn>
         </app-modal>
 
@@ -51,7 +51,7 @@
                         </v-card-text>
                         <v-divider></v-divider>
                         <v-card-actions>
-                            <v-spacer></v-spacer> {{ current_user.role }}
+                            <v-spacer></v-spacer> {{ currentUser.role }}
                             <v-btn 
                                 class="bt_green" 
                                 :disabled="!validConn"
@@ -82,7 +82,7 @@ export default {
         msgHint() { 
             return this.connection.password === "" ? "6 caractères minimum, sans espaces, contenant au moins un chiffre" : "" 
         },
-        current_user() {
+        currentUser() {
             return this.$store.getters.currentUser;
         },
         /* msgError() {
@@ -93,7 +93,7 @@ export default {
         }
     },
     watch: {        
-        current_user(val) {
+        currentUser(val) {
             // Redirection en fonction du role de l'utilisateur connecté
             let pathName = '';
             if(val.role == 'Participant') {

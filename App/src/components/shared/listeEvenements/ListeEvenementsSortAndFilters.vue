@@ -69,7 +69,7 @@
                 </div>
 
                 <div class="bloc">
-                    <v-switch 
+                    <v-switch v-if="currentUser.role == 'Admin'"
                         :label="label" 
                         color="primaire" 
                         v-model="pastEvents" 
@@ -159,6 +159,15 @@ export default {
     },
 
     computed: {
+        currentUser() {
+                return this.$store.getters.currentUser;
+
+                /* // Juste pour phase de developpement : A VIRER APRES
+                const cu = this.$store.getters.currentUser;
+                cu.role = "Participant";
+                return cu; */
+            },
+
         // Pour affichage au dessus du date picker : Donne la tranche de dates pendant lesquelles il y a des formations programmées
         initDateRangeText() {
             let txt = "";

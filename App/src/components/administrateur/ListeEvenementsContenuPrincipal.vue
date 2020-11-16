@@ -1,21 +1,35 @@
 <template>
-    <div class="blocsEvent" v-if="events.length > 0">       
+    <div class="blocsEvent" v-if="events.length > 0">
         
-        rangeEvents: {{ rangeEvents }} <br/> <!-- TEST -->
-        sortingParameters.type: {{ sortingParameters.type }} - sortingParameters.direction: {{ sortingParameters.direction }}<br/> <!-- TEST -->
-        currentUserRole => {{ currentUserRole }}<br />
+        <!-- 
+        currentUser : {{ currentUser }} <br />
+        rangeEvents: {{ rangeEvents }} <br/>
+        sortingParameters.type: {{ sortingParameters.type }} - sortingParameters.direction: {{ sortingParameters.direction }}<br/>
+        currentUser.role => {{ currentUser.role }}<br />
+        -->
 
         <v-card
             v-for="(event, i) in events" :key="event.id_ev" 
             :class="['blocEvent', isPast(event.date) ? 'obsolete' : '']"
             :data-past="isPast(event.date)"
-        >
-            <div class="headerEvent d-flex">
-                <span class="dateEvent primaire">{{ formatDate(event.date) }}</span>
-                <span class="titreEvent flex-grow-1 align-self-center">{{ event.titre | uppercase }}</span>
-                <span class="nbParticipants align-self-center"><span class="nb">{{ event.id_participants.length }}</span><span>participant(s)</span></span>
+        >       
+            <div class="dateEvent primaire">{{ formatDate(event.date) }}</div>
+            
+            <div v-if="currentUser.role == 'Participant' && isRegistered(event.id_evenement)" class="bandeauParticipantInscrit">
+                <v-icon>far fa-calendar-check</v-icon>Inscrit à cette formation
             </div>
-            <!-- <div style="font-style: italic; font-size: 14px; color: #333333; line-height: 14px;">{{ JSON.stringify(event) }}</div> -->
+            
+            <div class="headerEvent d-flex">
+                <span class="titreEvent flex-grow-1 align-self-center">{{ event.titre | uppercase }}</span>
+                <span class="nbParticipants align-self-center">
+                    <template v-if="currentUser.role == 'Participant'">
+                        <span class="nb placesDispos">{{ nbParticipantsMaxParFormation - event.id_participants.length }}</span><span>place(s) dispo.</span>
+                    </template>
+                    <template v-else>
+                        <span class="nb">{{ event.id_participants.length }}</span><span>participant(s)</span>
+                    </template>
+                </span>
+            </div>
             <div class="mainInfos">
                 <div class="description">{{ event.description }}</div>
                 <div>image: {{ event.image }}</div>
@@ -37,20 +51,24 @@
                 </div>
             </div>
             <v-divider></v-divider>
-            <v-card-actions v-if="currentUserRole == 'Admin'">
+            <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn depressed class="bt_event bt_green" @click="changeEvent(event)" :disabled="isPast(event.date)">Modifier</v-btn>
-                <v-btn depressed class="bt_event bt_green" @click="deleteEvent(event.id_evenement)">Supprimer</v-btn>
+                <template v-if="currentUser.role == 'Admin'">
+                    <v-btn depressed class="bt_event bt_green" @click="changeEvent(event)" :disabled="isPast(event.date)">Modifier</v-btn>
+                    <v-btn depressed class="bt_event bt_green" @click="deleteEvent(event.id_evenement)">Supprimer</v-btn>
+                </template>
+                <template v-if="currentUser.role == 'Participant'">
+                    <span v-if="isRegistered(event.id_evenement)">
+                        <v-btn depressed class="bt_event bt_red" @click="registerEvent(event.id_evenement, false)">Se désinscrire</v-btn>
+                    </span>
+                    <span v-else>
+                        <v-btn depressed class="bt_event bt_green" :disabled="canRegister(event.id_participants.length)" @click="registerEvent(event.id_evenement, true)">S'inscrire</v-btn>
+                    </span>
+                </template>
             </v-card-actions>
-            <!-- Ajouté le 05/11/20 -->
-            <v-card-actions v-if="currentUserRole == 'Participant'">
-                <v-spacer></v-spacer>
-                <v-btn depressed class="bt_event bt_green" @click="register(event.id_evenement)">S'inscrire à cette formation</v-btn>
-            </v-card-actions>
-            <!-- Fin ajout le 05/11/20 -->
         </v-card>
     </div>
-    <div v-else class="msgNoEvents"><v-icon>far fa-grimace</v-icon>Pas d'évènements, désolé !</div>
+    <div v-else-if="events.length == 0 && eventsLoaded" class="msgNoEvents"><v-icon>far fa-grimace</v-icon>Pas d'évènements, désolé !</div>
 </template>
 
 <script>
@@ -78,9 +96,11 @@
         },
 
         computed: {
-            currentUserRole() {
-                //return this.$store.getters.currentUserRole;
-                return "Participant";  // Pour developpement
+            currentUser() {
+                return this.$store.getters.currentUser;
+            },
+            nbParticipantsMaxParFormation() {
+                return this.$store.state.nbParticipantsMaxParFormation;
             },
 
             sortingParameters() {
@@ -92,7 +112,7 @@
 
             // Filtres fait dans Firestore (dans le VUEX), mais classement et pagination du coté Front car impossibilité de classer par un champ si le filtrage (via clause '.where')
             // est fait à partir d'un autre champ, d'ou certains cas de figure impossibles à gérer intégralement avec Firestore : c'est la raison pour laquelle la partie 'sorting' puis pagination qui se fait à la fin, dont gérées dans le component et non via Firestore.
-            events() {    
+            events() {
                 if(!this.eventsLoaded) { // Si évènements pas encore chargés dans le hook 'mounted'... 
 
                     return []; 
@@ -166,24 +186,18 @@
                 })
             },
 
+            // Partie Administrateur
             changeEvent(ev) {
                 console.log("id de l'encart à modifier :", ev.id_evenement, ev); //TEST
                 this.$emit('onChangeEvent', ev);
             },
             async deleteEvent(id_ev) {
-                const c = confirm("Confirmez la suppression de cet évènement!\n" + id_ev);
+                const c = confirm("Confirmez la suppression de cette formation svp!"); 
                 if(c) {
                     await this.$store.dispatch('deleteEvent', id_ev);
                     this.$emit("onEndDeleteEvent");
                 }
             },
-
-            // Ajouté le 05/11/20
-            register(id_event) {
-                // Récupérer aussi l'id Participant !!
-                alert(`Inscription à la formation n° ${id_event}`); //TEST
-            },
-
             getDateOfTheDay() {
                 this.dateOfTheDay = this.getCurrentDate();
             },
@@ -193,7 +207,28 @@
                 }  else {
                     return (this.dateToInteger(date) < this.dateToInteger(this.dateOfTheDay) ? true : false);
                 }
+            },
+
+
+            // Partie Participant
+            isRegistered(id_ev) {
+                const theEvent = this.events.filter(e => e.id_evenement === id_ev);
+                return theEvent[0].id_participants.includes(this.currentUser.id_user);
+            },
+            canRegister(nbParticipants) {
+                return !(nbParticipants < this.nbParticipantsMaxParFormation);
+            },
+            async registerEvent(id_ev, registry) {
+                //alert(`Inscription de l'utilisateur ${this.currentUser.id_auth} (id_user: ${this.currentUser.id_user}) à la formation n° ${id_ev}`); //TEST
+                const c = confirm(`Confirmez votre ${registry ? "inscription" : "désinscription"} à la formation svp!`);
+                if(c) {
+                    await this.$store.dispatch('registerEvent', {
+                        id_user: this.currentUser.id_user, 
+                        id_event: id_ev, registry: registry 
+                    });
+                }
             }
+
         },
 
         async mounted() {
@@ -210,8 +245,7 @@
 
 <style scoped>
     .blocEvent {
-        margin: 0 0 60px 0;
-        padding: 0 8px;
+        margin: 60px 0 0 0;
     }
     .blocEvent.obsolete {
         box-shadow: 0 0 0px 6px rgba(255,0,0,0.5) inset;
@@ -226,6 +260,21 @@
         position: absolute;
         margin: -40px 0 0 0;
         letter-spacing: 0.05em;
+
+        margin: -25px 0 0 15px;
+    }
+    .bandeauParticipantInscrit {
+        background-color: #ffe186; 
+        color: #8a7a47; 
+        padding: 5px 10px 3px 10px; 
+        border-radius: 3px 3px 0 0;
+        text-align: right;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .bandeauParticipantInscrit > i {
+        font-size: 15px;
+        margin: -3px 5px 0 0;
     }
     .headerEvent,
     .nbParticipants {
@@ -233,15 +282,13 @@
     }
     .headerEvent {
         font-size: 17px;
-        padding: 15px 7px 12px 15px;
+        padding: 15px 15px 18px 15px;
         border-bottom: dashed 1px #cecece;
-    }
-    .headerEvent > span:nth-child(2) {
-        font-size: 20px;
-        line-height: 20px;
     }
     .titreEvent {
         padding: 0 20px 0 0;
+        font-size: 20px;
+        line-height: 20px;
     }
     .nbParticipants {
         text-align: center;
@@ -255,6 +302,9 @@
         font-size: 20px;
         font-weight: bold;
         display: block;
+    }
+    .nbParticipants  .nb.placesDispos {
+        min-width: 70px;
     }
     .nbParticipants span:last-child {
         font-size: 11px;

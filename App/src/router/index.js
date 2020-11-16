@@ -5,7 +5,7 @@ import Accueil from '@/components/Accueil'
 import AdminCreationEvenement from '@/components/administrateur/CreationEvenement'
 import AdminListeEvenements from '@/components/administrateur/ListeEvenements'
 import ListeParticipants from '@/components/animateurs/ListeParticipants'
-import Evenements from '@/components/participants/Evenements'
+//import Evenements from '@/components/participants/Evenements'   // <<<== CECI EST LA BONNE VERSION : 12/11/20
 import Inscription from '@/components/user/Inscription'
 import Connection from '@/components/user/Login'
 import UnknownURL from '@/components/shared/base/404'
@@ -48,7 +48,10 @@ export default new VueRouter({
         {
             path: '/events',
             name: 'events',
-            component: Evenements,
+            //component: Evenements, // <<<== CECI EST LA BONNE VERSION : 12/11/20
+
+            component: AdminListeEvenements, // VERSION POUR PHASE DE DEV : 12/11/20
+            
             beforeEnter: (to, from, next) => {
                 Redirect('events', next);
             }

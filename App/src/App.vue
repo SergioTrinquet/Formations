@@ -154,7 +154,7 @@ export default {
   },
 
   watch: {
-    currentUser(val) { console.warn("watch : currentUser : " + JSON.stringify(val)); //TEST
+    currentUser(val) { console.warn("watch : currentUser => ", val); //TEST
       // Si déconnexion donc plus de valeur dans currentUser => Redirection vers pg d'accueil
       if(val.role == null) {
         this.$router.push({name: 'accueil'});
