@@ -5,6 +5,7 @@
     <app-loading :loading="loading"></app-loading><!-- Loader général -->
     <app-errorMsg :message="msgError"></app-errorMsg><!-- Encart d'erreur général -->
 
+    <!-- Menu marge gauche -->
     <v-navigation-drawer 
       class="d-sm"
       v-model="sideNav"
@@ -40,6 +41,7 @@
 
     </v-navigation-drawer>
 
+    <!-- 1ere ligne Header -->
     <v-system-bar 
       height="30" 
       app 
@@ -52,7 +54,9 @@
       <div class="userType">type utilisateur : {{ (currentUser.role == null) ? "pas identifié" : currentUser.role }}</div> 
     </v-system-bar>
 
-    <v-app-bar  style="margin-top:30px"
+
+    <v-app-bar  
+      style="margin-top:30px"
       app
       color="primaire"
       dark
@@ -69,6 +73,7 @@
         />
       </div> -->
 
+      <!-- Icone menu -->
       <div class="d-sm-none">
         <v-icon class="mr-1" v-on:click="sideNav = !sideNav">menu</v-icon>
         <v-divider
@@ -77,10 +82,18 @@
         ></v-divider>
       </div>
 
-      <router-link tag="div" to="/" class="white--text title" style="cursor: pointer;">Formations</router-link>
+      <router-link 
+        tag="div" 
+        :to="direction" 
+        class="white--text title" 
+        style="cursor: pointer;"
+      >
+        Formations
+      </router-link>
 
       <v-spacer></v-spacer>
 
+      <!-- Boutons de navigation -->
       <v-btn 
         color="primaire" 
         depressed 
@@ -98,6 +111,7 @@
         v-show="currentUser.role !== null"
       ></v-divider>
 
+      <!-- Icone de déconnexion -->
       <v-tooltip bottom content-class="tooltip">
         <template v-slot:activator="{ on }">
           <v-icon 
@@ -111,7 +125,7 @@
 
     </v-app-bar>
 
-
+    <!-- Contenu page -->
     <v-content class="background">    
 
       <!-- JUSTE POUR TEST --><div style="position: fixed; top 90px;">{{ "FF_currentUser => " + FF_currentUser }}<button v-on:click="CallStateFF_currentUser" style="background-color:red; color: #fff;">Appel FF_currentUser</button></div>
@@ -132,17 +146,22 @@ export default {
   }),
 
   computed: {
-    menu() {
-      return this.$store.getters.menu;
-    },
-    currentUser() {
-      return this.$store.getters.currentUser;
-    },
     msgError() {
       return this.$store.state.msgError;
     },
     loading() {
         return this.$store.state.loading;
+    },
+    menu() { console.log(" App : On est dans le computed 'menu'"); //TEST
+      //return this.$store.getters.menu; // Version Originale
+      // V2
+      return this.$store.getters.menu.filter(m => m.visible == true);
+    },
+    currentUser() {
+      return this.$store.getters.currentUser;
+    },
+    direction() {
+        return (this.currentUser.role == "Participant" ? "events" : "/");
     }
 
     // TEST
@@ -157,7 +176,12 @@ export default {
     currentUser(val) { console.warn("watch : currentUser => ", val); //TEST
       // Si déconnexion donc plus de valeur dans currentUser => Redirection vers pg d'accueil
       if(val.role == null) {
-        this.$router.push({name: 'accueil'});
+        this.$router.push({ name: 'accueil' });
+      }
+
+      // Si personne loguée est un Participant, il n'a qu'une page donc redirection vers celle-ci 
+      if(val.role == 'Participant') {
+        this.$router.push({ name: 'events' });
       }
     }
   },
@@ -165,9 +189,9 @@ export default {
   methods: {
     signOut() {
       this.$store.dispatch('signOut');
-    }
+    },
 
-    ,CallStateFF_currentUser() { this.$store.dispatch('FF_currentUser'); } // TEST
+    CallStateFF_currentUser() { this.$store.dispatch('FF_currentUser'); } // TEST
   }
 
 }
