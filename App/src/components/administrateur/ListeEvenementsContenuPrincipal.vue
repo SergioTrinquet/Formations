@@ -234,9 +234,6 @@
         async mounted() {
             this.getDateOfTheDay();
             await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date
-            //await this.$store.dispatch('loadEvenements', { dates: ["2020-03-15"], villes: ["Nice", "Brest"] }); //TEST
-            //await this.$store.dispatch('loadEvenements', { villes: ["Nice", "Brest"] }); //TEST
-            //await this.$store.dispatch('loadEvenements', { dates: ["2021-03-14"] }); //TEST
             this.eventsLoaded = true;
             this.$emit("onEventsLoaded");
         }
