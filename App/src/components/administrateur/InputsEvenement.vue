@@ -15,7 +15,8 @@
             label="Description"
             rows="2"
             :rules="rules.mandatory"
-            class="textarea"
+            auto-grow
+            row-height="18" 
             light
         >
         </v-textarea>
@@ -255,9 +256,8 @@ export default {
     font-size: 0.95em;
   }
   .v-text-field input { line-height: 15px; } /* N'override pas Vuetify */
-  .v-textarea textarea { line-height: 1rem !important; } /* N'override pas Vuetify */
 
   .wrapSentenceCreateAnimateur {
-    padding: 10px 0 30px;
+    padding: 10px 0 20px;
   }
 </style>
