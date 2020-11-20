@@ -152,12 +152,11 @@ export default {
     loading() {
         return this.$store.state.loading;
     },
-    menu() { console.log(" App : On est dans le computed 'menu'"); //TEST
-      //return this.$store.getters.menu; // Version Originale
-      // V2
-      return this.$store.getters.menu.filter(m => m.visible == true);
+    menu() {
+      //return this.$store.getters.menu.filter(m => m.visible == true); // V1
+        return this.$store.getters.menu; // V2
     },
-    currentUser() {
+    currentUser() { console.log(this.$store.getters.currentUser); //TEST
       return this.$store.getters.currentUser;
     },
     direction() {
