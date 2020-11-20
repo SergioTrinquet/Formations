@@ -58,8 +58,8 @@
 <script>
 import header from '@/components/shared/listeEvenements/ListeEvenementsHeader';
 import sortAndFilters from '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters';
+import encartsFormations from '@/components/shared/listeEvenements/ListeEvenementsCards';
 import modifEvenement from '@/components/administrateur/ListeEvenementModification';
-import encartsFormations from '@/components/administrateur/ListeEvenementsContenuPrincipal';
 
 export default {
 
