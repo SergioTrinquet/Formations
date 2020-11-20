@@ -15,9 +15,10 @@
         >       
             <div class="dateEvent primaire">{{ formatDate(event.date) }}</div>
             
-            <div v-if="currentUser.role == 'Participant' && isRegistered(event.id_evenement)" class="bandeauParticipantInscrit">
-                <v-icon>far fa-calendar-check</v-icon>Inscrit à cette formation
-            </div>
+            <app-bandeauInscription 
+                v-if="currentUser.role == 'Participant'" 
+                :idParticipants="event.id_participants"
+            ></app-bandeauInscription>
             
             <div class="headerEvent d-flex">
                 <span class="titreEvent flex-grow-1 align-self-center">{{ event.titre | uppercase }}</span>
@@ -53,18 +54,7 @@
             <v-divider></v-divider>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <template v-if="currentUser.role == 'Admin'">
-                    <v-btn depressed class="bt_event bt_green" @click="changeEvent(event)" :disabled="isPast(event.date)">Modifier</v-btn>
-                    <v-btn depressed class="bt_event bt_green" @click="deleteEvent(event.id_evenement)">Supprimer</v-btn>
-                </template>
-                <template v-if="currentUser.role == 'Participant'">
-                    <span v-if="isRegistered(event.id_evenement)">
-                        <v-btn depressed class="bt_event bt_red" @click="registerEvent(event.id_evenement, false)">Se désinscrire</v-btn>
-                    </span>
-                    <span v-else>
-                        <v-btn depressed class="bt_event bt_green" :disabled="canRegister(event.id_participants.length)" @click="registerEvent(event.id_evenement, true)">S'inscrire</v-btn>
-                    </span>
-                </template>
+                <component :is="buttonsCard" v-bind="buttonsCardProperties(event)"></component>
             </v-card-actions>
         </v-card>
     </div>
@@ -72,10 +62,15 @@
 </template>
 
 <script>
+    import bandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
+    import cardButtonParticipant from '@/components/participants/ListeEvenementsCardButton';
+    import cardButtonsAdmin from '@/components/administrateur/ListeEvenementsCardButtons';
+
     import formatageDate from '@/mixins/formatageDate';
     import currentDate from '@/mixins/currentDate';
     import map from '@/mixins/map';
     import dateToInt from '@/mixins/dateToInt';
+    
     import uppercase from '@/filters/uppercase.js';
 
     export default {
@@ -87,6 +82,12 @@
         ],
 
         filters: { uppercase },
+
+        components: {
+            'app-bandeauInscription': bandeauInscription,
+            'app-cardButtonParticipant': cardButtonParticipant,
+            'app-cardButtonsAdmin': cardButtonsAdmin
+        },
 
         data() {
             return {
@@ -101,6 +102,18 @@
             },
             nbParticipantsMaxParFormation() {
                 return this.$store.state.nbParticipantsMaxParFormation;
+            },
+
+            buttonsCard() {
+                const role = this.currentUser.role;
+                let component = null;
+                if(role == 'Participant') {
+                    component = 'app-cardButtonParticipant';
+                } else if(role == 'Admin') {
+                    component = 'app-cardButtonsAdmin';
+                }
+                return component;
+                //return (role == 'Participant' ? 'app-cardButtonParticipant' : (role == 'Admin' ? 'app-cardButtonsAdmin' : ''));
             },
 
             sortingParameters() {
@@ -186,21 +199,6 @@
                 })
             },
 
-            // Partie Administrateur
-            changeEvent(ev) {
-                console.log("id de l'encart à modifier :", ev.id_evenement, ev); //TEST
-                this.$emit('onChangeEvent', ev);
-            },
-            async deleteEvent(id_ev) {
-                const c = confirm("Confirmez la suppression de cette formation svp!"); 
-                if(c) {
-                    await this.$store.dispatch('deleteEvent', id_ev);
-                    this.$emit("onEndDeleteEvent");
-                }
-            },
-            getDateOfTheDay() {
-                this.dateOfTheDay = this.getCurrentDate();
-            },
             isPast(date) {
                 if(this.dateOfTheDay == null) {
                     return false;
@@ -209,30 +207,26 @@
                 }
             },
 
-
-            // Partie Participant
-            isRegistered(id_ev) {
-                const theEvent = this.events.filter(e => e.id_evenement === id_ev);
-                return theEvent[0].id_participants.includes(this.currentUser.id_user);
-            },
-            canRegister(nbParticipants) {
-                return !(nbParticipants < this.nbParticipantsMaxParFormation);
-            },
-            async registerEvent(id_ev, registry) {
-                //alert(`Inscription de l'utilisateur ${this.currentUser.id_auth} (id_user: ${this.currentUser.id_user}) à la formation n° ${id_ev}`); //TEST
-                const c = confirm(`Confirmez votre ${registry ? "inscription" : "désinscription"} à la formation svp!`);
-                if(c) {
-                    await this.$store.dispatch('registerEvent', {
-                        id_user: this.currentUser.id_user, 
-                        id_event: id_ev, registry: registry 
-                    });
+            buttonsCardProperties(ev) {
+                const role = this.currentUser.role;
+                let props = null;
+                if(role == 'Participant') {
+                    props = { 
+                        idEvent: ev.id_evenement, 
+                        idParticipants: ev.id_participants 
+                    };
+                } else if(role == 'Admin') {
+                    props = { 
+                        event: ev,
+                        isPast: this.isPast(ev.date)
+                    };
                 }
+                return props;
             }
-
         },
 
         async mounted() {
-            this.getDateOfTheDay();
+            this.dateOfTheDay = this.getCurrentDate();
             await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date
             this.eventsLoaded = true;
             this.$emit("onEventsLoaded");
@@ -259,19 +253,6 @@
         letter-spacing: 0.05em;
 
         margin: -25px 0 0 15px;
-    }
-    .bandeauParticipantInscrit {
-        background-color: #ffe186; 
-        color: #8a7a47; 
-        padding: 5px 10px 3px 10px; 
-        border-radius: 3px 3px 0 0;
-        text-align: right;
-        font-weight: bold;
-        font-size: 14px;
-    }
-    .bandeauParticipantInscrit > i {
-        font-size: 15px;
-        margin: -3px 5px 0 0;
     }
     .headerEvent,
     .nbParticipants {
@@ -350,8 +331,7 @@
     .otherData label {
         margin: 10px 0 0 0;
     }
-    .bt_event { font-weight: bold; }
-
+    
     .msgNoEvents {
         margin: 35% auto 0 auto;
         border-radius: 3px;

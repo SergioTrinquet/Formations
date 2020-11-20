@@ -10,16 +10,18 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
-//export const store = new Vuex.Store({ 
 export default new Vuex.Store({
     state:{
+        loading: false,
+        msgError: null,
+
         menuItems: [
-            { icon: 'account_circle', intitule: 'S\'inscrire', roles: [null], routeName: 'sign_up' },
-            { icon: 'lock_open', intitule: 'Se connecter', roles: [null], routeName: 'sign_in' },
-            { icon: 'event_note', intitule: 'Créer un évènement', roles: ['Admin'],  routeName: 'create_event' },
-            { icon: 'view_stream', intitule: 'Liste de évènements', roles: ['Admin'],  routeName: 'events_list' },
-            { icon: 'view_stream', intitule: 'Liste de évènements', roles: ['Participant'],  routeName: 'events' },
-            { icon: 'supervisor_account', intitule: 'Liste des participants', roles: ['Animateur'],  routeName: 'participants_list' },
+            { icon: 'account_circle', intitule: 'S\'inscrire', roles: [null], routeName: 'sign_up', visible: true },
+            { icon: 'lock_open', intitule: 'Se connecter', roles: [null], routeName: 'sign_in', visible: true },
+            { icon: 'event_note', intitule: 'Créer un évènement', roles: ['Admin'],  routeName: 'create_event', visible: true },
+            { icon: 'view_stream', intitule: 'Liste de évènements', roles: ['Admin'],  routeName: 'events_list', visible: true },
+            { icon: 'supervisor_account', intitule: 'Liste des participants', roles: ['Animateur'],  routeName: 'participants_list', visible: true },
+            { roles: ['Participant'],  routeName: 'events', visible: false }
         ],
 
         currentUser: {
@@ -32,7 +34,7 @@ export default new Vuex.Store({
         /* utilisateurs: [{ id: '', firstName: '', lastName: '', role: '', email: '', password: '', evenements: [], //liste des id evenements }], */
         utilisateurs: [],
         
-        admin: [], // Tableau destiné à stocker objets avec propriété 'id'
+        //admin: [], // Tableau destiné à stocker objets avec propriété 'id'
         participants: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'profession'
         animateurs: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'region'
 
@@ -44,8 +46,6 @@ export default new Vuex.Store({
         }], */
         evenements: [],
         
-        loading: false,
-        msgError: null,
         inputRules: {
             mandatory: [v => (v !== null && typeof v !== "undefined" && !!v.trim()) || "Champ obligatoire"],
             email: [v => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/g.test(v) || "Adresse incorrect"],
@@ -67,6 +67,8 @@ export default new Vuex.Store({
         nbParticipantsMaxParFormation: 30,
         selectedPage: 1,
         sortingParameters: {type: 'date', direction: 'asc'},
+        eventToModify: null,
+        flagEventDeleted: false,
 
         FF_currentUser: 'Vide' //TEST
     },
@@ -74,9 +76,9 @@ export default new Vuex.Store({
 
 
     mutations: {
-        setLoadedUtilisateurs(state, payload) {
+        /* setLoadedUtilisateurs(state, payload) {
             state.utilisateurs = payload;
-        },
+        }, */
 
         // Appelé dans pages création et modification évènement pour alimenter liste déroulante des animateurs
         setLoadedAnimateurs(state, payload) {
@@ -94,6 +96,9 @@ export default new Vuex.Store({
 
         deleteEvent(state, payload) {
             state.evenements = state.evenements.filter(v => v.id_evenement != payload);
+        },
+        setFlagEventDeleted(state, payload) {
+            state.flagEventDeleted = payload;
         },
 
         setDisplayModalRecordedEvent(state, payload) {
@@ -205,6 +210,9 @@ export default new Vuex.Store({
             const idx = state.evenements.findIndex(e => e.id_evenement == payload.id_ev);
             state.evenements[idx].id_participants = payload.eventParticipants;
         },
+        setEventToModify(state, payload) {
+            state.eventToModify = payload;
+        },
 
         // TEST
         FF_currentUser(state, payload) {
@@ -242,7 +250,7 @@ export default new Vuex.Store({
 
         
         // PAS UTILISE ACTUELLEMENT : Au chargement du site, récupération des utilisateurs 
-        loadUtilisateurs({commit}) {
+        /* loadUtilisateurs({commit}) {
             commit('setLoading', true);
             commit('setMessageError', null);
 
@@ -259,7 +267,7 @@ export default new Vuex.Store({
                 commit('setMessageError', err.message); 
             })
             .finally(() => { commit('setLoading', false) });
-        },
+        }, */
 
         // Inscription : Ajout participant
         addParticipant({commit}, payload) {
@@ -342,8 +350,7 @@ export default new Vuex.Store({
                 .then((querySnapshot) => {
                     querySnapshot.forEach(function (doc) {
                         console.log('signIn', doc.id, ' => ', doc.data()); //TEST
-                        //commit('fillDataCurrentUser', doc.data()); // Ancienne version au 06/11/20
-                        commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id }); // Nvelle version au 06/11/20
+                        commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id });
                     });
                 });
             })
@@ -379,6 +386,7 @@ export default new Vuex.Store({
             });
         },
 
+
         // Pour alimentation liste déroulante dans form. de création d'Animateur
         loadAnimateurs({commit}) {
             commit('setLoading', true);
@@ -391,7 +399,6 @@ export default new Vuex.Store({
             .then((querySnapshot) => {
                 const animateurs = [];
                 querySnapshot.forEach(function (doc) {
-                    //console.log('Animateur', '(' + doc.id + ')', ' => ', doc.data()); //TEST
                     animateurs.push({
                         id: doc.id,
                         nom: doc.data().lastName,
@@ -408,7 +415,8 @@ export default new Vuex.Store({
             .finally(() => { commit('setLoading', false) });
         },
 
-        // Partie Administrateur exclusivement : Création d'un Animateur
+
+        // Profil Administrateur exclusivement : Création d'un Animateur
         addAnimateur({state, commit}, payload) {
             commit('setLoading', true);
             commit('setMessageError', null);
@@ -467,19 +475,6 @@ export default new Vuex.Store({
             
         },
         
-        /* // Etape Inscription : Check si participant qui s'inscrit existe déjà
-        checkDoublonEvenement({state}, payload) {
-            this.$store.dispatch('loadUtilisateurs'); // Chargement utilisateurs dans Firebase
-            let doublon = state.utilisateurs.find(u => {    
-                //console.warn("u.role => " + u.role + " | u.firstName => " + u.firstName + " | u.lastName => " + u.lastName + " | u.login => " + u.login); //TEST
-                //console.warn("prenom => " + payload.prenom + " | nom => " + payload.nom + " | email => " + payload.email); //TEST
-                return (u.role === 'Participant' && 
-                        u.firstName === payload.prenom && 
-                        u.lastName === payload.nom);
-            });
-            this.commit('checkDoublonParticipant', doublon);
-        }, */
-
         
         // Pour obtenir les infos nécessaires aux paramétrages des filtres dans page de liste des évènements
         paramsFiltreEvenements({commit}, payload = null) {
@@ -534,31 +529,31 @@ export default new Vuex.Store({
         },
 
 
-
-        loadEvenements({commit}, payload = null) {
+        // Profil Administrateur et Participant : Chargement de la liste des évènements
+        async loadEvenements({state, commit}, payload = null) {
             commit('setLoading', true);
             commit('setMessageError', null);
 
+            // Récupération date du jour
             const today = new Date();
             const month = (today.getMonth()+1).toString();
             const day = today.getDate().toString();
             const currentDate = today.getFullYear().toString() + "-" + (month.length == 1 ? ("0" + month) : month) + "-" + (day.length == 1 ? ("0" + day) : day);           
             
             const db = firebase.firestore();
-
             let collectionEvenements = db.collection('evenements');
-            console.log("payload dans 'loadEvenements", payload); //TEST
-
+            let collectionUtilisateurs = db.collection('utilisateurs');
+            let evenementsParticipant = null; // Utilisé lorsque profil 'participant'
+            
+            //console.log("payload dans 'loadEvenements", payload); //TEST
             //for(var prop in payload) { console.log("Propriété de payload", prop); } //TEST
-
+            
             // Ici par défaut, les évènements doivent être ceux après la date du jour et classés par date.
             // Si des paramètres de filtres sont passés, ils prendront la place de ceux par défaut
             if(payload == null) { 
-                //console.log("payload == null"); //TEST
-                // Sélection et classement des évènements par défaut (qd arrivée sur la page ou qund aucun filtre et aucun tri)
+                // Sélection et classement des évènements par défaut (qd arrivée sur la page ou quand aucun filtre et aucun tri)
                 collectionEvenements = collectionEvenements.where("date" , ">=", currentDate).orderBy("date");
             } else {
-                //console.log("payload != null"); //TEST
                 // Si pas de filtre sur date(s) et pas affichage des évènements antérieurs à la date du jour
                 if(!("dates" in payload) && !("pastEvents" in payload)) {
                     //console.log("payload n'a pas la propriété 'dates' ni de propriété 'pastEvents'"); //TEST
@@ -581,57 +576,70 @@ export default new Vuex.Store({
                 }
                 
                 if("villes" in payload) {
-                    //console.warn("=> 'villes' in payload "); //TEST
-                    // Checker si 'in' avec une seule ville fonctionne! Sinon faire une condition avec "==" si 1 ville et 'in' si plusieurs
+                    // TODO: Checker si 'in' avec une seule ville fonctionne! Sinon faire une condition avec "==" si 1 ville et 'in' si plusieurs
                     collectionEvenements = collectionEvenements.where('ville' , 'in', payload.villes);
                 }
 
                 collectionEvenements = collectionEvenements.orderBy("date");
-            }
-            //console.warn("collectionEvenements", collectionEvenements); //TEST
-            /* let collectionEvenements = db.collection('evenements')
-                                            .where("date" , ">", "2021-01-01").where("date", "<", "2021-06-30")
-                                            //.where("ville", "==", "Nice")
-                                            .where('ville', 'in', ['Brest', 'Nancy', 'Nice'])
-                                            //.orderBy(payload.orderBy, payload.direction)
-                                            ; */
-            // FIN TEST au 30/09/2020
 
+
+                // Juste lorsque profil 'participant'
+                if("mesFormations" in payload) {
+                    // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
+                    evenementsParticipant = await collectionUtilisateurs
+                        .doc(state.currentUser.id_user)
+                        .get()
+                        .then(querySnapshot => querySnapshot.data().evenements)
+                        .catch(err => { 
+                            console.error("Erreur lors de la récupération des évènements du participant", err);
+                            commit('setMessageError', "Etape de récupération des évènements du participant: " + err.message); 
+                        })
+                        .finally(() => { commit('setLoading', false) });
+
+                    console.log("DANS 'loadEvenements', evenementsParticipant' =>", evenementsParticipant); //TEST
+                    // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
+                    //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipant).orderBy(firebase.firestore.FieldPath.documentId());
+                }
+
+            }
+            
 
             // Récupération liste des évènements et du/des animateurs de chacun de ces évènements
             return collectionEvenements
             .get()
             .then((querySnapshot) => {
 
+                // Partie filtrage qd participant ne veut afficher que ses formations
+                let docs = null;
+                if(evenementsParticipant !== null) {
+                    docs = querySnapshot.docs.filter(d => evenementsParticipant.includes(d.id));
+                } else {
+                    docs = querySnapshot.docs;
+                }
+
                 // Pour communiquer le nb d'évènements après filtre(s) mais avant pagination : Sert au calcul du nb de pages notamment
-                commit('setNbEventsFiltered', querySnapshot.docs.length);
+                commit('setNbEventsFiltered', docs.length);
 
                 ///// Partie Pagination /////
                 /* var artPerPg = state.nbEventsPerPage;
                 var numPg = (payload !== null && "numPage" in payload ? payload.numPage : 1);
                 var from = artPerPg * (numPg - 1);
-
-                var lastVisible = querySnapshot.docs[parseInt(from)]; //console.log("lastVisible", lastVisible.data()); //TEST
-                collectionEvenements
-                    .startAt(lastVisible).limit(artPerPg)
-                    .get()
-                    .then((querySnapshot) => { */
+                var lastVisible = docs[parseInt(from)]; //console.log("lastVisible", lastVisible.data()); //TEST
+                collectionEvenements.startAt(lastVisible).limit(artPerPg).get().then(querySnapshot => { */
                 ///// FIN Partie Pagination /////
 
-
                 let events = [];
-                querySnapshot.forEach((doc) => {
+                docs.forEach(doc => {
 
                     // Pour retrouver les noms des animateurs de l'évènement
                     let event_animateur = doc.data().id_animateurs;
                     // "firebase.firestore.FieldPath.documentId()" correspond à l'ID des éléments de la collection 'utilisateurs'
                     let listeAnimateurs = [];
-                    db.collection('utilisateurs')
+                    collectionUtilisateurs
                     .where(firebase.firestore.FieldPath.documentId(), 'in', event_animateur)
                     .get()
-                    .then((querySnapshot) => {
+                    .then(querySnapshot => {
                         querySnapshot.forEach((doc) => { 
-                            //console.log("=>>"); console.log(doc.id, doc.data()); //TEST
                             listeAnimateurs.push({
                                 "id": doc.id,
                                 "prenom": doc.data().firstName,
@@ -678,21 +686,9 @@ export default new Vuex.Store({
             .finally(() => { commit('setLoading', false) });
         },
 
-        // A partir de l'id Evenement, on récupère les participants
-        /* loadParticipantsFromEvenement({commit}, payload) {
-            const arrayParticipants = payload;
-            // "firebase.firestore.FieldPath.documentId()" correspond à l'ID des éléments de la collection 'utilisateurs'
-            const db = firebase.firestore();
-            db.collection('utilisateurs')
-            .where(firebase.firestore.FieldPath.documentId(), 'in', arrayParticipants)
-            .get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => { console.log("=>>"); console.log(doc.id, doc.data());  }) //TEST
-                console.log("=========");
-            })
-        }, */
 
-        // Partie Administrateur exclusivement : Ajout évènement
+
+        // Profil Administrateur exclusivement : Ajout évènement
         addEvenement({state, commit}, payload) {
             commit('setLoading', true);
             commit('setMessageError', null);
@@ -737,7 +733,7 @@ export default new Vuex.Store({
         },
 
 
-        // Partie Participants : Inscription à une formation
+        // Profil Participants : Inscription à une formation
         registerEvent({ commit }, payload) {
             // Dans collection 'evenements', ajout de l'id utilisateur (payload.id_user) dans la propriété 'id_participants' en vérifiant que l'id ne s'y trouve pas déjà (=> utilisateur déjà inscrit)
             // Dans collection 'utilisateur', ajout de l'id evenement (payload.id_event) dans propriété 'evenements' (en vérifiant que l'id evenement ne s'y trouve pas déjà)
@@ -804,7 +800,7 @@ export default new Vuex.Store({
         },
 
 
-        // Appelée dans partie 'Admin' : Modification d'un évènement
+        // Profil Administrateur uniquement : Modification d'un évènement
         modifyEvenement({ commit }, payload) {
             commit('setLoading', true);
             commit('setMessageError', null);
@@ -899,7 +895,7 @@ export default new Vuex.Store({
         },
 
 
-        // Appelée dans partie 'Admin' : Suppression évènement
+        // Profil Administrateur uniquement : Suppression évènement
         deleteEvent({commit}, payload) {
             // Ici il faut :
             // - Retirer dans 'utilisateurs' l'id evenement du tableau 'evenements' quand il s'agit d'un Animateur: ou plusieurs Animateurs
@@ -913,7 +909,7 @@ export default new Vuex.Store({
 
             /*================ Transaction : FONCTIONNE !! ==============*/
             const eventToDelete = db.collection('evenements').doc(payload);
-            return db.runTransaction(function(transaction) {
+            return db.runTransaction(transaction => {
                 // This code may get re-run multiple times if there are conflicts.
                 return transaction.get(eventToDelete).then(async querySnapshot => {
                     //console.log("Action 'deleteEvent'", querySnapshot.data()); //TEST
@@ -970,12 +966,12 @@ export default new Vuex.Store({
                         .catch(error => { throw error });
                     }
                     
-                    console.log("transaction.delete(eventToDelete)"); //TEST
                     transaction.delete(eventToDelete);
-
-                });
+                })
+                .catch(error => { throw error });
             }).then(() => {
                 commit('deleteEvent', payload); // Rafraichissement affichage écran
+                commit('setFlagEventDeleted', true); //Pour réinitialisation des filtres
                 console.log("Transaction successfully committed!");
             })
             .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
@@ -1194,9 +1190,8 @@ export default new Vuex.Store({
             return (typeof fullDataCurrentUser == 'undefined' ? state.currentUser : fullDataCurrentUser);
         },
         menu(state) {
-            return state.menuItems.filter((val) => {
-                return val.roles.indexOf(state.currentUser.role) > -1;
-            });
+            //return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1); // V1
+            return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1 && m.visible == true); // V2
         },
         // IMPORTANT : Voir si soit on le supprime et on appelle ds le composant 'this.$store.state.events', soit on récupère la partie traitement des filtres/pagination/classement du composant à ici
         events(state) {

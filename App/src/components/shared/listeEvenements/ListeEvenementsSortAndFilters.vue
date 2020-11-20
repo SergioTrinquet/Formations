@@ -58,6 +58,26 @@
                 </div>
 
                 <div class="bloc">
+                    <template v-if="currentUser.role == 'Participant'">
+                        <div class="chbxMesFormations d-flex align-center">
+                            <input type="checkbox" v-model="mesFormations" @change="myTrainingsOnly" id="chbx_mesFormations">
+                            <label for="chbx_mesFormations">Uniquement mes formations</label>
+                        </div>
+                    </template>
+
+                    <template v-if="currentUser.role == 'Admin'">
+                        <v-switch
+                            :label="label" 
+                            color="primaire" 
+                            v-model="pastEvents" 
+                            @change="updateParamsFilters"
+                            class="switch"
+                            hide-details="true"
+                        ></v-switch>
+                    </template>
+                </div>
+
+                <div class="bloc">
                     <div>Filtrer par</div>
                     <span 
                         v-for="(chip, i) in filter_chips" :key="i"
@@ -68,16 +88,6 @@
                     </span>
                 </div>
 
-                <div class="bloc">
-                    <v-switch v-if="currentUser.role == 'Admin'"
-                        :label="label" 
-                        color="primaire" 
-                        v-model="pastEvents" 
-                        @change="updateParamsFilters"
-                        class="switch"
-                        hide-details="true"
-                    ></v-switch>
-                </div>
             </div>
 
 
@@ -95,7 +105,7 @@
                 <v-btn @click="deleteAllFilters" class="deleteFiltersBt bt_green" x-small>Supprimer tous mes filtres</v-btn>
             </div>
 
-            <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0;">selectedFilters => {{ selectedFilters }}</span>
+            <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">selectedFilters => {{ selectedFilters }}</span>
             
 
         </div>
@@ -113,10 +123,6 @@ import deleteItemFromArray from '@/mixins/deleteItemFromArray';
 import itemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
 
 export default {
-    props: {
-        reloadParamsFilters: Number
-    },
-
     mixins: [
         datePickersAllowedDates,
         formatageDate,
@@ -140,8 +146,8 @@ export default {
             sortDirection: 'asc',
 
             filter_chips: [
-                { libelle: 'dates', filterType:'Dates', selected: false },
-                { libelle: 'villes', filterType:'Lieux', selected: false }
+                { libelle: 'dates', selected: false },
+                { libelle: 'villes', selected: false }
             ],
             label: "Anciennes formations",
             pastEvents: false,
@@ -155,18 +161,15 @@ export default {
             selectionVilles: [],
 
             paramsFiltersLoaded: false,
+
+            mesFormations: false/* 16/11/20 */
         }
     },
 
     computed: {
         currentUser() {
-                return this.$store.getters.currentUser;
-
-                /* // Juste pour phase de developpement : A VIRER APRES
-                const cu = this.$store.getters.currentUser;
-                cu.role = "Participant";
-                return cu; */
-            },
+            return this.$store.getters.currentUser;
+        },
 
         // Pour affichage au dessus du date picker : Donne la tranche de dates pendant lesquelles il y a des formations programmées
         initDateRangeText() {
@@ -227,20 +230,36 @@ export default {
         // Computed qui regroupe tous les filtres sélectionnés
         selectedFilters() {
             let filters = {};
+
+            // Quand personne loguée est un Administrateur
             if(this.pastEvents) {
                 filters.pastEvents = true;
             } else {
-                // Check if key 'pastEvents' exists
-                if("pastEvents" in filters) { delete filters.pastEvents; } // Remove key 'pastEvents' from object filters
+                if("pastEvents" in filters) { delete filters.pastEvents; } // Vérification si key 'pastEvents' existe : Si oui, suppression de l'objet 'filters'
             }
+
+            // Quand personne loguée est un Participant
+            if(this.mesFormations) {
+                filters.mesFormations = true;
+            } else {
+                if("mesFormations" in filters) { delete filters.mesFormations; } // Vérification si key 'mesFormations' existe : Si oui, suppression de l'objet 'filters'
+            }
+
+            // Peu importe le profil de la personne loguée
             if(this.dateRange.length > 0) {
                 filters.dates = this.dateRange;
             }
             if(this.selectionVilles.length > 0) {
                 filters.villes = this.selectionVilles;
             }
+
             return filters;
         },
+
+        // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
+        flagEventDeleted() {
+            return this.$store.state.flagEventDeleted;
+        }
 
     },
 
@@ -310,15 +329,26 @@ export default {
             }
         },
 
-        // Appelé quand suppression de formation
+        // Mis en comm. le 20/11/20
+        /* // Appelé quand suppression de formation
         reloadParamsFilters(val) {
             console.log("WATCH pour 'reloadParamsFilters'", val); //TEST
             this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
+        } */
+
+        // Ajouté le 20/11/20
+        flagEventDeleted(val) {
+            if(val) {
+                console.log("WATCH pour 'flagEventDeleted'", val); //TEST
+                this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
+                this.$store.commit('setFlagEventDeleted', false);
+            }
         }
+        // FIN Ajout 20/11/20
     },
 
     methods: {
-        // Affectation nvelles valeurs à la vaiable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
+        // Affectation nvelles valeurs à la variable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
         sortBy() {
             this.$store.commit('setSortingParameters', { type: this.sortSelect, direction: this.sortDirection });
         },
@@ -332,6 +362,12 @@ export default {
                 this.displayModalListeVilles = true
             }
         },
+
+        /// Ajouté le 16/11/20
+        async myTrainingsOnly() {
+            await this.loadEventsWithSelectedFilters();
+        },
+        // FIN
 
         // Quand clic sur switch 'formations passées' => Appel action ds le Vuex pour récupérer les paramètres à jour pour les filtres date et villes
         async updateParamsFilters() {
@@ -395,6 +431,7 @@ export default {
         },
 
         async loadEventsWithSelectedFilters() {
+            //await this.$store.dispatch('loadEvenements', { dates: ["2020-03-15"], villes: ["Nice", "Brest"] }); //TEST
             await this.$store.dispatch('loadEvenements', this.selectedFilters); // Appel requete avec filtres sélectionnés
             this.$emit('eventGoToFirstPage');
         }
@@ -423,15 +460,17 @@ export default {
         border-radius: 3px;
     }
     
+    #myFilters,
     #sortAndFiltersEvents .bloc {
         padding: 15px 10px;
+    }
+    #sortAndFiltersEvents .bloc {
         border-bottom: dotted 1px #6d6d6d;
     }
     #sortAndFiltersEvents .bloc:last-child {
         border-bottom-width: 0;
     }
-    #sortAndFiltersEvents .bloc,
-    .vChipSort { 
+    #sortAndFiltersEvents .bloc { 
         color: #444444;
     }
     #sortAndFiltersEvents .bloc,
@@ -440,11 +479,12 @@ export default {
     }
     .vChipSort { 
         display: inline-block;
-        margin: 0 8px 0 0; 
+        margin: 0 8px 6px 0; 
         border-radius: 20px;
         padding: 0 10px;
         cursor: pointer;
-        border: solid 1px #444444;
+        color: #283593;
+        border: solid 1px #283593;
         transition: all 0.2s ease-in-out;
     }
     .vChipSort.selected i.fas,
@@ -453,7 +493,7 @@ export default {
     }
     .vChipSort.selected,
     .vChipSort:hover {
-        background-color: #444444;
+        background-color: #283593;
         color: #ffffff;
     }
 
@@ -523,5 +563,18 @@ export default {
 
     .deleteFiltersBt {
         font-weight: bold;
+    }
+
+
+    .chbxMesFormations {
+        margin: 2px 0;
+    }
+    .chbxMesFormations input[type="checkbox"] {
+        margin: 0 8px 0 0;
+    }
+    .chbxMesFormations label {
+        width: 75%;
+        line-height: 1em;
+        cursor: pointer;
     }
 </style>
