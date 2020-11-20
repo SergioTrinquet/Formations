@@ -37,7 +37,7 @@ new Vue({
   store,
   render: h => h(App),
   created() {
-    store.commit('setLoading', true); // Ajouté le 05/11/20
+    store.commit('setLoading', true);
     
     // Check si un user est déjà connecté lors de l'arrivée sur le site, 
     // et authentification de celui-ci si c'est le cas
@@ -46,7 +46,10 @@ new Vue({
         console.log("main.js => user", user.uid); //TEST 
         store.dispatch('setCurrentUser', user.uid);
       }
-      else { console.warn("Pas de user") }
+      else { 
+        console.warn("Pas de user"); //TEST
+        store.commit('setLoading', false);
+      }
     });
     // Chargement des utilisateurs => Utile pour 'checkDoublonParticipant'
     //this.$store.dispatch('loadUtilisateurs'); // TEST : Mis en comm. le 20/05/2020
