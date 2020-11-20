@@ -1,7 +1,6 @@
 <template>
     <v-container fluid class="pa-0">
 
-
         <!-- Modal pour modification d'un évènement -->
         <app-modifEvenement 
             :displayModalChangeEvent="displayModalChangeEvent"
@@ -10,7 +9,7 @@
         ></app-modifEvenement>
 
 
-        <!-- Suheader -->
+        <!-- Subheader -->
         <app-header 
             v-if="eventsLoaded == true" 
             :initPagination="initPagination"
@@ -33,8 +32,7 @@
             
                 <!-- Incrementation de 'initPagination' : Retour à la page du début quand nouveaux filtres ou retraits filtres -->
                 <app-sortAndFilters 
-                    @eventGoToFirstPage="initPagination++"    
-                    :reloadParamsFilters="reloadParamsFilters"
+                    @eventGoToFirstPage="initPagination++"
                 ></app-sortAndFilters>
 
             </v-col>
@@ -45,9 +43,7 @@
 
                         <!-- Encarts descriptifs des formations -->
                         <app-encartsFormations
-                            @onChangeEvent="changeEvent($event)"
                             @onEventsLoaded="eventsLoaded = true"
-                            @onEndDeleteEvent="reloadParamsFilters++"
                         ></app-encartsFormations>
                 
                     </v-col>
@@ -78,19 +74,21 @@ export default {
         return {
             displayModalChangeEvent: false,
             eventsLoaded: false,
-            initPagination: 0,
-            reloadParamsFilters: 0,
-            eventToModify: null
+            initPagination: 0
         }
     },
 
-    methods: {
-        changeEvent(e) {
-            console.log("id de l'encart à modifier :", e.id_evenement, e); //TEST
-            this.displayModalChangeEvent = true;
-            this.eventToModify = e;
+
+    computed: {
+        eventToModify() {
+            return this.$store.state.eventToModify;
         }
-    }
+    },
+    watch: {
+        eventToModify() {
+            this.displayModalChangeEvent = true; // Pour faire apparaitre le modal de modification d'une formation
+        }
+    },
 
 }
 </script>
