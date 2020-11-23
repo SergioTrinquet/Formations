@@ -84,9 +84,7 @@
         filters: { uppercase },
 
         components: {
-            'app-bandeauInscription': bandeauInscription,
-            'app-cardButtonParticipant': cardButtonParticipant,
-            'app-cardButtonsAdmin': cardButtonsAdmin
+            'app-bandeauInscription': bandeauInscription
         },
 
         data() {
@@ -108,12 +106,12 @@
                 const role = this.currentUser.role;
                 let component = null;
                 if(role == 'Participant') {
-                    component = 'app-cardButtonParticipant';
+                    component = cardButtonParticipant;
                 } else if(role == 'Admin') {
-                    component = 'app-cardButtonsAdmin';
+                    component = cardButtonsAdmin;
                 }
                 return component;
-                //return (role == 'Participant' ? 'app-cardButtonParticipant' : (role == 'Admin' ? 'app-cardButtonsAdmin' : ''));
+                //return (role == 'Participant' ? cardButtonParticipant : (role == 'Admin' ? cardButtonsAdmin : ''));
             },
 
             sortingParameters() {
