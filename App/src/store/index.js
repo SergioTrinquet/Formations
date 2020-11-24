@@ -70,6 +70,8 @@ export default new Vuex.Store({
         eventToModify: null,
         flagEventDeleted: false,
 
+        filterMyTrainings: false, // Ajouté le 23/11/20
+
         FF_currentUser: 'Vide' //TEST
     },
 
@@ -157,16 +159,6 @@ export default new Vuex.Store({
             state.closeModalAnimateur = true;
         },
 
-        // Version au 06/11/20
-        /* fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
-            state.currentUser = {
-                id_auth: payload.id_auth,
-                role: payload.role,
-                firstName: payload.firstName,
-                lastName: payload.lastName
-            }
-        }, */
-        // Nvelle version au 06/11/20
         fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
             state.currentUser = {
                 id_user: payload.id_user,
@@ -197,9 +189,9 @@ export default new Vuex.Store({
         setParamsFiltersEvenements(state, payload) {
             state.paramsFiltersEvenements = payload;
         },
-        setNbEventsFiltered(state, payload) {
+        /* setNbEventsFiltered(state, payload) {
             state.nbEventsFiltered = payload;
-        },
+        }, */
         setSelectedPage(state, payload) {
             state.selectedPage = payload;
         },
@@ -213,6 +205,12 @@ export default new Vuex.Store({
         setEventToModify(state, payload) {
             state.eventToModify = payload;
         },
+
+        // Ajouté le 23/11/20
+        setValueFilterMyTrainings(state, payload) {
+            state.filterMyTrainings = payload
+        },
+        // Fin ajout le 23/11/20
 
         // TEST
         FF_currentUser(state, payload) {
@@ -237,8 +235,7 @@ export default new Vuex.Store({
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {    console.log(doc.id); //TEST
-                    //commit('fillDataCurrentUser', doc.data()); // Ancienne version au 06/11/20
-                    commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id }); // Nvelle version au 06/11/20
+                    commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id });
                 });
             })
             .catch((err) => { 
@@ -305,8 +302,7 @@ export default new Vuex.Store({
                         console.log("Document écrit dans collection 'participants' avec l'ID: ", docRef.id); //TEST                       
                         commit('addParticipant', {...newParticipant, profession: payload.profession});
                         // TODO: A-t-on besoin ci-dessous d'ajouter la propriété 'profession' à l'objet 'currentUser' dans 'fillDataCurrentUser' ???
-                        /* Ancienne version au 06/11/20 */ //commit('fillDataCurrentUser', {...newParticipant, profession: payload.profession}); // Mise à jour données utilisateur en cours
-                        /* Nvelle version au 06/11/20 */ commit('fillDataCurrentUser', { data: { ...newParticipant, profession: payload.profession }, id_user: docRefId }); // Mise à jour données utilisateur en cours
+                        commit('fillDataCurrentUser', { data: { ...newParticipant, profession: payload.profession }, id_user: docRefId }); // Mise à jour données utilisateur en cours
                     })
                     .catch(function(error) {
                         console.error("Error adding document dans collection 'participants' : ", error);
@@ -618,7 +614,7 @@ export default new Vuex.Store({
                 }
 
                 // Pour communiquer le nb d'évènements après filtre(s) mais avant pagination : Sert au calcul du nb de pages notamment
-                commit('setNbEventsFiltered', docs.length);
+                //commit('setNbEventsFiltered', docs.length);
 
                 ///// Partie Pagination /////
                 /* var artPerPg = state.nbEventsPerPage;
@@ -734,7 +730,7 @@ export default new Vuex.Store({
 
 
         // Profil Participants : Inscription à une formation
-        registerEvent({ commit }, payload) {
+        registerEvent({ state, commit }, payload) {
             // Dans collection 'evenements', ajout de l'id utilisateur (payload.id_user) dans la propriété 'id_participants' en vérifiant que l'id ne s'y trouve pas déjà (=> utilisateur déjà inscrit)
             // Dans collection 'utilisateur', ajout de l'id evenement (payload.id_event) dans propriété 'evenements' (en vérifiant que l'id evenement ne s'y trouve pas déjà)
             commit('setLoading', true);
@@ -793,6 +789,16 @@ export default new Vuex.Store({
                     id_ev: payload.id_event, 
                     eventParticipants: eventParticipants 
                 });
+
+                // 23/11/20
+                // Cas ici ou il faut mettre à jour la liste des formations pour la/lesquelle(s) le participant s'est inscrit : 
+                // Si le filtre est activé, lorsque le participant se désinscrit d'une formation, celle-ci doit disparaitre de la liste filtrée
+                if(payload.registry == false && state.filterMyTrainings) {
+                    //console.warn(`>>>>>>>>>>> On ne doit plus afficher l'evenement ${payload.id_event}`); //TEST
+                    commit('deleteEvent', payload.id_event);
+                }
+                // FIN 23/11/20
+
                 console.log("Transaction successfully committed!");
             })
             .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
@@ -1190,8 +1196,7 @@ export default new Vuex.Store({
             return (typeof fullDataCurrentUser == 'undefined' ? state.currentUser : fullDataCurrentUser);
         },
         menu(state) {
-            //return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1); // V1
-            return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1 && m.visible == true); // V2
+            return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1 && m.visible == true);
         },
         // IMPORTANT : Voir si soit on le supprime et on appelle ds le composant 'this.$store.state.events', soit on récupère la partie traitement des filtres/pagination/classement du composant à ici
         events(state) {

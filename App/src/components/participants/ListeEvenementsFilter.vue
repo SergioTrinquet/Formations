@@ -1,7 +1,7 @@
 <template>
     <div class="chbxMesFormations d-flex align-center">
         <input type="checkbox" v-model="myTrainings" @change="emitFilterParam" id="chbx_mesFormations">
-        <label for="chbx_mesFormations">Uniquement mes formations</label>
+        <label for="chbx_mesFormations">{{ label }}</label>
     </div>
 </template>
 
@@ -9,7 +9,12 @@
     export default {
         props: {
             mesFormations: {
-                type: Boolean
+                type: Boolean,
+                require: true
+            },
+            label: {
+                type: String,
+                require: true
             }
         },
 
@@ -27,7 +32,11 @@
 
         methods: {
             emitFilterParam() {
+                // emit au composant parent
                 this.$emit('emitFilterValue', { origin: 'Participant' , mesFormations: this.myTrainings });
+                
+                // Indique si filtre activé ou non dans Vuex. Utile quand désinscription d'une formation : Si le filtre est activé, la formation en question ne doit plus apparaitre après désinscription 
+                this.$store.commit('setValueFilterMyTrainings', this.myTrainings);
             }
         }
     }
