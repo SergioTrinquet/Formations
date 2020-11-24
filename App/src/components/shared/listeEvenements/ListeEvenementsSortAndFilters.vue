@@ -59,9 +59,9 @@
 
                 <div class="bloc">
                     <component 
-                        :is="specificFilter.component" 
-                        v-bind="specificFilter.properties" 
-                        @emitFilterValue="execFilter($event)"
+                        :is="profileSpecificFilter.component" 
+                        v-bind="profileSpecificFilter.properties" 
+                        @emitFilterValue="execProfileSpecificFilter($event)"
                     ></component>
                 </div>
 
@@ -79,7 +79,7 @@
             </div>
 
 
-            <div id="myFilters" v-if="dateRange.length > 0 || selectionVilles.length > 0 || pastEvents">    
+            <div id="myFilters" v-if="dateRange.length > 0 || selectionVilles.length > 0 || pastEvents || mesFormations">    
                 <div>Mes filtres</div>
                 <span v-if="dateRange.length > 0" class="primaireLight fakeChip">
                     {{ dateRangeText }} <v-icon @click="deleteDatesFromFilter">fas fa-times-circle</v-icon>
@@ -87,8 +87,8 @@
                 <span v-for="ville in selectionVilles" :key="ville" class="primaireLight fakeChip mr-2" >
                     {{ ville }} <v-icon @click="deleteCityFromFilter(ville)">fas fa-times-circle</v-icon>
                 </span>
-                <span v-if="pastEvents" class="primaireLight fakeChip">
-                    {{ label }} <v-icon @click="deleteOldFormationsFilter">fas fa-times-circle</v-icon>
+                <span v-if="pastEvents || mesFormations" class="primaireLight fakeChip">
+                    {{ profileSpecificFilter.properties.label }} <v-icon @click="deleteProfileSpecificFilter">fas fa-times-circle</v-icon>
                 </span>
                 <v-btn @click="deleteAllFilters" class="deleteFiltersBt bt_green" x-small>Supprimer tous mes filtres</v-btn>
             </div>
@@ -140,8 +140,9 @@ export default {
                 { libelle: 'dates', selected: false },
                 { libelle: 'villes', selected: false }
             ],
-            label: "Anciennes formations",
+
             pastEvents: false,
+            mesFormations: false,
 
             displayModalDatePickers: false,
             dateRange: [],
@@ -151,9 +152,7 @@ export default {
             nbMaxVilles: 3,
             selectionVilles: [],
 
-            paramsFiltersLoaded: false,
-
-            mesFormations: false
+            paramsFiltersLoaded: false
         }
     },
 
@@ -253,10 +252,10 @@ export default {
         },
 
         // Computed pour afficher le bon composant 'filtre' selon le profil utilisateur 
-        specificFilter() {
+        profileSpecificFilter() {
             const role = this.currentUser.role;
-            return role == 'Participant' ? { component: filterParticipant, properties: { mesFormations: this.mesFormations } } :
-                role == 'Admin' ? { component: filterAdmin, properties: { pastEvents: this.pastEvents } } :
+            return role == 'Participant' ? { component: filterParticipant, properties: { mesFormations: this.mesFormations, label: "Mes formations uniquement" } } :
+                role == 'Admin' ? { component: filterAdmin, properties: { pastEvents: this.pastEvents, label: "Anciennes formations" } } :
                 { component: '', properties: {}};
         }
     },
@@ -278,7 +277,7 @@ export default {
                 if(this.pastEvents == false) {
                     let alertMsg = "";
                     // Filtre 'dates'
-                    if(this.dateRange.length > 0) { // Si l'utilisateur a sélectionné une ou une ou des dates dans les filtres...
+                    if(this.dateRange.length > 0) { // Si l'utilisateur a sélectionné une ou des dates dans les filtres...
                         this.dateRange.forEach((d, i) => {
                             if(this.dateToInteger(d) < this.getCurrentDate()) {
                                 console.log("La " + i + "eme date "  + d + " est < à date du jour !!!"); // TEST
@@ -329,7 +328,7 @@ export default {
 
         flagEventDeleted(val) {
             if(val) {
-                console.log("WATCH pour 'flagEventDeleted'", val); //TEST
+                //console.log("WATCH pour 'flagEventDeleted'", val); //TEST
                 this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
                 this.$store.commit('setFlagEventDeleted', false);
             }
@@ -339,7 +338,7 @@ export default {
 
     methods: {
         // Récupération des valeurs du filtre du composant enfant et exec method appropriée
-        execFilter(e) {
+        execProfileSpecificFilter(e) {
             if(e.origin == "Participant") {
                 this.mesFormations = e.mesFormations;
                 this.loadEventsWithSelectedFilters();
@@ -414,15 +413,22 @@ export default {
             this.selectionVilles = this.deleteItemFromArray(this.selectionVilles, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectionVilles'
             this.loadEventsWithSelectedFilters(); // Pour mettre à jour affichage évènements avec nouveaux filtres
         },
-        deleteOldFormationsFilter() {
-            this.pastEvents = false;
-            this.updateParamsFilters(); // Mise à jour des paramètres d'initialisation des filtres 'dates' et 'villes'
+        deleteProfileSpecificFilter() {
+            const role = this.currentUser.role;
+            let obj = null;
+            if(role == 'Participant') {
+                obj = { origin: "Participant", mesFormations: false };
+            } else if(role == 'Admin') {
+                obj = { origin: "Administrateur", pastEvents: false };
+            }
+            this.execProfileSpecificFilter(obj);
         },
+        
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
             this.dateRange = []; // Suppression du filtre des dates : Réinitialisation des dates saisies
             this.selectionVilles = []; // Suppression du filtre des villes : Réinitialisation des villes saisies
-            this.deleteOldFormationsFilter(); // Suppression du filtre des formations passées
+            this.deleteProfileSpecificFilter(); // Selon type de profil logué (Administrateur ou Participant) Suppression du filtre des formations passées (visible seulement qd profil Administrateur) ou suppression du filtre les formations ou l'on est inscrit (visible seulement qd profil Participant)
         },
 
         async loadEventsWithSelectedFilters() {
