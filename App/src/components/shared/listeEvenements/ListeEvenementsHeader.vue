@@ -2,7 +2,7 @@
     <div class="wrapSubHeader">
         <div class="d-flex subHeader">
             <div class="align-self-center">
-                <div><span class="nbEvents primaire--text">{{ nbEventsFiltered }}</span> {{ "évènement" + (nbEventsFiltered > 1 ? "s" : "") }}</div>
+                <div><span class="nbEvents primaire--text">{{ nbEventsDisplayed }}</span> {{ "évènement" + (nbEventsDisplayed > 1 ? "s" : "") }}</div>
                 <div>{{ textSortType }}</div>
             </div>
             <v-spacer></v-spacer>
@@ -41,13 +41,14 @@
             nbEventsPerPage() {
                 return this.$store.state.nbEventsPerPage;
             },
-            nbEventsFiltered() {
-                return this.$store.state.nbEventsFiltered;
+            nbEventsDisplayed() {
+                /* return this.$store.state.nbEventsFiltered; */
+                return this.$store.getters.events.length;
             },
 
             // Pour calculer le nb de pages dans liste déroulante partie pagination
             pages() {
-                const nbEvents = this.nbEventsFiltered;
+                const nbEvents = this.nbEventsDisplayed;
                 if((nbEvents % this.nbEventsPerPage) > 0) {
                     return Math.floor(nbEvents/this.nbEventsPerPage) + 1;
                 } else {
