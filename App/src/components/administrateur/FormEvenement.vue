@@ -18,7 +18,6 @@
 
 <script>
     export default {
-        //props: ['evenement'],
         props: {
             evenement: {
                 type: Object,
