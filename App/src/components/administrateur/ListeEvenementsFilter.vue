@@ -15,6 +15,10 @@
             pastEvents: {
                 type: Boolean,
                 require: true
+            },
+            label: {
+                type: String,
+                require: true
             }
         },
         
@@ -26,8 +30,7 @@
 
         data() {
             return {
-                pastTrainings: false,
-                label: "Anciennes formations"
+                pastTrainings: false
             }
         },
 
