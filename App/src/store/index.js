@@ -15,13 +15,13 @@ export default new Vuex.Store({
         loading: false,
         msgError: null,
 
-        menuItems: [
-            { icon: 'account_circle', intitule: 'S\'inscrire', roles: [null], routeName: 'sign_up', visible: true },
-            { icon: 'lock_open', intitule: 'Se connecter', roles: [null], routeName: 'sign_in', visible: true },
-            { icon: 'event_note', intitule: 'Créer un évènement', roles: ['Admin'],  routeName: 'create_event', visible: true },
-            { icon: 'view_stream', intitule: 'Liste de évènements', roles: ['Admin'],  routeName: 'events_list', visible: true },
-            { icon: 'supervisor_account', intitule: 'Liste des participants', roles: ['Animateur'],  routeName: 'participants_list', visible: true },
-            { roles: ['Participant'],  routeName: 'events', visible: false }
+        pages: [
+            { roles: [null],  routeName: 'accueil', redirection: true },
+            { roles: [null], routeName: 'sign_up', btMenu: { icon: 'account_circle', intitule: 'S\'inscrire' } },
+            { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' }    },
+            { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer un évènement' } },
+            { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' } },
+            { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true }
         ],
 
         currentUser: {
@@ -790,14 +790,11 @@ export default new Vuex.Store({
                     eventParticipants: eventParticipants 
                 });
 
-                // 23/11/20
                 // Cas ici ou il faut mettre à jour la liste des formations pour la/lesquelle(s) le participant s'est inscrit : 
                 // Si le filtre est activé, lorsque le participant se désinscrit d'une formation, celle-ci doit disparaitre de la liste filtrée
                 if(payload.registry == false && state.filterMyTrainings) {
-                    //console.warn(`>>>>>>>>>>> On ne doit plus afficher l'evenement ${payload.id_event}`); //TEST
                     commit('deleteEvent', payload.id_event);
                 }
-                // FIN 23/11/20
 
                 console.log("Transaction successfully committed!");
             })
@@ -1196,7 +1193,12 @@ export default new Vuex.Store({
             return (typeof fullDataCurrentUser == 'undefined' ? state.currentUser : fullDataCurrentUser);
         },
         menu(state) {
-            return state.menuItems.filter(m => m.roles.indexOf(state.currentUser.role) > -1 && m.visible == true);
+            return state.pages.filter(p => p.roles.indexOf(state.currentUser.role) > -1 && 'btMenu' in p);
+        },
+        pageRedirection(state) {
+            //return state.pages.filter(p => p.redirection == true); 
+            // ou
+            return state.pages.filter(p => 'redirection' in p);
         },
         // IMPORTANT : Voir si soit on le supprime et on appelle ds le composant 'this.$store.state.events', soit on récupère la partie traitement des filtres/pagination/classement du composant à ici
         events(state) {

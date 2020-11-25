@@ -102,7 +102,8 @@
         v-bind:key="i"
         :to="{ name: item.routeName }"
       >
-        <span><v-icon class="mr-2">{{ item.icon }}</v-icon>{{ item.intitule }}</span>
+        <!-- <span><v-icon class="mr-2">{{ item.icon }}</v-icon>{{ item.intitule }}</span> -->
+          <span><v-icon class="mr-2">{{ item.btMenu.icon }}</v-icon>{{ item.btMenu.intitule }}</span>
       </v-btn>
 
       <v-divider 
@@ -150,21 +151,24 @@ export default {
       return this.$store.state.msgError;
     },
     loading() {
-        return this.$store.state.loading;
+      return this.$store.state.loading;
     },
     menu() {
-      //return this.$store.getters.menu.filter(m => m.visible == true); // V1
-        return this.$store.getters.menu; // V2
+      return this.$store.getters.menu;
     },
-    currentUser() { console.log(this.$store.getters.currentUser); //TEST
+    pageRedirection() {
+      return this.$store.getters.pageRedirection;
+    },
+    currentUser() {
       return this.$store.getters.currentUser;
     },
+    // ICI: A REFAIRE !!!!! : S'INSPIRER DU CODE DS LE WATCH (CURRENTUSER) 
     direction() {
-        return (this.currentUser.role == "Participant" ? "events" : "/");
-    }
+      return (this.currentUser.role == "Participant" ? "events" : "/");
+    },
 
     // TEST
-    ,FF_currentUser() {
+    FF_currentUser() {
       return this.$store.getters.FF_currentUser;
     }
     // FIN TEST
@@ -173,14 +177,13 @@ export default {
 
   watch: {
     currentUser(val) { console.warn("watch : currentUser => ", val); //TEST
-      // Si déconnexion donc plus de valeur dans currentUser => Redirection vers pg d'accueil
-      if(val.role == null) {
-        this.$router.push({ name: 'accueil' });
-      }
-
-      // Si personne loguée est un Participant, il n'a qu'une page donc redirection vers celle-ci 
-      if(val.role == 'Participant') {
-        this.$router.push({ name: 'events' });
+      // Redirection vers la bonne page en fonction du profil de la personne loguée :
+      // Si déconnexion ou bien pas encore logué => Redirection vers pg d'accueil,
+      // Si utilisateur logué en tant que Participant ou bien Animateur => Redirection vers pg de liste des formations
+      let pr = null;
+      pr = this.pageRedirection.find(pr => pr.roles.includes(val.role));
+      if(pr.routeName !== '') {
+        this.$router.push({ name: pr.routeName });
       }
     }
   },

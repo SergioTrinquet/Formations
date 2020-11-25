@@ -2,7 +2,7 @@ import store from '../store'
 
 export default (path, next) => {
     // Si le currentUser a les droits d'accès à la page...
-    const authorizedPath = store.state.menuItems.find(i => {
+    const authorizedPath = store.state.pages.find(i => {
         return i.routeName == path && i.roles.indexOf(store.getters.currentUser.role) > -1;
     });
     if(typeof authorizedPath !== 'undefined') {
