@@ -40,18 +40,19 @@ export default new VueRouter({
             path: '/listParticipants',
             name: 'participants_list',
             component: ListeParticipants,
+            props: true, // Qd on ne veut pas écrire '$route.params.XXX' à chaque fois dans le composant mais utiliser à la place une prop (du genre 'XXX' plus court)
             beforeEnter: (to, from, next) => {
                 Redirect('participants_list', next);
             }
         },
-        {
+        /* {
             path: '/events',
             name: 'events',
             component: SharedListeEvenements,
             beforeEnter: (to, from, next) => {
                 Redirect('events', next);
             }
-        },
+        }, */
         {
             path: '/signUp',
             name: 'sign_up',

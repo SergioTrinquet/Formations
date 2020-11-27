@@ -65,6 +65,7 @@
     import bandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
     import cardButtonParticipant from '@/components/participants/ListeEvenementsCardButton';
     import cardButtonsAdmin from '@/components/administrateur/ListeEvenementsCardButtons';
+    import cardButtonAnimateur from '@/components/animateurs/ListeEvenementsCardButton';
 
     import formatageDate from '@/mixins/formatageDate';
     import currentDate from '@/mixins/currentDate';
@@ -109,6 +110,8 @@
                     component = cardButtonParticipant;
                 } else if(role == 'Admin') {
                     component = cardButtonsAdmin;
+                } else if(role == 'Animateur') {
+                    component = cardButtonAnimateur;
                 }
                 return component;
                 //return (role == 'Participant' ? cardButtonParticipant : (role == 'Admin' ? cardButtonsAdmin : ''));
@@ -208,16 +211,24 @@
             buttonsCardProperties(ev) {
                 const role = this.currentUser.role;
                 let props = null;
-                if(role == 'Participant') {
-                    props = { 
-                        idEvent: ev.id_evenement, 
-                        idParticipants: ev.id_participants 
-                    };
-                } else if(role == 'Admin') {
-                    props = { 
-                        event: ev,
-                        isPast: this.isPast(ev.date)
-                    };
+                switch(role) {
+                    case "Participant":
+                        props = { 
+                            idEvent: ev.id_evenement, 
+                            idParticipants: ev.id_participants 
+                        };
+                        break;
+                    case "Admin":
+                        props = { 
+                            event: ev,
+                            isPast: this.isPast(ev.date)
+                        };
+                        break;
+                    case "Animateur":
+                        props = { 
+                            event: ev
+                        };
+                        break;
                 }
                 return props;
             }
@@ -225,7 +236,12 @@
 
         async mounted() {
             this.dateOfTheDay = this.getCurrentDate();
-            await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date
+
+            /* if(this.currentUser.role == "Animateur") {
+                await this.$store.dispatch('loadEvenements', this.currentUser.role);
+            } else { */
+                await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date
+            /* } */
             this.eventsLoaded = true;
             this.$emit("onEventsLoaded");
         }

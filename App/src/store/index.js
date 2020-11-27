@@ -21,7 +21,8 @@ export default new Vuex.Store({
             { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' }    },
             { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer un évènement' } },
             { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' } },
-            { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true }
+            { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true },
+            { roles: ['Animateur'],  routeName: 'participants_list' }
         ],
 
         currentUser: {
@@ -34,8 +35,7 @@ export default new Vuex.Store({
         /* utilisateurs: [{ id: '', firstName: '', lastName: '', role: '', email: '', password: '', evenements: [], //liste des id evenements }], */
         utilisateurs: [],
         
-        //admin: [], // Tableau destiné à stocker objets avec propriété 'id'
-        participants: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'profession'
+        participants: [], // VRAIMENT UTILE ?? // Tableau destiné à stocker objets aux propriétés 'id' et 'profession'
         animateurs: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'region'
 
         /* evenements: [{
@@ -69,6 +69,7 @@ export default new Vuex.Store({
         sortingParameters: {type: 'date', direction: 'asc'},
         eventToModify: null,
         flagEventDeleted: false,
+        eventParticipants: [],
 
         filterMyTrainings: false, // Ajouté le 23/11/20
 
@@ -111,6 +112,7 @@ export default new Vuex.Store({
             state.displayModalModifiedEvent = payload;
         },
 
+        // VRAIMENT UTILE ??
         addParticipant(state, payload) {
             // Ici recup de l'objet venant de 'addParticipant' dans 'actions' et partage de ses propriétés 
             // que l'on dispatche dans les 2 objets 'utilisateurs' et 'participants'
@@ -212,6 +214,21 @@ export default new Vuex.Store({
         },
         // Fin ajout le 23/11/20
 
+        setParticipantsListOfAnEvent(state, payload) {
+            //state.eventParticipants = payload;
+            let participantsList = [];
+            payload.forEach(p => {
+                participantsList.push({
+                    id: p.id,
+                    email: p.data.email, 
+                    firstName: p.data.firstName, 
+                    lastName: p.data.lastName,
+                    profession: p.data.profession
+                })
+            });
+            state.eventParticipants = participantsList;
+        },
+
         // TEST
         FF_currentUser(state, payload) {
             state.FF_currentUser = payload;
@@ -290,7 +307,7 @@ export default new Vuex.Store({
                     ...newParticipant,
                     evenements: []
                 })
-                .then(function(docRef) {
+                .then(docRef => {
                     const docRefId = docRef.id;
                     //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST
                     db.collection('participants')
@@ -304,12 +321,12 @@ export default new Vuex.Store({
                         // TODO: A-t-on besoin ci-dessous d'ajouter la propriété 'profession' à l'objet 'currentUser' dans 'fillDataCurrentUser' ???
                         commit('fillDataCurrentUser', { data: { ...newParticipant, profession: payload.profession }, id_user: docRefId }); // Mise à jour données utilisateur en cours
                     })
-                    .catch(function(error) {
+                    .catch(error => {
                         console.error("Error adding document dans collection 'participants' : ", error);
                         throw error;
                     });
                 })
-                .catch(function(error) {
+                .catch(error => {
                     console.error("Error adding document dans collection 'utilisateurs' : ", error);
                     throw error;
                 });
@@ -467,6 +484,9 @@ export default new Vuex.Store({
                     commit('setLoading', false);
                 });
 
+            } else {
+                commit('setMessageError', "Vous n'avez pas les droits pour ajouter un animateur");
+                commit('setLoading', false);
             }
             
         },
@@ -703,10 +723,10 @@ export default new Vuex.Store({
                 //commit('addEvenement', { ...newEvenement, id_ev: docRef.id });
                 
                 // Ajout id évènement à l'Animateur ou aux Animateurs s'ils sont plusieurs
-                const utilisateurs_collection = db.collection('utilisateurs');
+                const collectionUtilisateurs = db.collection('utilisateurs');
                 payload.id_animateurs.forEach(id_a => { // Boucle car potentiellement plusieurs animateurs à mettre à jour
                     console.log("id animateur", id_a); //TEST
-                    utilisateurs_collection
+                    collectionUtilisateurs
                     .doc(id_a) // On pointe sur le bon Animateur
                     .update({ evenements: firebase.firestore.FieldValue.arrayUnion(docRef.id) }) // On ajoute l'id de l'evenement au tableau d'id de la propriété 'evenements'
                     .then(() => { 
@@ -1165,6 +1185,34 @@ export default new Vuex.Store({
             });
         }, */
         /// FIN TEST ///
+
+        // Profil Animateur uniquement : Récupération des participants à la formation dont l'id est passé dans le payload.
+        // Appelé quand clic sur bouton 'Liste des participants' ds pg de liste des formations
+        getParticipantsEvenement({commit}, payload) {
+            commit('setLoading', true);
+            commit('setMessageError', null);
+
+            const db = firebase.firestore();
+
+            // Recherche des utilisateurs inscrits à cet évènement ET qui ont le statut de participant
+            db.collection('utilisateurs')
+            .where('evenements', 'array-contains', payload)
+            .where('role', '==', 'Participant')
+            .get()
+            .then(querySnapshot => {
+                if(querySnapshot.empty) { console.log("Pas d'utilisateurs pour cette formation !"); }
+                let listeParticipants = [];
+                querySnapshot.forEach(doc => {
+                    listeParticipants.push({ id: doc.id, data: doc.data() });
+                });
+                commit('setParticipantsListOfAnEvent', listeParticipants);
+            })
+            .catch(error => { 
+                console.log("Erreur lors de la récupération des participants d'une formation", error); 
+                commit('setMessageError', error.message);
+            })
+            .finally(() => { commit('setLoading', false) });
+        },
 
 
 
