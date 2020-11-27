@@ -9,7 +9,7 @@
         props: {
             idParticipants: {
                 type: Array,
-                require: true
+                required: true
             }
         },
 

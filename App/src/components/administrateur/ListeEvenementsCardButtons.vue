@@ -1,7 +1,7 @@
 <template>
     <div>
-        <v-btn depressed class="bt_event bt_green" @click="changeEvent()" :disabled="isPast">Modifier</v-btn>
-        <v-btn depressed class="bt_event bt_green" @click="deleteEvent()">Supprimer</v-btn>
+        <v-btn depressed class="bt_green" @click="changeEvent()" :disabled="isPast">Modifier</v-btn>
+        <v-btn depressed class="bt_green" @click="deleteEvent()">Supprimer</v-btn>
     </div>
 </template>
 
@@ -34,7 +34,7 @@
 </script>
 
 <style scoped>
-    .bt_event.bt_green:first-child {
+    .bt_green:first-child {
         margin-right: 8px;
     }
 </style>

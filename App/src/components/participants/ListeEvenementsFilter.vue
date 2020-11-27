@@ -10,11 +10,11 @@
         props: {
             mesFormations: {
                 type: Boolean,
-                require: true
+                required: true
             },
             label: {
                 type: String,
-                require: true
+                required: true
             }
         },
 
