@@ -10,11 +10,11 @@
         props: {
             event: {
                 type: Object,
-                require: true
+                required: true
             },
             isPast: {
                 type: Boolean,
-                require: true
+                required: true
             }
         },
 

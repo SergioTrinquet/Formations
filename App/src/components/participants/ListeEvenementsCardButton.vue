@@ -3,7 +3,7 @@
         <span v-if="isRegistered()">
             <v-btn 
                 depressed 
-                class="bt_event bt_red" 
+                class="bt_red" 
                 @click="registerEvent(idEvent, false)"
             >
                 Se désinscrire
@@ -12,7 +12,7 @@
         <span v-else>
             <v-btn 
                 depressed 
-                class="bt_event bt_green" 
+                class="bt_green" 
                 :disabled="canRegister(idParticipants.length)" 
                 @click="registerEvent(idEvent, true)"
             >
@@ -27,11 +27,11 @@
         props: {
             idEvent: {
                 type: String,
-                require: true
+                required: true
             },
             idParticipants: {
                 type: Array,
-                require: true
+                required: true
             }
         },
 
