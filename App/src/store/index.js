@@ -559,7 +559,9 @@ export default new Vuex.Store({
             const db = firebase.firestore();
             let collectionEvenements = db.collection('evenements');
             let collectionUtilisateurs = db.collection('utilisateurs');
-            let evenementsParticipant = null; // Utilisé lorsque profil 'participant'
+            //let evenementsParticipant = null; // Utilisé lorsque profil 'participant' // MIS EN COMM. LE 27/11/20
+            let evenementsParticipantOuAnimateur = null; // Utilisé lorsque profil 'participant' ou animateur' // AJOUTE LE 27/11/20
+                
             
             //console.log("payload dans 'loadEvenements", payload); //TEST
             //for(var prop in payload) { console.log("Propriété de payload", prop); } //TEST
@@ -598,8 +600,8 @@ export default new Vuex.Store({
 
                 collectionEvenements = collectionEvenements.orderBy("date");
 
-
-                // Juste lorsque profil 'participant'
+                // MIS EN COMMENTAIRE LE 27/11/20
+                /* // Juste lorsque profil 'participant'
                 if("mesFormations" in payload) {
                     // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
                     evenementsParticipant = await collectionUtilisateurs
@@ -607,15 +609,34 @@ export default new Vuex.Store({
                         .get()
                         .then(querySnapshot => querySnapshot.data().evenements)
                         .catch(err => { 
+                            commit('setLoading', false);
                             console.error("Erreur lors de la récupération des évènements du participant", err);
                             commit('setMessageError', "Etape de récupération des évènements du participant: " + err.message); 
-                        })
-                        .finally(() => { commit('setLoading', false) });
+                        });
 
                     console.log("DANS 'loadEvenements', evenementsParticipant' =>", evenementsParticipant); //TEST
                     // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
                     //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipant).orderBy(firebase.firestore.FieldPath.documentId());
+                } */
+
+                // AJOUTE LE 27/11/20
+                // lorsque profil 'Participant' ou 'Animateur'
+                if(("mesFormations" in payload) || ("profil" in payload && payload.profil == state.currentUser.role)) {
+                    console.warn("DANS LOADEVENEMENTS POUR ANIMATEUR !!!!!!", state.currentUser); //TEST
+                    // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
+                    evenementsParticipantOuAnimateur = await collectionUtilisateurs
+                    .doc(state.currentUser.id_user)
+                    .get()
+                    .then(querySnapshot => querySnapshot.data().evenements)
+                    .catch(err => { 
+                        commit('setLoading', false);
+                        console.error("Erreur lors de la récupération des évènements duparticipant/de l'animateur", err);
+                        commit('setMessageError', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
+                    });
+
+                    console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
                 }
+                // FIN AJOUT LE 27/11/20
 
             }
             
@@ -627,8 +648,13 @@ export default new Vuex.Store({
 
                 // Partie filtrage qd participant ne veut afficher que ses formations
                 let docs = null;
-                if(evenementsParticipant !== null) {
-                    docs = querySnapshot.docs.filter(d => evenementsParticipant.includes(d.id));
+                // MIS EN COMMENTAIRE LE 27/11/20
+                /* if(evenementsParticipant !== null) {
+                    docs = querySnapshot.docs.filter(d => evenementsParticipant.includes(d.id)); */
+                // AJOUTE LE 27/11/20    
+                if(evenementsParticipantOuAnimateur !== null) {
+                    docs = querySnapshot.docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
+
                 } else {
                     docs = querySnapshot.docs;
                 }
