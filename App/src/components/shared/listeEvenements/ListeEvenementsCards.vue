@@ -91,7 +91,7 @@
         data() {
             return {
                 eventsLoaded: false,
-                dateOfTheDay: null,
+                todaysDate: null,
             }
         },
 
@@ -201,10 +201,10 @@
             },
 
             isPast(date) {
-                if(this.dateOfTheDay == null) {
+                if(this.todaysDate == null) {
                     return false;
                 }  else {
-                    return (this.dateToInteger(date) < this.dateToInteger(this.dateOfTheDay) ? true : false);
+                    return (this.dateToInteger(date) < this.dateToInteger(this.todaysDate) ? true : false);
                 }
             },
 
@@ -235,13 +235,13 @@
         },
 
         async mounted() {
-            this.dateOfTheDay = this.getCurrentDate();
+            this.todaysDate = this.getCurrentDate();
 
-            /* if(this.currentUser.role == "Animateur") {
-                await this.$store.dispatch('loadEvenements', this.currentUser.role);
-            } else { */
+            if(this.currentUser.role == "Animateur") {  console.log("Dans le hook >", this.currentUser.role); //TEST
+                await this.$store.dispatch('loadEvenements', { "profil": this.currentUser.role });
+            } else {
                 await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date
-            /* } */
+            }
             this.eventsLoaded = true;
             this.$emit("onEventsLoaded");
         }
