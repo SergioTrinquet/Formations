@@ -70,6 +70,7 @@ export default new Vuex.Store({
         eventToModify: null,
         flagEventDeleted: false,
         eventParticipants: [],
+        nbDaysListParticipantsFormEnable: 3,
 
         filterMyTrainings: false, // Ajouté le 23/11/20
 
@@ -215,15 +216,16 @@ export default new Vuex.Store({
         // Fin ajout le 23/11/20
 
         setParticipantsListOfAnEvent(state, payload) {
-            //state.eventParticipants = payload;
             let participantsList = [];
             payload.forEach(p => {
+                //console.log("p.data.presence", p.id + " " + p.data.lastName, p.presence); //TEST
                 participantsList.push({
                     id: p.id,
                     email: p.data.email, 
                     firstName: p.data.firstName, 
                     lastName: p.data.lastName,
-                    profession: p.data.profession
+                    profession: p.data.profession,
+                    presence: p.data.presence
                 })
             });
             state.eventParticipants = participantsList;
@@ -411,7 +413,7 @@ export default new Vuex.Store({
             .get()
             .then((querySnapshot) => {
                 const animateurs = [];
-                querySnapshot.forEach(function (doc) {
+                querySnapshot.forEach(doc => {
                     animateurs.push({
                         id: doc.id,
                         nom: doc.data().lastName,
@@ -521,11 +523,9 @@ export default new Vuex.Store({
             return collectionEvenements
             .get()
             .then((querySnapshot) => {
-                //let nbEvents = 0;
                 let allCities =  [];
                 let allDates = [];
                 querySnapshot.forEach((doc) => {
-                    //nbEvents += 1;
                     allDates.push(doc.data().date); // Propriété de l'objet stocké ds Firestore
                     allCities.push(doc.data().ville); // Propriété de l'objet stocké ds Firestore
                 });
@@ -534,8 +534,7 @@ export default new Vuex.Store({
                 allDates = [...allDates].filter((date, i, self) => self.indexOf(date) == i);
                 allCities = [...allCities].filter((city, i, self) => self.indexOf(city) == i).sort();
 
-                //console.log({ nbEvents: nbEvents, villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] }); //TEST
-                commit('setParamsFiltersEvenements', { villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] }); // A FAIRE
+                commit('setParamsFiltersEvenements', { villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] });
             })
             .catch((err) => { 
                 console.error("Erreur lors de la récupération des évènements pour les paramètres des filtres", err);
@@ -559,10 +558,8 @@ export default new Vuex.Store({
             const db = firebase.firestore();
             let collectionEvenements = db.collection('evenements');
             let collectionUtilisateurs = db.collection('utilisateurs');
-            //let evenementsParticipant = null; // Utilisé lorsque profil 'participant' // MIS EN COMM. LE 27/11/20
-            let evenementsParticipantOuAnimateur = null; // Utilisé lorsque profil 'participant' ou animateur' // AJOUTE LE 27/11/20
+            let evenementsParticipantOuAnimateur = null; // Utilisé lorsque profil 'participant' ou animateur'
                 
-            
             //console.log("payload dans 'loadEvenements", payload); //TEST
             //for(var prop in payload) { console.log("Propriété de payload", prop); } //TEST
             
@@ -600,29 +597,10 @@ export default new Vuex.Store({
 
                 collectionEvenements = collectionEvenements.orderBy("date");
 
-                // MIS EN COMMENTAIRE LE 27/11/20
-                /* // Juste lorsque profil 'participant'
-                if("mesFormations" in payload) {
-                    // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
-                    evenementsParticipant = await collectionUtilisateurs
-                        .doc(state.currentUser.id_user)
-                        .get()
-                        .then(querySnapshot => querySnapshot.data().evenements)
-                        .catch(err => { 
-                            commit('setLoading', false);
-                            console.error("Erreur lors de la récupération des évènements du participant", err);
-                            commit('setMessageError', "Etape de récupération des évènements du participant: " + err.message); 
-                        });
-
-                    console.log("DANS 'loadEvenements', evenementsParticipant' =>", evenementsParticipant); //TEST
-                    // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
-                    //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipant).orderBy(firebase.firestore.FieldPath.documentId());
-                } */
-
-                // AJOUTE LE 27/11/20
+                
                 // lorsque profil 'Participant' ou 'Animateur'
                 if(("mesFormations" in payload) || ("profil" in payload && payload.profil == state.currentUser.role)) {
-                    console.warn("DANS LOADEVENEMENTS POUR ANIMATEUR !!!!!!", state.currentUser); //TEST
+                    //console.warn("DANS LOADEVENEMENTS POUR ANIMATEUR !!!!!!", state.currentUser); //TEST
                     // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
                     evenementsParticipantOuAnimateur = await collectionUtilisateurs
                     .doc(state.currentUser.id_user)
@@ -630,13 +608,14 @@ export default new Vuex.Store({
                     .then(querySnapshot => querySnapshot.data().evenements)
                     .catch(err => { 
                         commit('setLoading', false);
-                        console.error("Erreur lors de la récupération des évènements duparticipant/de l'animateur", err);
+                        console.error("Erreur lors de la récupération des évènements du participant/de l'animateur", err);
                         commit('setMessageError', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
                     });
 
                     console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
+                    // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
+                    //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipantOuAnimateur).orderBy(firebase.firestore.FieldPath.documentId());
                 }
-                // FIN AJOUT LE 27/11/20
 
             }
             
@@ -646,15 +625,10 @@ export default new Vuex.Store({
             .get()
             .then((querySnapshot) => {
 
-                // Partie filtrage qd participant ne veut afficher que ses formations
-                let docs = null;
-                // MIS EN COMMENTAIRE LE 27/11/20
-                /* if(evenementsParticipant !== null) {
-                    docs = querySnapshot.docs.filter(d => evenementsParticipant.includes(d.id)); */
-                // AJOUTE LE 27/11/20    
+                // Partie filtrage qd participant ne veut afficher que ses formations ou bien Animateur ne voit que les formations qu'il doit animer au chargement de la page de liste des formations
+                let docs = null;   
                 if(evenementsParticipantOuAnimateur !== null) {
                     docs = querySnapshot.docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
-
                 } else {
                     docs = querySnapshot.docs;
                 }
@@ -853,11 +827,6 @@ export default new Vuex.Store({
         modifyEvenement({ commit }, payload) {
             commit('setLoading', true);
             commit('setMessageError', null);
-
-            /* setTimeout(function() { 
-                commit('setLoading', false);
-                commit('setMessageError', "GROSSE ERREUR MECCC !!! GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!GROSSE ERREUR MECCC !!!");
-            }, 3000); // TEST */
             
             const db = firebase.firestore();
             const collectionEvenements = db.collection('evenements');
@@ -1229,7 +1198,10 @@ export default new Vuex.Store({
                 if(querySnapshot.empty) { console.log("Pas d'utilisateurs pour cette formation !"); }
                 let listeParticipants = [];
                 querySnapshot.forEach(doc => {
-                    listeParticipants.push({ id: doc.id, data: doc.data() });
+                    //listeParticipants.push({ id: doc.id, data: doc.data() }); // Mis en comm. le 01/12/20
+
+                    let presence = "presence" in doc.data() ? doc.data().presence.filter(e => e.id_ev == payload) : null;
+                    listeParticipants.push({ id: doc.id, data: doc.data(), presence: presence }); // Ajouté le 01/12/20
                 });
                 commit('setParticipantsListOfAnEvent', listeParticipants);
             })
@@ -1286,6 +1258,9 @@ export default new Vuex.Store({
             const from = ((parseInt(state.selectedPage) - 1) * state.nbEventsPerPage) + 1;
             const to = state.selectedPage * state.nbEventsPerPage;
             return { from: from, to: to };
+        },
+        eventParticipants(state) {
+            return state.eventParticipants.sort((a, b) => a.lastName > b.lastName);
         },
 
 
