@@ -42,7 +42,7 @@
                 </span>
             </div>
             {{ presences }} <!-- TEST -->
-            <br />onArrivalPresences => {{ onArrivalPresences }} <!-- TEST -->
+            <br />initialStatePresences => {{ initialStatePresences }} <!-- TEST -->
             <br />disabledRecordButton => {{ disabledRecordButton }} <!-- TEST -->
             <v-btn 
                 class="bt_green btLarge" depressed block
@@ -91,9 +91,8 @@
                 ], */
                 presences: [],
                 disabledForm: false,
-
-                onArrivalPresences: [], // EN COURS : 02/12/2020
-                disabledRecordButton: true  // EN COURS : 02/12/2020
+                initialStatePresences: [],
+                disabledRecordButton: true
             }
         },
 
@@ -138,8 +137,8 @@
                     });
                 });
 
-                
-                this.onArrivalPresences.push(...this.presences); // EN COURS : 02/12/2020
+            // Affectation var. de comparaison pour déterminer ensuite si bt 'Enregistrer' doit être en disabled ou pas
+                this.initialStatePresences.push(...this.presences); // EN COURS : 02/12/2020
             }
         },
 
@@ -164,15 +163,30 @@
                 const lgn = document.querySelector("[value='" + e.target.value + "']").closest("div");
                 lgn.classList.toggle("lgnSelected", e.target.checked);
 
-                // Partie comparaison avec sélection des participants à l'arrivée sur la page afin de savoir si on a besoin de soumettre l'enregistrement car changement dans sélection ou pas
-                if(this.onArrivalPresences.sort().toString() === this.presences.sort().toString()) {
-                    this.disabledRecordButton = true;
-                } else {
-                    this.disabledRecordButton = false;
-                }
+                // Partie comparaison avec sélection des participants à l'arrivée sur la page afin de savoir si on a besoin de soumettre l'enregistrement suite à changement dans sélection ou pas
+                this.disabledRecordButton = this.initialStatePresences.sort().toString() === this.presences.sort().toString() ? true : false;
             },
             recordPresenceParticipants() {
-                this.$store.dispatch('recordPresenceParticipants', this.presences); // A CREER
+                let differenceSelection = [];
+                differenceSelection = this.differenceSelectionParticipants();
+
+                this.$store.dispatch('recordPresenceParticipants', {id_formation: this.event.id_evenement, differenceSelection: differenceSelection}); // EN COURS DE CREATION
+            },
+            differenceSelectionParticipants() {
+                const initialState = this.initialStatePresences;
+                let endState = this.presences;
+                let differenceSelection = [];
+
+                initialState.forEach(p => {
+                    if(endState.includes(p) == false) {
+                        differenceSelection.push({ id_user: p, isPresent: false });
+                    } else {
+                        endState = [...endState].filter(v => v != p);
+                    }
+                });
+                endState.forEach(p => differenceSelection.push({ id_user: p, isPresent: true }));
+
+                return differenceSelection;
             }
         },
 

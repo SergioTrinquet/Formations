@@ -1198,10 +1198,8 @@ export default new Vuex.Store({
                 if(querySnapshot.empty) { console.log("Pas d'utilisateurs pour cette formation !"); }
                 let listeParticipants = [];
                 querySnapshot.forEach(doc => {
-                    //listeParticipants.push({ id: doc.id, data: doc.data() }); // Mis en comm. le 01/12/20
-
                     let presence = "presence" in doc.data() ? doc.data().presence.filter(e => e.id_ev == payload) : null;
-                    listeParticipants.push({ id: doc.id, data: doc.data(), presence: presence }); // Ajouté le 01/12/20
+                    listeParticipants.push({ id: doc.id, data: doc.data(), presence: presence });
                 });
                 commit('setParticipantsListOfAnEvent', listeParticipants);
             })
@@ -1210,6 +1208,105 @@ export default new Vuex.Store({
                 commit('setMessageError', error.message);
             })
             .finally(() => { commit('setLoading', false) });
+        },
+
+
+        // Profil Animateur uniquement : Enregistrement des participants présents ou non à une formation
+        async recordPresenceParticipants({ commit, dispatch }, payload) {
+            console.warn(payload); //TEST
+
+            commit('setLoading', true);
+            commit('setMessageError', null);
+
+            // 1. Faire la liste des participants sur lesquels il faut ecrire
+            // Checker si pour chacun des utilisateurs, il y a la propriété 'presence'
+            // Si pas 'présence', on la créé,
+            // Si 'présence' on boucle dessus pour voir si on trouve l'id_ev,
+            // Si pas 'id_ev', on le créé, et si présent, on le modifie
+            
+                        // TEST : A VIRER
+                        const db = firebase.firestore();
+                        const collectionUtilisateurs = db.collection('utilisateurs'); 
+
+                        /* OK */
+                        /* let toto = collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "RWy20OWU1kLcYTiUDsAC" ]).get();
+                        let titi = collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "CitW2wRiLh2rAV6T6nN9" ]).get();
+                        const [totoQuerySnapShot, titiQuerySnapShot] = await Promise.all([toto, titi]);
+                        const totoArray = totoQuerySnapShot.docs;
+                        const titiArray = titiQuerySnapShot.docs;
+                        let allArray = totoArray.concat(titiArray);
+                        allArray.forEach(doc => {
+                            console.log("======>", doc.data()); 
+                        }) */
+
+                        /* OK */
+                        await Promise.all([
+                            collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "RWy20OWU1kLcYTiUDsAC", "irplZHoJtwmSgsjaPaqz" ]).get(), 
+                            collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "CitW2wRiLh2rAV6T6nN9" ]).get()
+                        ])
+                        .then(querySnapshots => {
+                            // Autant de querySnapshot que de queries dans le Promise.All
+                            querySnapshots.forEach(querySnapshot => {
+                                querySnapshot.docs.forEach(doc => console.log("doc.data() => ", doc.data()));
+                            });
+                        })
+                        .catch(err => console.error(err));
+                        // FIN TEST : A VIRER
+
+
+            dispatch('concatAllDocs', payload)
+            // V1 (sans .flat()) 
+            /* .then(querySnapshots => { 
+                querySnapshots.forEach(querySnapshot => {
+                    querySnapshot.forEach(doc => console.log("=>", doc.data()));
+                })
+            }) */
+            // V2 (avec .flat())
+            .then(querySnapshot => { 
+                querySnapshot.forEach(doc => {
+                    const presence = payload.differenceSelection.filter(p => p.id_user == doc.id);
+                    console.log("=>", doc.id, doc.data(), { id_ev: payload.id_formation, isPresent: presence[0].isPresent });
+                });
+            })
+            
+            .catch(error => { 
+                console.log("Erreur lors de l'inscription des participants d'une formation", error); 
+                commit('setMessageError', error.message);
+            })
+            .finally(() => { commit('setLoading', false) });
+            
+            
+        },
+        async concatAllDocs(context, payload) {
+            // On isole les id_user qui vont ensuite servir pour la requete 'where'
+            let listeParticipants = [];
+            listeParticipants = payload.differenceSelection.map(p => p.id_user);
+            console.log("listeParticipants", listeParticipants); //TEST
+            
+            const db = firebase.firestore();
+            const collectionUtilisateurs = db.collection('utilisateurs');
+
+            // En raison des limitations de Firestore, on ne peut pas faire de clause 'in' avec un tableau ayant plus de 10 entrées.
+            // On découpe donc le tableau des participants ayant fait l'objet d'une modification sur leur présence
+            // en plusieurs tableaux de 10 entrées. Il y aura donc autant de requetes que de tableaux d'ou 
+            // la création d'un tableau de stockage de requetes
+            let queries = [];
+            while(listeParticipants.length) {
+                queries.push(collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", listeParticipants.splice(0, 10)).get());
+            }
+            
+            // Promise.all sur requetes qui permet de les executer en parallèles jusqu'à ce qu'elles soient ttes executées 
+            const queriesSnapShot = await Promise.all(queries);
+            // On veut retourner tous les documents de ttes les requetes dans un même tableau (ici 'allDocs')
+            let allDocs = [];
+            for(let querySnapshot of queriesSnapShot) { // Autant de querySnapshot que de queries ds le Promise.All...
+                //console.log("querySnapshot.docs => ", querySnapshot.docs); //TEST
+                allDocs.push(querySnapshot.docs);
+            }
+            //console.warn(allDocs.flat().length); //TEST
+
+            //return allDocs; // V1
+            return allDocs.flat(); // V2 : On "aplatit" le tableau de tableaux pour y avoir tous les docs au même niveau
         },
 
 
