@@ -35,7 +35,6 @@ export default new Vuex.Store({
         /* utilisateurs: [{ id: '', firstName: '', lastName: '', role: '', email: '', password: '', evenements: [], //liste des id evenements }], */
         utilisateurs: [],
         
-        participants: [], // VRAIMENT UTILE ?? // Tableau destiné à stocker objets aux propriétés 'id' et 'profession'
         animateurs: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'region'
 
         /* evenements: [{
@@ -71,8 +70,7 @@ export default new Vuex.Store({
         flagEventDeleted: false,
         eventParticipants: [],
         nbDaysListParticipantsFormEnable: 3,
-
-        filterMyTrainings: false, // Ajouté le 23/11/20
+        filterMyTrainings: false,
 
         FF_currentUser: 'Vide' //TEST
     },
@@ -111,29 +109,6 @@ export default new Vuex.Store({
 
         setDisplayModalModifiedEvent(state, payload) {
             state.displayModalModifiedEvent = payload;
-        },
-
-        // VRAIMENT UTILE ??
-        addParticipant(state, payload) {
-            // Ici recup de l'objet venant de 'addParticipant' dans 'actions' et partage de ses propriétés 
-            // que l'on dispatche dans les 2 objets 'utilisateurs' et 'participants'
-            const user = {
-                id: payload.id_auth,
-                firstName: payload.firstName,
-                lastName: payload.lastName,
-                role: payload.role,
-                email: payload.email,
-                password: payload.password,
-                evenements: [] // Pas encore d'évènements
-            };
-            const participant = {
-                id: payload.id_auth,
-                profession: payload.profession
-            };
-            //console.log("mutation 1 : " + JSON.stringify(user)); console.log("mutation 2 : " + JSON.stringify(participant)); //TEST
-            
-            state.utilisateurs.push(user);
-            state.participants.push(participant);
         },
 
         addAnimateur(state, payload) {
@@ -209,11 +184,9 @@ export default new Vuex.Store({
             state.eventToModify = payload;
         },
 
-        // Ajouté le 23/11/20
         setValueFilterMyTrainings(state, payload) {
             state.filterMyTrainings = payload
         },
-        // Fin ajout le 23/11/20
 
         setParticipantsListOfAnEvent(state, payload) {
             let participantsList = [];
@@ -287,7 +260,7 @@ export default new Vuex.Store({
 
         // Inscription : Ajout participant
         addParticipant({commit}, payload) {
-            // Quand User créé dans Firebase, Id créé et renvoyé dans la promesse, que l'on ajoute comme valeur de la propriété 'id' à l'objet
+            // Quand User créé dans Firebase, Id créé et renvoyé dans la promesse
             commit('setLoading', true);
             commit('setMessageError', null);
 
@@ -299,7 +272,8 @@ export default new Vuex.Store({
                     lastName: payload.nom,
                     role: 'Participant',
                     email: payload.email,
-                    password: payload.password
+                    password: payload.password,
+                    profession: payload.profession
                 }
 
                 // Ici ajout des autres propriétés que que email et password dans outil
@@ -307,31 +281,13 @@ export default new Vuex.Store({
                 db.collection('utilisateurs')
                 .add({
                     ...newParticipant,
-                    evenements: []
+                    evenements: [],
+                    presence: []
                 })
                 .then(docRef => {
-                    const docRefId = docRef.id;
-                    //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST
-                    db.collection('participants')
-                    .add({
-                        id_utilisateur: docRef.id,
-                        profession: payload.profession
-                    })
-                    .then(function(docRef) { 
-                        console.log("Document écrit dans collection 'participants' avec l'ID: ", docRef.id); //TEST                       
-                        commit('addParticipant', {...newParticipant, profession: payload.profession});
-                        // TODO: A-t-on besoin ci-dessous d'ajouter la propriété 'profession' à l'objet 'currentUser' dans 'fillDataCurrentUser' ???
-                        commit('fillDataCurrentUser', { data: { ...newParticipant, profession: payload.profession }, id_user: docRefId }); // Mise à jour données utilisateur en cours
-                    })
-                    .catch(error => {
-                        console.error("Error adding document dans collection 'participants' : ", error);
-                        throw error;
-                    });
+                    commit('fillDataCurrentUser', { data: newParticipant, id_user: docRef.id }); // Mise à jour données utilisateur en cours
                 })
-                .catch(error => {
-                    console.error("Error adding document dans collection 'utilisateurs' : ", error);
-                    throw error;
-                });
+                .catch(error => { throw error });
 
             })
             .catch(error => {
@@ -787,6 +743,15 @@ export default new Vuex.Store({
                         transaction.update(collectionUtilisateurs.doc(payload.id_user), { evenements: evenementsParticipant });
                     })
                     .catch(error => { throw error });
+
+                    ////// NOTE DU 15/12/2020 //////
+                    /* //Pour remplacer code plus haut, essayer de faire quelque chose du genre:
+                    transaction.update(collectionUtilisateurs.doc(payload.id_user), { evenements: (
+                        payload.registry ? 
+                        firebase.firestore.FieldValue.arrayUnion(payload.id_event) : 
+                        firebase.firestore.FieldValue.arrayRemove(payload.id_event)
+                    ) }); */
+                    ////// FIN NOTE DU 15/12/2020 //////
                     
 
 
@@ -1213,21 +1178,15 @@ export default new Vuex.Store({
 
         // Profil Animateur uniquement : Enregistrement des participants présents ou non à une formation
         async recordPresenceParticipants({ commit, dispatch }, payload) {
-            console.warn(payload); //TEST
+            console.log("payload dans 'recordPresenceParticipants' =>>", payload); //TEST
 
             commit('setLoading', true);
             commit('setMessageError', null);
 
-            // 1. Faire la liste des participants sur lesquels il faut ecrire
-            // Checker si pour chacun des utilisateurs, il y a la propriété 'presence'
-            // Si pas 'présence', on la créé,
-            // Si 'présence' on boucle dessus pour voir si on trouve l'id_ev,
-            // Si pas 'id_ev', on le créé, et si présent, on le modifie
-            
-                        // TEST : A VIRER
-                        const db = firebase.firestore();
-                        const collectionUtilisateurs = db.collection('utilisateurs'); 
+            const db = firebase.firestore();
+            const collectionUtilisateurs = db.collection('utilisateurs'); 
 
+                        // TEST : A VIRER
                         /* OK */
                         /* let toto = collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "RWy20OWU1kLcYTiUDsAC" ]).get();
                         let titi = collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "CitW2wRiLh2rAV6T6nN9" ]).get();
@@ -1240,7 +1199,7 @@ export default new Vuex.Store({
                         }) */
 
                         /* OK */
-                        await Promise.all([
+                        /* await Promise.all([
                             collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "RWy20OWU1kLcYTiUDsAC", "irplZHoJtwmSgsjaPaqz" ]).get(), 
                             collectionUtilisateurs.where(firebase.firestore.FieldPath.documentId(), "in", [ "CitW2wRiLh2rAV6T6nN9" ]).get()
                         ])
@@ -1250,38 +1209,65 @@ export default new Vuex.Store({
                                 querySnapshot.docs.forEach(doc => console.log("doc.data() => ", doc.data()));
                             });
                         })
-                        .catch(err => console.error(err));
+                        .catch(err => console.error(err)); */
                         // FIN TEST : A VIRER
 
 
+            // Récupération liste des participants sur lesquels il faut ecrire.
             dispatch('concatAllDocs', payload)
-            // V1 (sans .flat()) 
-            /* .then(querySnapshots => { 
-                querySnapshots.forEach(querySnapshot => {
-                    querySnapshot.forEach(doc => console.log("=>", doc.data()));
-                })
-            }) */
-            // V2 (avec .flat())
-            .then(querySnapshot => { 
+            .then(querySnapshot => {
                 querySnapshot.forEach(doc => {
-                    const presence = payload.differenceSelection.filter(p => p.id_user == doc.id);
-                    console.log("=>", doc.id, doc.data(), { id_ev: payload.id_formation, isPresent: presence[0].isPresent });
+                    var docUser = collectionUtilisateurs.doc(doc.id);
+                    docUser
+                        .get()
+                        .then(user => {
+                            // On détermine si appel a déjà été réalisé ou pas par l'animateur (il en a la possibilité pdt un laps de temps déterminé dans une variable du state à compter de la date de formation)
+                            const callAlreadyDone = user.data().presence.filter(p => p.id_ev == payload.id_formation);
+                            console.log("user.data()", user.data(), "callAlreadyDone[0]", callAlreadyDone[0]); //TEST
+                            //console.log("callAlreadyDone pour '" + doc.id + "' =>>", callAlreadyDone[0]); //TEST
+
+                            // Valeur de la coche faite par l'animateur lors de l'appel pour signaler si participant est présent ou non
+                            const presence = payload.resultAppel.filter(p => p.id_user == doc.id);
+                            const obj = { id_ev: payload.id_formation, isPresent: presence[0].isPresent };
+                            
+                            // Si aucun appel fait à propos présence du participant à la formation (donc id formation pas présent dans prop. 'presence'), on ajoute juste l'objet signalant la présence ou pas du participant à la formation
+                            // Si appel déjà fait (donc id formation présente dans tableau 'presence'), on remplace la totalité du tableau d'objets de la propriété 'presence'
+                            var queryType = null;
+                            var dataToUpdate = null;
+                            if(typeof callAlreadyDone[0] == 'undefined') { // Si pas d'appel fait avant...
+                                queryType = 'arrayUnionRequired';
+                                dataToUpdate = obj;
+                            } else { // ...sinon si appel a déjà été fait...
+                                queryType = 'replaceEntireArray';
+                                let newArrayPresence = user.data().presence.filter(p => p.id_ev != payload.id_formation);
+                                newArrayPresence.push(obj);
+                                dataToUpdate = newArrayPresence;
+                            }
+                    
+                            return { queryType: queryType, dataToUpdate: dataToUpdate };
+                        })
+                        .then(data => {
+                            console.warn("data", data); //TEST
+                            docUser.update({ presence: 
+                                data.queryType == 'arrayUnionRequired' ? 
+                                firebase.firestore.FieldValue.arrayUnion(data.dataToUpdate) : 
+                                data.dataToUpdate
+                            });
+                        })
+                        .catch(error => {  throw error });
                 });
             })
-            
             .catch(error => { 
-                console.log("Erreur lors de l'inscription des participants d'une formation", error); 
+                console.log("Erreur lors de la phase d'enregistrement des présences des participants à une formation", error); 
                 commit('setMessageError', error.message);
             })
             .finally(() => { commit('setLoading', false) });
-            
             
         },
         async concatAllDocs(context, payload) {
             // On isole les id_user qui vont ensuite servir pour la requete 'where'
             let listeParticipants = [];
-            listeParticipants = payload.differenceSelection.map(p => p.id_user);
-            console.log("listeParticipants", listeParticipants); //TEST
+            listeParticipants = payload.resultAppel.map(p => p.id_user);
             
             const db = firebase.firestore();
             const collectionUtilisateurs = db.collection('utilisateurs');
@@ -1300,13 +1286,10 @@ export default new Vuex.Store({
             // On veut retourner tous les documents de ttes les requetes dans un même tableau (ici 'allDocs')
             let allDocs = [];
             for(let querySnapshot of queriesSnapShot) { // Autant de querySnapshot que de queries ds le Promise.All...
-                //console.log("querySnapshot.docs => ", querySnapshot.docs); //TEST
                 allDocs.push(querySnapshot.docs);
             }
-            //console.warn(allDocs.flat().length); //TEST
 
-            //return allDocs; // V1
-            return allDocs.flat(); // V2 : On "aplatit" le tableau de tableaux pour y avoir tous les docs au même niveau
+            return allDocs.flat(); // On "aplatit" le tableau de tableaux pour y avoir tous les docs au même niveau
         },
 
 
