@@ -1,56 +1,70 @@
 <template>
-    <div>
-        <div style="text-align: right;">
-            <a class="btListeFormations" @click="$router.go(-1)">Retour à la liste des formations</a>
+    <div id="titi">
+        <div class="linkBack">
+            <a @click="$router.go(-1)"><v-icon>fas fa-arrow-left</v-icon>Retour <span class="facultatif">à la liste des formations</span></a>
         </div>
         <!-- <div>{{ $route.params.event }}</div> -->
         <!-- <div style="margin: 30px 0 0 0">{{ event }}</div> -->
-        <div class="wrapperListeParticipants d-flex flex-column justify-center align-center">
-            <div class="explication">
-                Cette liste sert à l'appel des participants lors de la formation.<br/>
-                Il n'est possible de cocher la présence du participant que le jour même de la formation.
-            </div>
-            <div class="msgInfoEnableForm" v-if="disabledForm">Ce formulaire n'est actif qu'à compter de la date de formation et ce pendant {{ nbDaysListParticipantsFormEnable }} jour(s)</div>
-            <div class="dataFormation">
-                <div>
-                    <span class="date primaire">{{ formatDate(event.date) }}</span> 
-                    <span class="titre primaire--text">{{ event.titre }}</span>
+        <div class="d-flex flex-column justify-center align-center">
+            
+            <div class="col-lg-8 col-sm-10 col-12 
+                        mx-sm-4 px-sm-4  mx-0 px-0
+                        wrapperListeParticipants"
+            >
+
+                <div class="explication">
+                    <v-icon class="iconeInfo">fas fa-info-circle</v-icon>
+                    <span>
+                        Cette liste sert à l'appel des participants lors de la formation
+                        <span v-if="disabledForm">Ce formulaire n'est actif qu'à compter de la date de formation et ce pendant {{ nbDaysListParticipantsFormEnable }} jour(s)</span>
+                    </span>
                 </div>
+
+                <div class="dataFormation">
+                    <div style="align-items: stretch;">
+                        <span class="date primaire">{{ formatDate(event.date) }}</span> 
+                        <span class="titre primaire--text">{{ event.titre }}</span>
+                    </div>
+                </div>
+
+                <div class="NbParticipants">{{ sentenceNbParticipants }}</div>
+                <div class="legende">
+                    <span>Nom</span>
+                    <span>Prénom</span>
+                    <span>Profession</span>
+                    <span class="email">Adresse mail</span>
+                    <span>Présence</span>
+                </div>
+                <div v-for="(participant, i) in eventParticipants" :key="i" class="lgnParticipant">
+                    <span>{{ participant.lastName | capitalizeOnEveryWords }}</span>
+                    <span>{{ participant.firstName | capitalizeOnEveryWords }}</span>
+                    <span>{{ participant.profession | capitalizeOnEveryWords }}</span>
+                    <span class="email">{{ participant.email }}</span>
+                    <span>
+                        <input 
+                            type="checkbox" 
+                            v-model="presences" 
+                            :value="participant.id" 
+                            @change="selectionParticipant" 
+                            :disabled="disabledForm" 
+                        />
+                    </span>
+                </div>
+                <!-- TEST -->
+                <!-- presences => {{ presences }} 
+                <br />initialStatePresences => {{ initialStatePresences }}
+                <br />disabledRecordButton => {{ disabledRecordButton }} -->
+                <!-- TEST -->
+                <v-btn 
+                    class="bt_green" depressed block
+                    :disabled="disabledRecordButton || disabledForm" 
+                    @click="recordPresenceParticipants"
+                >
+                    Enregistrer
+                </v-btn>
+
             </div>
 
-            <div class="NbParticipants">{{ sentenceNbParticipants }}</div>
-            <div class="legende">
-                <span>Nom</span>
-                <span>Prénom</span>
-                <span>Profession</span>
-                <span class="email">Adresse mail</span>
-                <span>Présence</span>
-            </div>
-            <div v-for="(participant, i) in eventParticipants" :key="i" class="lgnParticipant">
-                <span>{{ participant.lastName | capitalizeOnEveryWords }}</span>
-                <span>{{ participant.firstName | capitalizeOnEveryWords }}</span>
-                <span>{{ participant.profession | capitalizeOnEveryWords }}</span>
-                <span class="email">{{ participant.email }}</span>
-                <span>
-                    <input 
-                        type="checkbox" 
-                        v-model="presences" 
-                        :value="participant.id" 
-                        @change="selectionParticipant" 
-                        :disabled="disabledForm" 
-                    />
-                </span>
-            </div>
-            {{ presences }} <!-- TEST -->
-            <br />initialStatePresences => {{ initialStatePresences }} <!-- TEST -->
-            <br />disabledRecordButton => {{ disabledRecordButton }} <!-- TEST -->
-            <v-btn 
-                class="bt_green btLarge" depressed block
-                :disabled="disabledRecordButton || disabledForm" 
-                @click="recordPresenceParticipants"
-            >
-                Enregistrer
-            </v-btn>
         </div>
     </div>
 </template>
@@ -60,12 +74,6 @@
     import capitalizeOnEveryWords from '@/filters/capitalizeOnEveryWords';
 
     export default {
-        /* RESTE A FAIRE :
-           ===============
-        - Gérer l'enregistrement ds la collection utilisateurs de Firestore
-        - Améliorer visuellement les checkboxs avec du CSS
-        - Améliorer visuellement la page en général
-        */
         filters: {
             capitalizeOnEveryWords
         },
@@ -83,22 +91,18 @@
         
         data() {
             return {
-                // TEMPORAIRE : JUSTE POUR MISE EN PAGE
-                /* participants: [
-                    { lastName: "POLUX", firstName: "Jean", email: "xxx@yyy.fr", profession: "Avocat" },
-                    { lastName: "TRINQUET", firstName: "Jacques", email: "sss@ddd.fr", profession: "Medecin" },
-                    { lastName: "MARTIN", firstName: "Pierre", email: "ddd@jjj.com", profession: "Plombier" },
-                ], */
                 presences: [],
                 disabledForm: false,
                 initialStatePresences: [],
-                disabledRecordButton: true
+                disabledRecordButton: true,
+                scrollYvalue: 0,
+                scrollYvalueforNoOpacity: 120
             }
         },
 
         computed: {
             // Pas besoin !! Se trouve déjà dans la prop passée en params dans la route !!
-            eventParticipants() { //console.log(this.$store.getters.eventParticipants); //TEST
+            eventParticipants() {
                 return this.$store.getters.eventParticipants;
             },
             sentenceNbParticipants() {
@@ -116,7 +120,7 @@
                 let partPresents = [];
                 const self = this;
                 val.forEach(p => {
-                    if(typeof p.presence !== "undefined") { // Si propriété 'presence' existe, donc si appel a déjà étét fait...
+                    if(typeof p.presence !== "undefined") { // Si propriété 'presence' existe, donc si appel a déjà été fait...
                         let ipPart = p.id;
                         p.presence.forEach(x => {
                             if(x.id_ev == self.event.id_evenement && x.isPresent == true) { // Si participant a été coché présent pour cette formation...
@@ -137,12 +141,33 @@
                     });
                 });
 
-            // Affectation var. de comparaison pour déterminer ensuite si bt 'Enregistrer' doit être en disabled ou pas
-                this.initialStatePresences.push(...this.presences); // EN COURS : 02/12/2020
+                // Affectation var. de comparaison pour déterminer ensuite si bt 'Enregistrer' doit être en disabled ou pas
+                this.initialStatePresences.push(...this.presences);
             }
         },
 
         methods: {
+            //// TEST au 17/12/2020 ////
+            setBandeauOpacity() {
+                window.addEventListener("scroll", () => {
+                    this.scrollYvalue = window.scrollY;
+                    let flag = false;
+                    if(this.scrollYvalue > this.scrollYvalueforNoOpacity) {
+                        this.scrollYvalue = this.scrollYvalueforNoOpacity;
+                        if(!flag) { this.displayBackgroundColor() }
+                        flag = true;
+                    } else {
+                        this.displayBackgroundColor();
+                        flag = false;
+                    }
+                });
+            },
+            displayBackgroundColor() {
+                let valOpacity = this.scrollYvalue / this.scrollYvalueforNoOpacity;
+                document.querySelector(".linkBack").style.backgroundColor = `rgba(255, 255, 255, ${valOpacity})`;
+            },
+
+
             // Pour rendre formulaire enable ou pas en fct° de la date du jour
             enableForm() {
                 //const today = new Date(); // Date du  jour au format complet
@@ -163,34 +188,27 @@
                 const lgn = document.querySelector("[value='" + e.target.value + "']").closest("div");
                 lgn.classList.toggle("lgnSelected", e.target.checked);
 
-                // Partie comparaison avec sélection des participants à l'arrivée sur la page afin de savoir si on a besoin de soumettre l'enregistrement suite à changement dans sélection ou pas
+                // Comparaison avec sélection des participants à l'arrivée sur la page afin de savoir si on a besoin de soumettre l'enregistrement suite à changement dans sélection ou pas
                 this.disabledRecordButton = this.initialStatePresences.sort().toString() === this.presences.sort().toString() ? true : false;
             },
             recordPresenceParticipants() {
-                let differenceSelection = [];
-                differenceSelection = this.differenceSelectionParticipants();
-
-                this.$store.dispatch('recordPresenceParticipants', {id_formation: this.event.id_evenement, differenceSelection: differenceSelection}); // EN COURS DE CREATION
-            },
-            differenceSelectionParticipants() {
-                const initialState = this.initialStatePresences;
-                let endState = this.presences;
-                let differenceSelection = [];
-
-                initialState.forEach(p => {
-                    if(endState.includes(p) == false) {
-                        differenceSelection.push({ id_user: p, isPresent: false });
-                    } else {
-                        endState = [...endState].filter(v => v != p);
-                    }
+                let appel = [];
+                // Récupération des données de l'appel
+                this.eventParticipants.forEach(p => {
+                    appel.push({ 
+                        id_user: p.id, 
+                        isPresent: this.presences.includes(p.id) 
+                    });
                 });
-                endState.forEach(p => differenceSelection.push({ id_user: p, isPresent: true }));
-
-                return differenceSelection;
-            }
+                // Enregistrement ds Firestore
+                this.$store.dispatch('recordPresenceParticipants', {id_formation: this.event.id_evenement, resultAppel: appel});
+            },
+            
         },
 
         async mounted() {
+            // Pour gérer l'opacité du bandeau sous le header
+            this.setBandeauOpacity();
             // Chargement des participants de la formation
             await this.$store.dispatch('getParticipantsEvenement', this.$route.params.event.id_evenement);
             // Pour rendre ou non les éléments du formulaire modifiables
@@ -200,20 +218,40 @@
 </script>
 
 <style scoped>
-    .btListeFormations {
+    .linkBack {
+        position: fixed;
+        width: 100%;
+        text-align: right;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0);
+        /* transition: all 1s ease-in-out; */
+    }
+    .linkBack a {
         cursor: pointer;
         padding: 3px 10px;
-        margin: 10px;
-        border-radius: 3px;
-        color: rgb(2, 31, 126);
-        font-size: 0.9em;
+        margin: 10px 8px;
+        border-radius: 4px;
         text-decoration: none;
     }
+    .linkBack .v-icon {
+        margin: 0 7px 0 0;
+    }
+    .linkBack a,
+    .linkBack .v-icon {
+        font-size: 0.9em;
+        color: rgb(2, 31, 126);
+        transition: all 0.4s ease-in-out;
+    }
+    .linkBack a:hover {
+        background-color: #283593;
+    }
+    .linkBack a:hover,
+    .linkBack a:hover .v-icon {
+        color: #fff;
+    }
     .dataFormation {
-        margin: 7px;
         font-size: 1.3em;
         text-align: center;
-        /* background-color: #e8476224; */
         background-color: rgb(195, 203, 255);
     }
     .dataFormation > div {
@@ -228,42 +266,51 @@
     }
     .dataFormation .titre { 
         flex-grow: 1;
-        /* color: #e84763; */
+        line-height: 1em;
+        margin: auto;
     }
-    .wrapperListeParticipants > * {
-        width: 50vw;
-        min-width: 700px;
+    .wrapperListeParticipants {
+        margin: 50px 0;
     }
-    .btLarge {
-        width: 50vw !important;
-        min-width: 700px !important;
-        margin: 20px;
+    .bt_green {
+        margin: 30px 0 0 0;
     }
     .explication {
-        background-color:#016fff;
+        background-color:#4093ff;
         color: #fff;
-        margin: 0 0 30px 0;
-        padding: 10px 20px;
+        margin: 0 0 40px 0;
+        padding: 15px 20px;
+        font-size: 1em;
+        line-height:1.1em;
+        display: flex;
+        border-radius: 4px;
+    }
+    .explication > span { 
+        flex-basis: 1;
+        margin: auto 0;
+    }
+    .iconeInfo {
+        color: #ffffff;
+        margin: auto 15px auto 0;
+        font-size: 1.3em;
     }
     .NbParticipants {
         text-align: left;
-        margin: 10px 0;
-        color: #313131;
-        border-bottom: dashed 1px #313131;
+        margin: 20px 0;
+        color: #283593;
+        border-bottom: dotted 1px #283593;
     }
     .legende,
     .lgnParticipant {
         display: flex;
         align-items: center;
         padding: 10px 20px;
+        flex-wrap: wrap;
     }
     .legende {
         color: #575555;
         font-weight: bold;
         font-size: 14px;
-        /* border-bottom: dashed 1px #575555;
-        margin: 0 0 16px 0;
-        padding: 10px 20px 5px 20px; */
     }
     .lgnParticipant {
         font-size: 0.9em;
@@ -271,7 +318,6 @@
         border-radius: 4px;
         margin: 0 0 10px;
         min-height: 3.2em;
-        /* box-shadow: 0px 0px 3px rgba(0,0,0,0.3); */
         box-shadow: 0px 0px 0px 2px #cecece inset;
     }
     .lgnParticipant.lgnSelected {
@@ -293,5 +339,37 @@
     .legende > span.email,
     .lgnParticipant > span.email {
         flex-grow: 2;
+    }
+
+    /* Pour les écrans/fenetres de navigateur de 600px et moins */
+    @media screen and (max-width: 600px) {
+        .linkBack .facultatif { display: none; }
+        .lgnParticipant { 
+            margin: 0;    
+        }
+        .explication,
+        .lgnParticipant,
+        .bt_green {
+            border-radius: 0; 
+        }
+        .bt_green {
+            height: 50px !important;
+        }
+        .dataFormation > div {
+            flex-direction: column;
+        }
+        .wrapperListeParticipants {
+            padding: 0;
+            margin: 50px 0 0 0;
+        }
+        .explication { margin: 0; }
+        .dataFormation .date {
+            font-size: 0.8em;
+            padding: 3x;
+        }
+        .NbParticipants {
+            border-width: 0;
+            text-align: center;
+        }
     }
 </style>
