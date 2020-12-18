@@ -1,5 +1,13 @@
 <template>
-    <div id="titi">
+    <div>
+        <!-- Modal final avec redirection vers liste des évènements -->
+        <app-modal :display="participantsPresenceRecordDone">
+            <div class="wrapperContentModal">
+                <div>Les données de l'appel sont enregistrées</div>
+                <v-btn @click="endRecordAppelParticipants" depressed>Fermer</v-btn>
+            </div>
+        </app-modal>
+
         <div class="linkBack">
             <a @click="$router.go(-1)"><v-icon>fas fa-arrow-left</v-icon>Retour <span class="facultatif">à la liste des formations</span></a>
         </div>
@@ -52,8 +60,7 @@
                 </div>
                 <!-- TEST -->
                 <!-- presences => {{ presences }} 
-                <br />initialStatePresences => {{ initialStatePresences }}
-                <br />disabledRecordButton => {{ disabledRecordButton }} -->
+                <br />initialStatePresences => {{ initialStatePresences }} -->
                 <!-- TEST -->
                 <v-btn 
                     class="bt_green" depressed block
@@ -111,6 +118,9 @@
             },
             nbDaysListParticipantsFormEnable() {
                 return this.$store.state.nbDaysListParticipantsFormEnable;
+            },
+            participantsPresenceRecordDone() {
+                return this.$store.state.participantsPresenceRecordDone;
             }
         },
 
@@ -147,7 +157,7 @@
         },
 
         methods: {
-            //// TEST au 17/12/2020 ////
+            // Gestion opacité du bandeau sous le header
             setBandeauOpacity() {
                 window.addEventListener("scroll", () => {
                     this.scrollYvalue = window.scrollY;
@@ -166,7 +176,6 @@
                 let valOpacity = this.scrollYvalue / this.scrollYvalueforNoOpacity;
                 document.querySelector(".linkBack").style.backgroundColor = `rgba(255, 255, 255, ${valOpacity})`;
             },
-
 
             // Pour rendre formulaire enable ou pas en fct° de la date du jour
             enableForm() {
@@ -203,7 +212,10 @@
                 // Enregistrement ds Firestore
                 this.$store.dispatch('recordPresenceParticipants', {id_formation: this.event.id_evenement, resultAppel: appel});
             },
-            
+            endRecordAppelParticipants() {
+                this.$store.commit('setParticipantsPresenceRecord', false);
+                this.$router.push({ name: 'events_list' });
+            }
         },
 
         async mounted() {
@@ -243,7 +255,7 @@
         transition: all 0.4s ease-in-out;
     }
     .linkBack a:hover {
-        background-color: #283593;
+        background-color: #3949AB;
     }
     .linkBack a:hover,
     .linkBack a:hover .v-icon {
@@ -339,6 +351,10 @@
     .legende > span.email,
     .lgnParticipant > span.email {
         flex-grow: 2;
+    }
+
+    .wrapperContentModal {
+        padding: 25px;
     }
 
     /* Pour les écrans/fenetres de navigateur de 600px et moins */

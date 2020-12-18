@@ -72,6 +72,8 @@ export default new Vuex.Store({
         nbDaysListParticipantsFormEnable: 3,
         filterMyTrainings: false,
 
+        participantsPresenceRecordDone: false, // EN COURS
+
         FF_currentUser: 'Vide' //TEST
     },
 
@@ -202,6 +204,10 @@ export default new Vuex.Store({
                 })
             });
             state.eventParticipants = participantsList;
+        },
+
+        setParticipantsPresenceRecord(state, payload) {
+            state.participantsPresenceRecordDone = payload;
         },
 
         // TEST
@@ -689,7 +695,7 @@ export default new Vuex.Store({
                         //console.log("Animateur " + id_a + " mis à jour avec la donnée ", docRef.id); //TEST 
                         commit('setDisplayModalRecordedEvent', true);
                     })
-                    .catch((error) => { 
+                    .catch(error => { 
                         console.error(`Erreur lors de l'update dans collection 'utilisateurs' (phase d'ajout de l'id evenement au tableau d'id de la propriété 'evenements' pour l'animateur '${id_a}')`, error);
                         throw error; 
                     });
@@ -700,7 +706,7 @@ export default new Vuex.Store({
                     throw new Error(`L'évènement '${docRef.id}' que vous venez de créer n'a pas d'animateur(s) affecté(s).`);
                 }
             })
-            .catch((error) => { commit('setMessageError', error.message) })
+            .catch(error => { commit('setMessageError', error.message) })
             .finally(() => { commit('setLoading', false) });
         },
 
@@ -1253,6 +1259,8 @@ export default new Vuex.Store({
                                 firebase.firestore.FieldValue.arrayUnion(data.dataToUpdate) : 
                                 data.dataToUpdate
                             });
+
+                            this.commit('setParticipantsPresenceRecord', true); // Pour faire apparaitre modal comme quoi l'enregistrement est fait
                         })
                         .catch(error => {  throw error });
                 });
