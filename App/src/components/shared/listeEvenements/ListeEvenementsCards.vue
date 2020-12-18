@@ -263,9 +263,7 @@
         margin: 0 15px 0 0;
         padding: 2px 15px;
         position: absolute;
-        margin: -40px 0 0 0;
         letter-spacing: 0.05em;
-
         margin: -25px 0 0 15px;
     }
     .headerEvent,
@@ -330,8 +328,7 @@
 
     .map { 
         height: 200px; 
-        width: 60%;    
-        min-width: 350px;
+        width: 60%;
         display: inline-block;
         z-index: 0;
     }
@@ -358,4 +355,23 @@
         color: #5f5f5f;
     }
     .msgNoEvents i { margin: 0 10px 0 0; }
+
+    /* Pour les écrans/fenetres de navigateur  de 600px et moins */
+    @media screen and (max-width: 960px) {
+        .map { width: 100%; }
+        .otherData { width: 100%; }
+    }
+    /* Pour les écrans/fenetres de navigateur de 600px et moins */
+    @media screen and (max-width: 600px) {
+        .dateEvent {
+            width: 100vw;
+            margin: -25px 0 0 0;
+            padding: 5px;
+            text-align: center;
+            border-radius: 0 !important;
+        }
+        .blocEvent {
+            border-radius: 0 !important;
+        }
+    }
 </style>
