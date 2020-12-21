@@ -45,7 +45,7 @@
 
             <div id="sortAndFiltersEvents" class="d-flex flex-column">
                 <div class="bloc">
-                    <div>Classer par</div>
+                    <div>Classement</div>
                     <div class="d-flex align-stretch" id="selectSort">
                         <select v-model="sortSelect" @change="sortBy" class="background">
                             <option v-for="(item, i) in sortItemsList" :key="i" 
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="bloc">
-                    <div>Filtrer par</div>
+                    <div>Filtres</div>
                     <span 
                         v-for="(chip, i) in filter_chips" :key="i"
                         @click="filterBy(i)" 
@@ -328,7 +328,6 @@ export default {
 
         flagEventDeleted(val) {
             if(val) {
-                //console.log("WATCH pour 'flagEventDeleted'", val); //TEST
                 this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
                 this.$store.commit('setFlagEventDeleted', false);
             }
@@ -337,17 +336,6 @@ export default {
     },
 
     methods: {
-        // Récupération des valeurs du filtre du composant enfant et exec method appropriée
-        execProfileSpecificFilter(e) {
-            if(e.origin == "Participant") {
-                this.mesFormations = e.mesFormations;
-                this.loadEventsWithSelectedFilters();
-            } else if(e.origin == "Administrateur") {
-                this.pastEvents = e.pastEvents;
-                this.updateParamsFilters();
-            }
-        },
-
         // Affectation nvelles valeurs à la variable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
         sortBy() {
             this.$store.commit('setSortingParameters', { type: this.sortSelect, direction: this.sortDirection });
@@ -363,10 +351,10 @@ export default {
             }
         },
 
-        // Quand clic sur switch 'formations passées' => Appel action ds le Vuex pour récupérer les paramètres à jour pour les filtres date et villes
+        // Juste pour profil Administrateur : Quand clic sur switch 'formations passées' => Appel action ds le Vuex pour récupérer les paramètres à jour pour les filtres date et villes
         async updateParamsFilters() {
             if(this.pastEvents) {
-                await this.$store.dispatch('paramsFiltreEvenements', 'all');
+                await this.$store.dispatch('paramsFiltreEvenements', { includePastTrainings: true });
             } else {
                 await this.$store.dispatch('paramsFiltreEvenements');
             }
@@ -424,11 +412,27 @@ export default {
             this.execProfileSpecificFilter(obj);
         },
         
+        // Récupération des valeurs du filtre du composant enfant et exec method appropriée
+        execProfileSpecificFilter(e) {
+            if(e.origin == "Participant") {
+                this.mesFormations = e.mesFormations;
+                this.loadEventsWithSelectedFilters();
+            } else if(e.origin == "Administrateur") {
+                this.pastEvents = e.pastEvents;
+                this.updateParamsFilters();
+            }
+        },
+        
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
             this.dateRange = []; // Suppression du filtre des dates : Réinitialisation des dates saisies
             this.selectionVilles = []; // Suppression du filtre des villes : Réinitialisation des villes saisies
-            this.deleteProfileSpecificFilter(); // Selon type de profil logué (Administrateur ou Participant) Suppression du filtre des formations passées (visible seulement qd profil Administrateur) ou suppression du filtre les formations ou l'on est inscrit (visible seulement qd profil Participant)
+            const role = this.currentUser.role;
+            if(role == 'Participant' || role == 'Administrateur') {
+                this.deleteProfileSpecificFilter(); // Selon type de profil logué (Administrateur ou Participant) Suppression du filtre des formations passées (visible seulement qd profil Administrateur) ou suppression du filtre les formations ou l'on est inscrit (visible seulement qd profil Participant)
+            } else {
+                this.loadEventsWithSelectedFilters();
+            }
         },
 
         async loadEventsWithSelectedFilters() {

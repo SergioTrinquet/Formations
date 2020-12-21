@@ -457,13 +457,13 @@ export default new Vuex.Store({
         
         
         // Pour obtenir les infos nécessaires aux paramétrages des filtres dans page de liste des évènements
-        paramsFiltreEvenements({commit}, payload = null) {
+        async paramsFiltreEvenements({state, commit}, payload = null) {
             commit('setLoading', true);
             commit('setMessageError', null);
 
             const db = firebase.firestore();
 
-            console.log("Dans 'paramsFiltreEvenements'"); //TEST
+            console.log("payload dans 'paramsFiltreEvenements'", payload); //TEST
 
             // A FACTORISER CAR EST DEJA UTILISE CI-DESSOUS !!!
             const today = new Date();
@@ -473,21 +473,38 @@ export default new Vuex.Store({
             //
 
             let collectionEvenements = db.collection('evenements');
-            if(payload == null) { // Sélection et classement des évènements par défaut
-                console.log("payload == null"); //TEST
-                collectionEvenements = collectionEvenements.where("date" , ">=", currentDate).orderBy("date");
-            } else {
-                console.log("payload != null => Affichage de ts les évènements, anciens et à venir"); //TEST
-                collectionEvenements = collectionEvenements.orderBy("date");
+            if(payload == null) { // Sélection et classement des évènements par défaut. En revanche qd "includePastTrainings" in payload, on affiche ttes les formations sans restriction de dates
+                collectionEvenements = collectionEvenements.where("date" , ">=", currentDate);
+            }
+            collectionEvenements = collectionEvenements.orderBy("date");
+            
+            // Si personne loguée a un profil 'Animateur', ne doit voir dans filtres que les villes et les dates de ses réunions
+            let evenementsAnimateur = null; // Pour stocker ses évènements lorsque profil 'Animateur'
+            if(state.currentUser.role == "Animateur") {
+                evenementsAnimateur = await db.collection('utilisateurs')
+                .doc(state.currentUser.id_user)
+                .get()
+                .then(querySnapshot => querySnapshot.data().evenements)
+                .catch(err => { 
+                    commit('setLoading', false);
+                    console.error("Erreur lors de la récupération des paramètres de filtres (cas de profil 'Animateur')", err);
+                    commit('setMessageError', "Etape de récupération des paramètres de filtres (cas de profil 'Animateur') : " + err.message); 
+                });
             }
 
             
             return collectionEvenements
             .get()
             .then((querySnapshot) => {
+                // Partie filtrage qd profil Animateur
+                let docs = querySnapshot.docs;   
+                if(evenementsAnimateur !== null) {
+                    docs = docs.filter(d => evenementsAnimateur.includes(d.id));
+                } 
+
                 let allCities =  [];
                 let allDates = [];
-                querySnapshot.forEach((doc) => {
+                docs.forEach((doc) => {
                     allDates.push(doc.data().date); // Propriété de l'objet stocké ds Firestore
                     allCities.push(doc.data().ville); // Propriété de l'objet stocké ds Firestore
                 });
@@ -499,7 +516,7 @@ export default new Vuex.Store({
                 commit('setParamsFiltersEvenements', { villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] });
             })
             .catch((err) => { 
-                console.error("Erreur lors de la récupération des évènements pour les paramètres des filtres", err);
+                console.error("Erreur lors de la récupération des paramètres de filtres", err);
                 commit('setMessageError', err.message); 
             })
             .finally(() => { commit('setLoading', false) });
@@ -538,15 +555,11 @@ export default new Vuex.Store({
                 }
 
                 if("dates" in payload) {
-                    //console.log("Dans propriété 'dates' => " + payload.dates.length + " dates"); //TEST
                     // Check si tableau de dates a une date...
                     if(payload.dates.length == 1) {
-                        //console.log("1 date => " + payload.dates[0]); //TEST
                         collectionEvenements = collectionEvenements.where("date" , "==", payload.dates[0]);
                     } else { //... ou deux
-                        //console.log("plusieurs dates"); //TEST
                         for(let i=0; i < payload.dates.length; i++) {
-                            //console.log("date " + i); //TEST
                             collectionEvenements = collectionEvenements.where("date" , (i == 0 ? ">=" : "<="), payload.dates[i]);
                         }
                     }
@@ -558,41 +571,39 @@ export default new Vuex.Store({
                 }
 
                 collectionEvenements = collectionEvenements.orderBy("date");
-
-                
-                // lorsque profil 'Participant' ou 'Animateur'
-                if(("mesFormations" in payload) || ("profil" in payload && payload.profil == state.currentUser.role)) {
-                    //console.warn("DANS LOADEVENEMENTS POUR ANIMATEUR !!!!!!", state.currentUser); //TEST
-                    // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
-                    evenementsParticipantOuAnimateur = await collectionUtilisateurs
-                    .doc(state.currentUser.id_user)
-                    .get()
-                    .then(querySnapshot => querySnapshot.data().evenements)
-                    .catch(err => { 
-                        commit('setLoading', false);
-                        console.error("Erreur lors de la récupération des évènements du participant/de l'animateur", err);
-                        commit('setMessageError', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
-                    });
-
-                    console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
-                    // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
-                    //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipantOuAnimateur).orderBy(firebase.firestore.FieldPath.documentId());
-                }
-
             }
             
+
+            
+            // lorsque profil 'Participant' ou 'Animateur'
+            if((payload !== null && "mesFormations" in payload) || (state.currentUser.role == "Animateur")) {
+                // Récupération tableau listant les id_evenements au(x)quel(s) le participant est inscrit
+                evenementsParticipantOuAnimateur = await collectionUtilisateurs
+                .doc(state.currentUser.id_user)
+                .get()
+                .then(querySnapshot => querySnapshot.data().evenements)
+                .catch(err => { 
+                    commit('setLoading', false);
+                    console.error("Erreur lors de la récupération des évènements du participant/de l'animateur", err);
+                    commit('setMessageError', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
+                });
+
+                console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
+                // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
+                //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipantOuAnimateur).orderBy(firebase.firestore.FieldPath.documentId());
+            }
+
+
 
             // Récupération liste des évènements et du/des animateurs de chacun de ces évènements
             return collectionEvenements
             .get()
-            .then((querySnapshot) => {
+            .then(querySnapshot => {
 
                 // Partie filtrage qd participant ne veut afficher que ses formations ou bien Animateur ne voit que les formations qu'il doit animer au chargement de la page de liste des formations
-                let docs = null;   
+                let docs = querySnapshot.docs;   
                 if(evenementsParticipantOuAnimateur !== null) {
-                    docs = querySnapshot.docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
-                } else {
-                    docs = querySnapshot.docs;
+                    docs = docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
                 }
 
                 // Pour communiquer le nb d'évènements après filtre(s) mais avant pagination : Sert au calcul du nb de pages notamment
@@ -657,7 +668,7 @@ export default new Vuex.Store({
                 /////// FIN :  orderBy et la pagination !! ///////
 
             })
-            .catch((err) => { 
+            .catch(err => { 
                 console.error("Erreur lors de la récupération des évènements", err);
                 commit('setMessageError', err.message); 
             })
@@ -1253,7 +1264,7 @@ export default new Vuex.Store({
                             return { queryType: queryType, dataToUpdate: dataToUpdate };
                         })
                         .then(data => {
-                            console.warn("data", data); //TEST
+                            //console.warn("data", data); //TEST
                             docUser.update({ presence: 
                                 data.queryType == 'arrayUnionRequired' ? 
                                 firebase.firestore.FieldValue.arrayUnion(data.dataToUpdate) : 
