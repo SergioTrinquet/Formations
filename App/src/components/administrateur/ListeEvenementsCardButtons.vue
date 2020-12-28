@@ -26,7 +26,7 @@
                 const c = confirm("Confirmez la suppression de cette formation svp!"); 
                 if(c) {
                     await this.$store.dispatch('deleteEvent', this.event.id_evenement);
-                    this.$emit("onEndDeleteEvent");
+                    //this.$emit("onEndDeleteEvent");
                 }
             },
         }
