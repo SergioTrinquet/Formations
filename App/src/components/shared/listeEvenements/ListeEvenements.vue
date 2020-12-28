@@ -16,19 +16,8 @@
         ></app-header>
 
 
-        <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
-        <v-row class="hidden-sm-and-up">
-            <v-col style="background-color:pink; text-align: center;">
-                <v-btn style="width: 100%;">Classement</v-btn>
-            </v-col>
-            <v-col style="background-color:blue; text-align: center;">
-                <v-btn style="width: 100%;">Filtres</v-btn>
-            </v-col>
-        </v-row>
-
-
         <v-row>
-            <v-col cols="2" class="hidden-xs-only pa-0" id="margeTriEtFiltres">
+            <v-col cols="2" class="pa-0 hidden-xs-only margeTriEtFiltres">
             
                 <!-- Incrementation de 'initPagination' : Retour à la page du début quand nouveaux filtres ou retraits filtres -->
                 <app-sortAndFilters 
@@ -60,6 +49,7 @@ import header from '@/components/shared/listeEvenements/ListeEvenementsHeader';
 import sortAndFilters from '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters';
 import encartsFormations from '@/components/shared/listeEvenements/ListeEvenementsCards';
 import modifEvenement from '@/components/administrateur/ListeEvenementModification';
+
 
 export default {
 
@@ -94,7 +84,7 @@ export default {
 </script>
 
 <style scoped>
-    #margeTriEtFiltres {
+    .margeTriEtFiltres {
         background-color: #ffffff;
         min-width: 250px;
     }

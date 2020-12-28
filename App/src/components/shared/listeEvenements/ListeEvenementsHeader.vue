@@ -1,5 +1,9 @@
 <template>
     <div class="wrapSubHeader">
+
+        <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
+        <app-smallScreenButtons  class="hidden-sm-and-up"></app-smallScreenButtons> <!-- Ajouté le 21/12/2020 -->
+
         <div class="d-flex subHeader">
             <div class="align-self-center">
                 <div><span class="nbEvents primaire--text">{{ nbEventsDisplayed }}</span> {{ "évènement" + (nbEventsDisplayed > 1 ? "s" : "") }}</div>
@@ -22,15 +26,22 @@
                 >fas fa-angle-right</v-icon>
             </div>
         </div>
+
     </div>
 </template>
 
 <script>
+    import smallScreenButtons from '@/components/shared/listeEvenements/ListeEvenementsSmallScreenButtons'; // EN COURS LE 21/12/2020
+
     export default {
         data() {
             return {
                 selectedPage: 1
             }
+        },
+
+        components: { 
+            'app-smallScreenButtons': smallScreenButtons // EN COURS LE 21/12/2020
         },
 
         props: [
@@ -42,7 +53,6 @@
                 return this.$store.state.nbEventsPerPage;
             },
             nbEventsDisplayed() {
-                /* return this.$store.state.nbEventsFiltered; */
                 return this.$store.getters.events.length;
             },
 
@@ -102,11 +112,11 @@
 
 <style scoped>
 .wrapSubHeader {
-    height:50px;
+    position: fixed; 
+    z-index: 5; 
+    width: 100vw; 
 }
 .subHeader {
-    position: fixed; 
-    z-index: 1; 
     background-color: #ffffff; 
     line-height: 17px; 
     padding:8px 20px; 
