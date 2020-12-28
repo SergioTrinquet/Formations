@@ -18,8 +18,8 @@ export default new Vuetify({
                 primaire: colors.indigo.darken1,
                 primaireDark: colors.indigo.darken3,
                 primaireLight: colors.indigo.lighten1,
+                primaireLighter: colors.indigo.lighten2,
                 secondaire: colors.pink.lighten2,
-                //background: colors.grey.lighten3
                 background: colors.indigo.lighten5
 
                 //, primaire: '#393473', secondaire: '#FF298A', tertiaire: '#FFD567'
