@@ -57,7 +57,7 @@
                     </div> 
                 </div>
 
-                <div class="bloc">
+                <div class="bloc" v-if="profileSpecificFilter.component != ''">
                     <component 
                         :is="profileSpecificFilter.component" 
                         v-bind="profileSpecificFilter.properties" 
@@ -68,11 +68,11 @@
                 <div class="bloc">
                     <div>Filtres</div>
                     <span 
-                        v-for="(chip, i) in filter_chips" :key="i"
+                        v-for="(button, i) in filterButtons" :key="i"
                         @click="filterBy(i)" 
-                        :class="'vChipSort background ' + (chip.selected ? 'selected' : '')"
+                        :class="'vChipSort background ' + (button.selected ? 'selected' : '')"
                     >
-                        {{ chip.libelle }}<v-icon right v-show="chip.selected">fas fa-check</v-icon>
+                        {{ button.libelle }}<v-icon right v-show="button.selected">fas fa-check</v-icon>
                     </span>
                 </div>
 
@@ -136,7 +136,7 @@ export default {
             sortSelect: "date",
             sortDirection: 'asc',
 
-            filter_chips: [
+            filterButtons: [
                 { libelle: 'dates', selected: false },
                 { libelle: 'villes', selected: false }
             ],
@@ -200,6 +200,14 @@ export default {
             return titleDatePicker;
         },
 
+
+
+        // Ajouté le 28/12/2020
+        // Récupération des valeurs de classement (ordre et type)
+        sortingParameters() {
+            return this.$store.state.sortingParameters;
+        },
+
         
         // Computed pour les paramètres d'initialisation des filtres 'dates' et 'villes'
         dataFilters() {
@@ -258,9 +266,18 @@ export default {
                 role == 'Admin' ? { component: filterAdmin, properties: { pastEvents: this.pastEvents, label: "Anciennes formations" } } :
                 { component: '', properties: {}};
         }
+
     },
 
     watch: {
+        // Ajouté le 28/12/2020
+        // Affectation des variables de classement aux variables locales
+        sortingParameters(val) {
+            this.sortSelect = val.type;
+            this.sortDirection = val.direction;
+        },
+
+
         // Déclenché à chaque changement de valeur de la variable qui conditionne sens de classement
         sortDirection() {
             this.sortBy();
@@ -343,8 +360,8 @@ export default {
 
         // Quand clic sur type de filtre : Pour ouverture modal du filtre 'dates' ou 'villes'
         filterBy(idx) {
-            const chip = this.filter_chips[idx];
-            if(chip.libelle == "dates") {
+            const button = this.filterButtons[idx];
+            if(button.libelle == "dates") {
                 this.displayModalDatePickers = true
             } else {
                 this.displayModalListeVilles = true
@@ -454,15 +471,16 @@ export default {
     .blocsMargeWrapper {
         position: fixed;
         left: 0;
-        border: solid 2px green;
+        /* border: solid 2px green; */
     }
     #sortAndFiltersEvents,
     #myFilters {
         background-color: #ffffff;
         width: 220px;
-        margin: 25px 0 0 20px;
+        /* margin: 25px 0 0 20px;
         box-shadow: 0 0 3px rgba(0,0,0,0.3);
-        border-radius: 3px;
+        border-radius: 3px; */
+        margin: 20px 10px 0;
     }
     
     #myFilters,
@@ -471,12 +489,10 @@ export default {
     }
     #sortAndFiltersEvents .bloc {
         border-bottom: dotted 1px #6d6d6d;
+        color: #444444;
     }
     #sortAndFiltersEvents .bloc:last-child {
         border-bottom-width: 0;
-    }
-    #sortAndFiltersEvents .bloc { 
-        color: #444444;
     }
     #sortAndFiltersEvents .bloc,
     .vChipSort {
