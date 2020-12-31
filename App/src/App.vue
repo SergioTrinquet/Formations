@@ -64,15 +64,6 @@
       class="over"
     >
       
-      <!-- <div class="d-flex align-center">
-        <v-img
-          class="shrink mr-2"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-      </div> -->
-
       <!-- Icone menu -->
       <div class="d-sm-none">
         <v-icon class="mr-1" v-on:click="sideNav = !sideNav">menu</v-icon>
@@ -182,7 +173,7 @@ export default {
       // Si utilisateur logué en tant que Participant ou bien Animateur => Redirection vers pg de liste des formations
       let pr = null;
       pr = this.pageRedirection.find(pr => pr.roles.includes(val.role));
-      if(pr.routeName !== '') {
+      if(typeof pr !== "undefined" && pr.routeName !== '') {
         this.$router.push({ name: pr.routeName });
       }
     }
