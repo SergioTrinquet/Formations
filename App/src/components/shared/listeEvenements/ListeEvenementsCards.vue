@@ -236,7 +236,7 @@
 
         async mounted() {
             this.todaysDate = this.getCurrentDate();
-            await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieures à la date du jour et classés par date          
+            await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieurs à la date du jour et classés par date          
             this.eventsLoaded = true;
             this.$emit("onEventsLoaded");
         }
@@ -245,7 +245,7 @@
 
 <style scoped>
     .blocEvent {
-        margin: 60px 0 0 0;
+        margin: 100px 0 0 0;
     }
     .blocEvent.obsolete {
         box-shadow: 0 0 0px 6px rgba(255,0,0,0.5) inset;

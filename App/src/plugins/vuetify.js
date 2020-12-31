@@ -22,6 +22,7 @@ export default new Vuetify({
                 secondaire: colors.pink.lighten2,
                 background: colors.indigo.lighten5
 
+                // "6a00a3","06d6a0","1b9aaa","ef476f"
                 //, primaire: '#393473', secondaire: '#FF298A', tertiaire: '#FFD567'
             },
             dark: {},

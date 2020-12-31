@@ -1,7 +1,7 @@
 <template>
     <v-container fluid class="pa-0">
 
-        <!-- Modal pour modification d'un évènement -->
+        <!-- Modal pour modification d'un évènement (exclusivement avec profil administrateur) -->
         <app-modifEvenement 
             :displayModalChangeEvent="displayModalChangeEvent"
             :theEvent="eventToModify" 
@@ -79,6 +79,12 @@ export default {
             this.displayModalChangeEvent = true; // Pour faire apparaitre le modal de modification d'une formation
         }
     },
+
+    /* // Ajouté le 28/12/2020
+    async mounted() {
+        await this.$store.dispatch('paramsFiltreEvenements'); // Récupération des données necessaires au paramétrage des filtres
+        this.paramsFiltersLoaded = true;
+    }   */
 
 }
 </script>
