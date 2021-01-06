@@ -2,7 +2,7 @@
     <div class="wrapSubHeader">
 
         <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
-        <app-smallScreenButtons  class="hidden-sm-and-up"></app-smallScreenButtons> <!-- Ajouté le 21/12/2020 -->
+        <app-smallScreenButtons  class="hidden-sm-and-up"></app-smallScreenButtons>
 
         <div class="d-flex subHeader">
             <div class="align-self-center">
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-    import smallScreenButtons from '@/components/shared/listeEvenements/ListeEvenementsSmallScreenButtons'; // EN COURS LE 21/12/2020
+    import smallScreenButtons from '@/components/shared/listeEvenements/ListeEvenementsSmallScreenButtons';
 
     export default {
         data() {
@@ -41,12 +41,8 @@
         },
 
         components: { 
-            'app-smallScreenButtons': smallScreenButtons // EN COURS LE 21/12/2020
+            'app-smallScreenButtons': smallScreenButtons
         },
-
-        props: [
-            'initPagination'
-        ],
 
         computed: {
             nbEventsPerPage() {
@@ -82,14 +78,22 @@
                     text = (dir == 'asc' ? 'nb de participants (croissant)' : 'nb de participants (décroissant)');
                 }
                 return "classé(s) par " + text;
+            },
+
+            // Pour remettre à la 1ere page (WATCH)
+            initPagination() { //console.log("COMPUTED de initPagination", this.$store.state.initPagination); //TEST
+                return this.$store.state.initPagination;
             }
         },
 
         watch: {
-            initPagination() {
-                // Retour à la page du début quand nouveaux filtres ou retraits filtres : 
-                // On affiche la 1ere page par défaut (v-model 'selectedPage' = 1)
-                this.selectedPage = 1;
+            // Retour à la page du début quand nouveaux filtres ou retraits filtres : 
+            // On affiche la 1ere page par défaut (v-model 'selectedPage' = 1)
+            initPagination(val) { //console.log("WATCH de initPagination", val); //TEST
+                if(val) { 
+                    this.selectedPage = 1;
+                    this.$store.commit('setInitPagination', false);
+                }
             },
 
             selectedPage() {
@@ -113,7 +117,7 @@
 <style scoped>
 .wrapSubHeader {
     position: fixed; 
-    z-index: 5; 
+    z-index: 1; 
     width: 100vw; 
 }
 .subHeader {

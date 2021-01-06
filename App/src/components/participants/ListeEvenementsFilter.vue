@@ -32,8 +32,8 @@
 
         methods: {
             emitFilterParam() {
-                // emit au composant parent
-                this.$emit('emitFilterValue', { origin: 'Participant' , mesFormations: this.myTrainings });
+                // Affectation dans variable qui regroupe tous les filtres du booleen 'myTrainings'
+                this.$store.commit('setSelectedFilters', { 'mesFormations': this.myTrainings });
                 
                 // Indique si filtre activé ou non dans Vuex. Utile quand désinscription d'une formation : Si le filtre est activé, la formation en question ne doit plus apparaitre après désinscription 
                 this.$store.commit('setValueFilterMyTrainings', this.myTrainings);

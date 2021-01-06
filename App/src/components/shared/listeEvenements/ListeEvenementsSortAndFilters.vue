@@ -1,130 +1,84 @@
 <template>
-    <div v-if="paramsFiltersLoaded == true">
-        <!-- Calendrier sélection dates -->
-        <v-overlay :value="displayModalDatePickers" opacity="0.75">  
-            <div class="initDatesText">{{ initDateRangeText }}</div>
-            <v-date-picker 
-                v-model="dateRange" 
-                elevation="15"
-                range
-                scrollable 
-                light
-                color="primaire"
-                first-day-of-week="1"
-                :show-current="pickerDate"
-                :min="dataFilters.dates.min"
-                :max="dataFilters.dates.max"
-                :allowed-dates="allButWeekends"
-                :title-date-format="formatAffichageTitleDatepicker"
-            >
-                <v-spacer></v-spacer>
-                <v-btn text color="primaire" @click="cancelDatePicker">Annuler</v-btn>
-                <v-btn text color="primaire" @click="emitDateRange">OK</v-btn>
-            </v-date-picker>
-        </v-overlay>
 
+    <!-- Marge gauche -->
+    <div class="blocsMargeWrapper">
 
-        <!-- Encart filtre villes -->
-        <app-itemsSelectionModal 
-            :modalDisplay="displayModalListeVilles"
-            @onCloseModal="closeModal($event)"
-            modalWidth="100vw" 
-            modalHeight="50vh"
-            cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
-            @onSendItems="sendItems($event)"
-            defaultTextNoItems="- Aucune ville sélectionnée -"
-            :listItems="dataFilters.villes"
-            :nbMaxItems="nbMaxVilles"
-            :textError="'Pas plus de ' + nbMaxVilles + ' villes svp'"
-            :selectedItems="selectionVilles"
-        ></app-itemsSelectionModal>
-
-
-        <!-- Marge gauche -->
-        <div class="blocsMargeWrapper">
-
-            <div id="sortAndFiltersEvents" class="d-flex flex-column">
-                <div class="bloc">
-                    <div>Classement</div>
-                    <div class="d-flex align-stretch" id="selectSort">
-                        <select v-model="sortSelect" @change="sortBy" class="background">
-                            <option v-for="(item, i) in sortItemsList" :key="i" 
-                                :value="item.sortType"
-                            >{{ item.libelle }}</option>
-                        </select>
-                        <v-icon :class="['up', 'primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'">fas fa-arrow-up</v-icon>
-                        <v-icon :class="['down', 'primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'">fas fa-arrow-down</v-icon>
-                    </div> 
-                </div>
-
-                <div class="bloc" v-if="profileSpecificFilter.component != ''">
-                    <component 
-                        :is="profileSpecificFilter.component" 
-                        v-bind="profileSpecificFilter.properties" 
-                        @emitFilterValue="execProfileSpecificFilter($event)"
-                    ></component>
-                </div>
-
-                <div class="bloc">
-                    <div>Filtres</div>
-                    <span 
-                        v-for="(button, i) in filterButtons" :key="i"
-                        @click="filterBy(i)" 
-                        :class="'vChipSort background ' + (button.selected ? 'selected' : '')"
-                    >
-                        {{ button.libelle }}<v-icon right v-show="button.selected">fas fa-check</v-icon>
-                    </span>
-                </div>
-
+        <div id="sortAndFiltersEvents" class="d-flex flex-column">
+            <div class="bloc">
+                <div>Classement</div>
+                <div class="d-flex align-stretch" id="selectSort">
+                    <select v-model="sortSelect" @change="sortBy" class="background">
+                        <option v-for="(item, i) in sortItemsList" :key="i" 
+                            :value="item.sortType"
+                        >{{ item.libelle }}</option>
+                    </select>
+                    <v-icon :class="['up', 'primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'">fas fa-arrow-up</v-icon>
+                    <v-icon :class="['down', 'primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'">fas fa-arrow-down</v-icon>
+                </div> 
             </div>
 
-
-            <div id="myFilters" v-if="dateRange.length > 0 || selectionVilles.length > 0 || pastEvents || mesFormations">    
-                <div>Mes filtres</div>
-                <span v-if="dateRange.length > 0" class="primaireLight fakeChip">
-                    {{ dateRangeText }} <v-icon @click="deleteDatesFromFilter">fas fa-times-circle</v-icon>
-                </span>
-                <span v-for="ville in selectionVilles" :key="ville" class="primaireLight fakeChip mr-2" >
-                    {{ ville }} <v-icon @click="deleteCityFromFilter(ville)">fas fa-times-circle</v-icon>
-                </span>
-                <span v-if="pastEvents || mesFormations" class="primaireLight fakeChip">
-                    {{ profileSpecificFilter.properties.label }} <v-icon @click="deleteProfileSpecificFilter">fas fa-times-circle</v-icon>
-                </span>
-                <v-btn @click="deleteAllFilters" class="deleteFiltersBt bt_green" x-small>Supprimer tous mes filtres</v-btn>
+            <div class="bloc" v-if="profileSpecificFilter.component != ''">
+                <component 
+                    :is="profileSpecificFilter.component" 
+                    v-bind="profileSpecificFilter.properties" 
+                    @emitFilterValue="execProfileSpecificFilter()"
+                ></component>
             </div>
 
-            <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">selectedFilters => {{ selectedFilters }}</span>
-            
+            <div class="bloc">
+                <div>Filtres</div>
+                <span 
+                    v-for="(button, i) in filterButtons" :key="i"
+                    @click="filterBy(i)" 
+                    :class="'vChipSort background ' + (button.selected ? 'selected' : '')"
+                >
+                    {{ button.libelle }}<v-icon right v-show="button.selected">fas fa-check</v-icon>
+                </span>
+            </div>
 
         </div>
-        <!-- FIN Marge gauche -->
+
+
+        <div id="myFilters" v-if="'dates' in filtersSelection && filtersSelection.dates.length > 0 || 
+            selectionVilles.length > 0 || 
+            pastEvents || 
+            mesFormations"
+        >    
+            <div>Mes filtres</div>
+            <span v-if="'dates' in filtersSelection && filtersSelection.dates.length > 0" class="primaireLight fakeChip">
+                {{ dateRangeText }} <v-icon @click="deleteDatesFromFilter">fas fa-times-circle</v-icon>
+            </span>
+            <span v-for="ville in selectionVilles" :key="ville" class="primaireLight fakeChip mr-2" >
+                {{ ville }} <v-icon @click="deleteCityFromFilter(ville)">fas fa-times-circle</v-icon>
+            </span>
+            <span v-if="pastEvents || mesFormations" class="primaireLight fakeChip">
+                {{ profileSpecificFilter.properties.label }} <v-icon @click="deleteProfileSpecificFilter">fas fa-times-circle</v-icon>
+            </span>
+            <v-btn @click="deleteAllFilters" class="deleteFiltersBt bt_green" x-small>Supprimer tous mes filtres</v-btn>
+        </div>
+
+        <!-- TEST --><!-- <span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">selectedFilters => {{ selectedFilters }}</span> -->
+        <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">Computed filtersSelection => {{ filtersSelection }}</span>
 
     </div>
+
 </template>
 
 <script>
-import datePickersAllowedDates from '@/mixins/datePickerAllowedDates';
 import formatageDate from '@/mixins/formatageDate';
 import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
 import deleteItemFromArray from '@/mixins/deleteItemFromArray';
-
-import itemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
 import filterParticipant from '@/components/participants/ListeEvenementsFilter';
 import filterAdmin from '@/components/administrateur/ListeEvenementsFilter';
 
 export default {
     mixins: [
-        datePickersAllowedDates,
         formatageDate,
         currentDate,
         dateToInt,
         deleteItemFromArray
     ],
-
-    components: { 
-        'app-itemsSelectionModal': itemsSelectionModal
-    },
 
     data() {
         return {
@@ -141,18 +95,7 @@ export default {
                 { libelle: 'villes', selected: false }
             ],
 
-            pastEvents: false,
-            mesFormations: false,
-
-            displayModalDatePickers: false,
             dateRange: [],
-            previousDateRange: [],
-
-            displayModalListeVilles: false,
-            nbMaxVilles: 3,
-            selectionVilles: [],
-
-            paramsFiltersLoaded: false
         }
     },
 
@@ -161,72 +104,45 @@ export default {
             return this.$store.getters.currentUser;
         },
 
-        // Pour affichage au dessus du date picker : Donne la tranche de dates pendant lesquelles il y a des formations programmées
-        initDateRangeText() {
-            let txt = "";
-            if(typeof this.dataFilters.dates.min != 'undefined') {
-                if(this.dataFilters.dates.min == this.dataFilters.dates.max) {
-                    txt = `Seule date sélectionnable : ${this.formatDate(this.dataFilters.dates.min)}`;
-                } else {
-                    txt = `Entre le ${this.formatDate(this.dataFilters.dates.min)} et le ${this.formatDate(this.dataFilters.dates.max)}`;
-                }
-            }
-            return txt;
-        },
-
-        // Pour attribut du date picker : Sensé sélectionné le mois quand ouvertutre du date picker, mais bug
-        pickerDate() {
-            //return "2021-05-03";
-            const minDate = this.dataFilters.dates.min;
-            const currentDate = this.getCurrentDate();
-            
-            if(currentDate < this.dateToInteger(minDate)) {
-                return minDate.substring(0, minDate.lastIndexOf("-"));
-            } else {
-                return [currentDate.slice(0, 4), "-", currentDate.slice(4, 6)].join('');
-            }
-        },
-
-        dateRangeText() {
-            let titleDatePicker = "";
-            if(this.dateRange.length == 0) {
-                titleDatePicker = "";
-            } else if(this.dateRange.length == 1) {
-                titleDatePicker = this.formatDate(this.dateRange[0]);
-            } else {
-                this.sortByDate(this.dateRange); // Classement chronologique des dates
-                titleDatePicker = `Du ${this.formatDate(this.dateRange[0])} au ${this.formatDate(this.dateRange[1])}`;
-            }
-            return titleDatePicker;
-        },
-
-
-
-        // Ajouté le 28/12/2020
         // Récupération des valeurs de classement (ordre et type)
         sortingParameters() {
             return this.$store.state.sortingParameters;
         },
+        filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection", this.$store.state.selectedFilters); //TEST
+            return this.$store.state.selectedFilters;
+        },
+        selectionVilles() {
+            let villes = this.filtersSelection.villes;
+            return typeof villes == 'undefined' ? [] : villes;
+        },
+        pastEvents() {
+            let pastEvents = this.filtersSelection.pastEvents;
+            return typeof pastEvents == 'undefined' ? false : pastEvents;
+        },
+        mesFormations() {
+            let mesFormations = this.filtersSelection.mesFormations;
+            return (typeof mesFormations == 'undefined') ? false : mesFormations;
+        },
+        dateRangeText() {   console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
+            return this.$store.state.dateRangeText;
+        },
 
-        
+        // A VIRER A TERME !! (04/01/2021)
         // Computed pour les paramètres d'initialisation des filtres 'dates' et 'villes'
         dataFilters() {
-            if(!this.paramsFiltersLoaded) { // Si évènements pas encore chargés dans le life cycle hook 'mounted'... 
-                return {}; 
-            } else { //...Sinon si chargés...
-                let paramsFiltersEvenements = this.$store.state.paramsFiltersEvenements;
-                return {
-                    villes: paramsFiltersEvenements.villes.map(v => v.toUpperCase()), 
-                    dates: {
-                        min: paramsFiltersEvenements.minDate, 
-                        max: paramsFiltersEvenements.maxDate
-                    }
+            let paramsFiltersEvenements = this.$store.state.paramsFiltersEvenements;
+            return {
+                villes: paramsFiltersEvenements.villes.map(v => v.toUpperCase()), 
+                dates: {
+                    min: paramsFiltersEvenements.minDate, 
+                    max: paramsFiltersEvenements.maxDate
                 }
             }
         },
 
+        // VOUE A DISPARAITRE AU PROFIT VAR 'slectedFilters' DANS VUEX
         // Computed qui regroupe tous les filtres sélectionnés
-        selectedFilters() {
+        /* selectedFilters() {
             let filters = {};
 
             // Quand personne loguée est un Administrateur
@@ -252,7 +168,7 @@ export default {
             }
 
             return filters;
-        },
+        }, */
 
         // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
         flagEventDeleted() {
@@ -270,19 +186,18 @@ export default {
     },
 
     watch: {
-        // Ajouté le 28/12/2020
         // Affectation des variables de classement aux variables locales
         sortingParameters(val) {
             this.sortSelect = val.type;
             this.sortDirection = val.direction;
         },
 
-
         // Déclenché à chaque changement de valeur de la variable qui conditionne sens de classement
         sortDirection() {
             this.sortBy();
         },
 
+        // A VIRER A TERME !!!!!!!!! : Code à transférer ds les composants concernés (04/01/2021)
         // Déclenché qd clic sur 'Anciennes formations'
         dataFilters(val, oldVal) {
             console.warn("WATCH => dataFilters", val, oldVal); //TEST
@@ -362,9 +277,9 @@ export default {
         filterBy(idx) {
             const button = this.filterButtons[idx];
             if(button.libelle == "dates") {
-                this.displayModalDatePickers = true
+                this.$store.commit('setDisplayModalDatePicker', true);
             } else {
-                this.displayModalListeVilles = true
+                this.$store.commit('setDisplayModalCitiesList', true);
             }
         },
 
@@ -377,92 +292,49 @@ export default {
             }
         },
 
-        // Quand validation des dates dans le date picker (pour filtre 'dates')
-        emitDateRange() {
-            this.loadEventsWithSelectedFilters(); // Pour mettre à jour affichage évènements avec nouveaux filtres
-            this.closeDatePicker();
-            this.previousDateRange = this.dateRange; // Pour gérer cas qd clic 'Annuler' sur Date picker : Permet l'affichage de la précédente période si modif sans enregistrer, puis annulation
-        },
-        cancelDatePicker() {
-            this.dateRange = this.previousDateRange;
-            this.closeDatePicker();
-        },
-        // Fermeture datePicker
-        closeDatePicker() {
-            this.displayModalDatePickers = false; 
-        },
-        formatAffichageTitleDatepicker(val) {
-            console.log(val); //TEST
-            return this.dateRangeText;
-        }, 
-        sortByDate(array) {
-            return array.sort((a, b) => {
-                return this.dateToInteger(a) - this.dateToInteger(b);
-            });
-        },
-
-        // Appelé qd clic ajout d'une ville dans modal filtre 'villes'
-        sendItems(selectionVilles) {
-            this.selectionVilles = selectionVilles;
-            this.loadEventsWithSelectedFilters(); // Pour mettre à jour affichage évènements avec nouveaux filtres
-        },
-        closeModal(val) {
-            this.displayModalListeVilles = val;
-        },
 
         deleteDatesFromFilter() {
-            this.dateRange = []; // Réinitialisation des dates saisies
-            this.loadEventsWithSelectedFilters(); // Pour mettre à jour affichage évènements avec nouveaux filtres
+            this.$store.commit('setSelectedFilters', { 'dateRange': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
+            this.$store.commit('setInitDatePickerDates', true); // Réinitialisation des dates dans le datePicker 
         },
-        deleteCityFromFilter(ville) {
-            this.selectionVilles = this.deleteItemFromArray(this.selectionVilles, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectionVilles'
-            this.loadEventsWithSelectedFilters(); // Pour mettre à jour affichage évènements avec nouveaux filtres
+        deleteCityFromFilter(ville) {  console.log("COMPOSANT Sort And Filters : Je suis ds 'deleteCityFromFilter'"); //TEST
+            const newSelectionVilles = this.deleteItemFromArray(this.selectionVilles, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectionVilles'
+            this.$store.commit('setSelectedFilters', { 'villes': newSelectionVilles }); // Envoi mise à jour de la liste des villes dans var. dans Vuex regroupant les valeurs des filtres
         },
         deleteProfileSpecificFilter() {
             const role = this.currentUser.role;
-            let obj = null;
             if(role == 'Participant') {
-                obj = { origin: "Participant", mesFormations: false };
+                this.$store.commit('setSelectedFilters', { 'mesFormations': false }); // Retrait option affichage des anciennes formations
             } else if(role == 'Admin') {
-                obj = { origin: "Administrateur", pastEvents: false };
+                this.$store.commit('setSelectedFilters', { 'pastEvents': false }); // Retrait option affichage des anciennes formations
+                this.execProfileSpecificFilter(); // VRAIMENT UTILE ????
             }
-            this.execProfileSpecificFilter(obj);
+            
         },
         
+        // VRAIMENT UTILE ????
         // Récupération des valeurs du filtre du composant enfant et exec method appropriée
-        execProfileSpecificFilter(e) {
-            if(e.origin == "Participant") {
-                this.mesFormations = e.mesFormations;
-                this.loadEventsWithSelectedFilters();
-            } else if(e.origin == "Administrateur") {
-                this.pastEvents = e.pastEvents;
-                this.updateParamsFilters();
-            }
+        execProfileSpecificFilter() {  //console.log("Dans 'execProfileSpecificFilter'"); //TEST
+            this.updateParamsFilters();
         },
         
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
-            this.dateRange = []; // Suppression du filtre des dates : Réinitialisation des dates saisies
-            this.selectionVilles = []; // Suppression du filtre des villes : Réinitialisation des villes saisies
+            this.$store.commit('setSelectedFilters', { 'dateRange': [], 'villes': [] }); // Réinitialisation des dates saisies et du filtre des villes dans var. dans Vuex regroupant les filtres la valeur des filtres
+
             const role = this.currentUser.role;
-            if(role == 'Participant' || role == 'Administrateur') {
+            if(role == 'Participant' || role == 'Admin') {
                 this.deleteProfileSpecificFilter(); // Selon type de profil logué (Administrateur ou Participant) Suppression du filtre des formations passées (visible seulement qd profil Administrateur) ou suppression du filtre les formations ou l'on est inscrit (visible seulement qd profil Participant)
-            } else {
-                this.loadEventsWithSelectedFilters();
             }
         },
 
+        // A VIRER A TERME CAR DEJA DS COMPOSANT 'ListeEvenements.vue' !!!!!
         async loadEventsWithSelectedFilters() {
             //await this.$store.dispatch('loadEvenements', { dates: ["2020-03-15"], villes: ["Nice", "Brest"] }); //TEST
-            await this.$store.dispatch('loadEvenements', this.selectedFilters); // Appel requete avec filtres sélectionnés
-            this.$emit('eventGoToFirstPage');
+            await this.$store.dispatch('loadEvenements', this.filtersSelection); // Appel requete avec filtres sélectionnés
+            this.$store.commit('setInitPagination', true);
         }
-    },
-
-    async mounted() {
-        await this.$store.dispatch('paramsFiltreEvenements'); // Récupération des données necessaires au paramétrage des filtres
-        this.paramsFiltersLoaded = true;
-    }  
+    }
 
 }
 </script>

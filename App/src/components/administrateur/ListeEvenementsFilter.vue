@@ -36,7 +36,8 @@
 
         methods: {
             emitFilterParam() {
-                this.$emit('emitFilterValue', { origin: 'Administrateur', pastEvents: this.pastTrainings });
+                this.$emit('emitFilterValue');  // VRAIMENT UTILE ????
+                this.$store.commit('setSelectedFilters', { 'pastEvents': this.pastTrainings }); // Affectation dans variable qui regroupe tous les filtres du booleen 'pastTrainings'
             }
         }
     }

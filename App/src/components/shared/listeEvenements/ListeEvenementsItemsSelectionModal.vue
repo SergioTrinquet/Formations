@@ -92,8 +92,11 @@
                 }
             }
 
-            , selectedItems(val) {
-                this.selectedCheckboxes = val;
+            // Qd apparition modal, récupération des villes sélectionnées
+            , modalDisplay(val) {
+                if(val) {
+                    this.selectedCheckboxes = this.selectedItems;
+                }
             }
         },
 
@@ -113,7 +116,7 @@
                 this.closeModal(); // Fermeture encart
             },
             closeModal() {
-                this.$emit('onCloseModal', false);
+                this.$emit('onCloseModal');
             }
         }
     }

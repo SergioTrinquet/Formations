@@ -88,9 +88,12 @@
             'app-bandeauInscription': bandeauInscription
         },
 
+        props:{
+            eventsLoaded: { required: true, type: Boolean },
+        },
+
         data() {
             return {
-                eventsLoaded: false,
                 todaysDate: null,
             }
         },
@@ -236,9 +239,6 @@
 
         async mounted() {
             this.todaysDate = this.getCurrentDate();
-            await this.$store.dispatch('loadEvenements'); // Sans payload, version par defaut qui renvoie les évènements postérieurs à la date du jour et classés par date          
-            this.eventsLoaded = true;
-            this.$emit("onEventsLoaded");
         }
     }
 </script>
