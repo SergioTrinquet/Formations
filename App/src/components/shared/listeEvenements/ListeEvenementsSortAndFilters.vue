@@ -1,11 +1,11 @@
 <template>
 
     <!-- Marge gauche -->
-    <div class="blocsMargeWrapper">
+    <div class="leftMarginWrapper">
 
         <div id="sortAndFiltersEvents" class="d-flex flex-column">
             <div class="bloc">
-                <div>Classement</div>
+                <div class="marginLegend">Classement</div>
                 <div class="d-flex align-stretch" id="selectSort">
                     <select v-model="sortSelect" @change="sortBy" class="background">
                         <option v-for="(item, i) in sortItemsList" :key="i" 
@@ -17,48 +17,52 @@
                 </div> 
             </div>
 
-            <div class="bloc" v-if="profileSpecificFilter.component != ''">
-                <component 
-                    :is="profileSpecificFilter.component" 
-                    v-bind="profileSpecificFilter.properties" 
-                    @emitFilterValue="execProfileSpecificFilter()"
-                ></component>
+            
+            <div class="bloc" v-if="currentUser.role == 'Admin'">
+                <app-displayOldTrainings></app-displayOldTrainings>
             </div>
 
-            <div class="bloc">
-                <div>Filtres</div>
-                <span 
-                    v-for="(button, i) in filterButtons" :key="i"
+            <div class="bloc" id="btFiltres">
+                <div class="marginLegend">Filtres</div>
+
+                <!-- Ajouté le 11/01/2021 -->
+                <app-participantFilter v-if="currentUser.role == 'Participant'">
+                    <template v-slot:iconLeft>
+                        <v-icon left v-show="mesFormations">fas fa-check</v-icon>
+                    </template>
+                </app-participantFilter>
+
+                <button 
+                    v-for="(filtre, i) in listeFiltres" :key="i"
                     @click="filterBy(i)" 
-                    :class="'vChipSort background ' + (button.selected ? 'selected' : '')"
+                    :class="(filtre.selected ? 'selected primaire' : 'primaireLight')"
                 >
-                    {{ button.libelle }}<v-icon right v-show="button.selected">fas fa-check</v-icon>
-                </span>
+                    <v-icon left v-show="filtre.selected">fas fa-check</v-icon>{{ filtre.libelle }}
+                </button>
+                
             </div>
 
         </div>
 
 
-        <div id="myFilters" v-if="'dates' in filtersSelection && filtersSelection.dates.length > 0 || 
-            selectionVilles.length > 0 || 
-            pastEvents || 
+        <div id="myFilters" class="background" v-if="'dates' in filtersSelection && filtersSelection.dates.length > 0 || 
+            selectedCities.length > 0 || 
             mesFormations"
         >    
-            <div>Mes filtres</div>
             <span v-if="'dates' in filtersSelection && filtersSelection.dates.length > 0" class="primaireLight fakeChip">
                 {{ dateRangeText }} <v-icon @click="deleteDatesFromFilter">fas fa-times-circle</v-icon>
             </span>
-            <span v-for="ville in selectionVilles" :key="ville" class="primaireLight fakeChip mr-2" >
+            <span v-for="ville in selectedCities" :key="ville" class="primaireLight fakeChip mr-2" >
                 {{ ville }} <v-icon @click="deleteCityFromFilter(ville)">fas fa-times-circle</v-icon>
             </span>
-            <span v-if="pastEvents || mesFormations" class="primaireLight fakeChip">
-                {{ profileSpecificFilter.properties.label }} <v-icon @click="deleteProfileSpecificFilter">fas fa-times-circle</v-icon>
+            <span v-if="mesFormations" class="primaireLight fakeChip">
+                Mes formations <v-icon @click="deleteMyTrainingsFilter">fas fa-times-circle</v-icon>
             </span>
-            <v-btn @click="deleteAllFilters" class="deleteFiltersBt bt_green" x-small>Supprimer tous mes filtres</v-btn>
+            <a @click="deleteAllFilters" class="linkDeleteFilters">Supprimer tous mes filtres</a>
         </div>
 
-        <!-- TEST --><!-- <span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">selectedFilters => {{ selectedFilters }}</span> -->
-        <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; width: 240px; font-size: 15px; line-height: 18px;">Computed filtersSelection => {{ filtersSelection }}</span>
+        <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; 
+        width: 210px; font-size: 15px; line-height: 18px;">Computed filtersSelection => {{ filtersSelection }}</span>
 
     </div>
 
@@ -69,8 +73,8 @@ import formatageDate from '@/mixins/formatageDate';
 import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
 import deleteItemFromArray from '@/mixins/deleteItemFromArray';
-import filterParticipant from '@/components/participants/ListeEvenementsFilter';
-import filterAdmin from '@/components/administrateur/ListeEvenementsFilter';
+import participantFilter from '@/components/participants/ListeEvenementsFilter';
+import displayOldTrainings from '@/components/administrateur/ListeEvenementsFilter';
 
 export default {
     mixins: [
@@ -79,6 +83,11 @@ export default {
         dateToInt,
         deleteItemFromArray
     ],
+
+    components: {
+        'app-displayOldTrainings': displayOldTrainings,
+        'app-participantFilter': participantFilter
+    },
 
     data() {
         return {
@@ -90,7 +99,7 @@ export default {
             sortSelect: "date",
             sortDirection: 'asc',
 
-            filterButtons: [
+            listeFiltres: [
                 { libelle: 'dates', selected: false },
                 { libelle: 'villes', selected: false }
             ],
@@ -103,7 +112,6 @@ export default {
         currentUser() {
             return this.$store.getters.currentUser;
         },
-
         // Récupération des valeurs de classement (ordre et type)
         sortingParameters() {
             return this.$store.state.sortingParameters;
@@ -111,7 +119,11 @@ export default {
         filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection", this.$store.state.selectedFilters); //TEST
             return this.$store.state.selectedFilters;
         },
-        selectionVilles() {
+        selectedDateRange() {   //console.log("COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
+            let dates = this.filtersSelection.dates;
+            return typeof dates == 'undefined' ? [] : dates;
+        },
+        selectedCities() {
             let villes = this.filtersSelection.villes;
             return typeof villes == 'undefined' ? [] : villes;
         },
@@ -140,47 +152,9 @@ export default {
             }
         },
 
-        // VOUE A DISPARAITRE AU PROFIT VAR 'slectedFilters' DANS VUEX
-        // Computed qui regroupe tous les filtres sélectionnés
-        /* selectedFilters() {
-            let filters = {};
-
-            // Quand personne loguée est un Administrateur
-            if(this.pastEvents) {
-                filters.pastEvents = true;
-            } else {
-                if("pastEvents" in filters) { delete filters.pastEvents; } // Vérification si key 'pastEvents' existe : Si oui, suppression de l'objet 'filters'
-            }
-
-            // Quand personne loguée est un Participant
-            if(this.mesFormations) {
-                filters.mesFormations = true;
-            } else {
-                if("mesFormations" in filters) { delete filters.mesFormations; } // Vérification si key 'mesFormations' existe : Si oui, suppression de l'objet 'filters'
-            }
-
-            // Peu importe le profil de la personne loguée
-            if(this.dateRange.length > 0) {
-                filters.dates = this.dateRange;
-            }
-            if(this.selectionVilles.length > 0) {
-                filters.villes = this.selectionVilles;
-            }
-
-            return filters;
-        }, */
-
         // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
         flagEventDeleted() {
             return this.$store.state.flagEventDeleted;
-        },
-
-        // Computed pour afficher le bon composant 'filtre' selon le profil utilisateur 
-        profileSpecificFilter() {
-            const role = this.currentUser.role;
-            return role == 'Participant' ? { component: filterParticipant, properties: { mesFormations: this.mesFormations, label: "Mes formations uniquement" } } :
-                role == 'Admin' ? { component: filterAdmin, properties: { pastEvents: this.pastEvents, label: "Anciennes formations" } } :
-                { component: '', properties: {}};
         }
 
     },
@@ -238,15 +212,15 @@ export default {
                     }
 
                     // Filtre 'villes'
-                    if(this.selectionVilles.length > 0) { // Si l'utilisateur a sélectionné une ou plusieurs villes dans les filtres...
+                    if(this.selectedCities.length > 0) { // Si l'utilisateur a sélectionné une ou plusieurs villes dans les filtres...
                         // Ici comparaison des villes entre oldVal et val pour voir différence et 
                         // isoler les intrus pour les exclure
                         if(oldVal.villes.length > val.villes.length) {
                             // On isole la/les ville(s) qui n'accueillent plus de formations suite au bt 'formations passées' désactivée
                             let villesToDelete = oldVal.villes.filter(v => val.villes.indexOf(v) === -1);
                             //console.log("villesToDelete : ", villesToDelete); //TEST
-                            this.selectionVilles = this.selectionVilles.filter(v => villesToDelete.indexOf(v) === -1);
-                            //console.log("Villes qui restent dans 'selectionVilles': ", this.selectionVilles); //TEST
+                            this.selectedCities = this.selectedCities.filter(v => villesToDelete.indexOf(v) === -1);
+                            //console.log("Villes qui restent dans 'selectedCities': ", this.selectedCities); //TEST
                             alertMsg += `\nLa suppression de l'affichage des formations passées est incompatible avec certaines villes sélectionnées pour filtrer les données : le(s) filtre(s) ${villesToDelete.join(", ")} a/ont été supprimé(s) !`
                         }
                     }
@@ -263,6 +237,25 @@ export default {
                 this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
                 this.$store.commit('setFlagEventDeleted', false);
             }
+        },
+        
+        // Pour afficher icone de suppression du filtre 'dates' + pour comptage nb de filtres actifs
+        selectedDateRange(val) {
+            const idx = this.listeFiltres.findIndex(f => f.libelle == 'dates');
+            if(val.length > 0) {
+                this.listeFiltres[idx].selected = true;
+            } else {
+                this.listeFiltres[idx].selected = false;
+            }
+        },
+        // Pour afficher croix de suppression du filtre 'villes' + pour comptage nb de filtres actifs
+        selectedCities(val) {
+            const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
+            if(val.length > 0) {
+                this.listeFiltres[idx].selected = true;
+            } else {
+                this.listeFiltres[idx].selected = false;
+            }
         }
 
     },
@@ -275,7 +268,7 @@ export default {
 
         // Quand clic sur type de filtre : Pour ouverture modal du filtre 'dates' ou 'villes'
         filterBy(idx) {
-            const button = this.filterButtons[idx];
+            const button = this.listeFiltres[idx];
             if(button.libelle == "dates") {
                 this.$store.commit('setDisplayModalDatePicker', true);
             } else {
@@ -283,7 +276,7 @@ export default {
             }
         },
 
-        // Juste pour profil Administrateur : Quand clic sur switch 'formations passées' => Appel action ds le Vuex pour récupérer les paramètres à jour pour les filtres date et villes
+        // Juste pour profil Administrateur : Quand clic sur checkbox 'formations passées' => Appel action ds le Vuex pour récupérer les paramètres à jour pour les filtres date et villes
         async updateParamsFilters() {
             if(this.pastEvents) {
                 await this.$store.dispatch('paramsFiltreEvenements', { includePastTrainings: true });
@@ -292,40 +285,26 @@ export default {
             }
         },
 
-
         deleteDatesFromFilter() {
-            this.$store.commit('setSelectedFilters', { 'dateRange': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
+            this.$store.commit('setSelectedFilters', { 'dates': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
             this.$store.commit('setInitDatePickerDates', true); // Réinitialisation des dates dans le datePicker 
         },
         deleteCityFromFilter(ville) {  console.log("COMPOSANT Sort And Filters : Je suis ds 'deleteCityFromFilter'"); //TEST
-            const newSelectionVilles = this.deleteItemFromArray(this.selectionVilles, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectionVilles'
+            const newSelectionVilles = this.deleteItemFromArray(this.selectedCities, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectedCities'
             this.$store.commit('setSelectedFilters', { 'villes': newSelectionVilles }); // Envoi mise à jour de la liste des villes dans var. dans Vuex regroupant les valeurs des filtres
         },
-        deleteProfileSpecificFilter() {
-            const role = this.currentUser.role;
-            if(role == 'Participant') {
-                this.$store.commit('setSelectedFilters', { 'mesFormations': false }); // Retrait option affichage des anciennes formations
-            } else if(role == 'Admin') {
-                this.$store.commit('setSelectedFilters', { 'pastEvents': false }); // Retrait option affichage des anciennes formations
-                this.execProfileSpecificFilter(); // VRAIMENT UTILE ????
-            }
-            
-        },
-        
-        // VRAIMENT UTILE ????
-        // Récupération des valeurs du filtre du composant enfant et exec method appropriée
-        execProfileSpecificFilter() {  //console.log("Dans 'execProfileSpecificFilter'"); //TEST
-            this.updateParamsFilters();
+        deleteMyTrainingsFilter() {
+            this.$store.commit('setSelectedFilters', { 'mesFormations': false }); // Retrait option affichage des anciennes formations
         },
         
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
-            this.$store.commit('setSelectedFilters', { 'dateRange': [], 'villes': [] }); // Réinitialisation des dates saisies et du filtre des villes dans var. dans Vuex regroupant les filtres la valeur des filtres
-
-            const role = this.currentUser.role;
-            if(role == 'Participant' || role == 'Admin') {
-                this.deleteProfileSpecificFilter(); // Selon type de profil logué (Administrateur ou Participant) Suppression du filtre des formations passées (visible seulement qd profil Administrateur) ou suppression du filtre les formations ou l'on est inscrit (visible seulement qd profil Participant)
+            let filters = { 'dates': [], 'villes': [] };
+            if(this.currentUser.role == 'Participant') {
+                filters = Object.assign({}, filters, { 'mesFormations': false });
             }
+            console.log("filters", filters); //TEST
+            this.$store.commit('setSelectedFilters', filters); // Réinitialisation des dates saisies et du filtre des villes dans var. dans Vuex regroupant les filtres la valeur des filtres
         },
 
         // A VIRER A TERME CAR DEJA DS COMPOSANT 'ListeEvenements.vue' !!!!!
@@ -340,64 +319,67 @@ export default {
 </script>
 
 <style scoped>
-    .blocsMargeWrapper {
+    .leftMarginWrapper {
         position: fixed;
         left: 0;
+        margin-top: 50px;
         /* border: solid 2px green; */
     }
-    #sortAndFiltersEvents,
-    #myFilters {
+    #sortAndFiltersEvents {
         background-color: #ffffff;
-        width: 220px;
-        /* margin: 25px 0 0 20px;
-        box-shadow: 0 0 3px rgba(0,0,0,0.3);
-        border-radius: 3px; */
-        margin: 20px 10px 0;
+        width: 210px;
     }
-    
-    #myFilters,
-    #sortAndFiltersEvents .bloc {
-        padding: 15px 10px;
+    #myFilters {
+        margin:-10px 10px 0 10px;
+        padding: 5px;
+        width: 200px;
+    }
+
+    #sortAndFiltersEvents {
+        margin: 10px 7px 0;
     }
     #sortAndFiltersEvents .bloc {
         border-bottom: dotted 1px #6d6d6d;
         color: #444444;
+        padding: 15px 10px;
     }
     #sortAndFiltersEvents .bloc:last-child {
         border-bottom-width: 0;
     }
-    #sortAndFiltersEvents .bloc,
-    .vChipSort {
+    #sortAndFiltersEvents .bloc {
         font-size: 14px;
     }
-    .vChipSort { 
+    #btFiltres button { 
         display: inline-block;
         margin: 0 8px 6px 0; 
         border-radius: 4px;
-        padding: 0 10px;
+        padding: 2px 19px;
         cursor: pointer;
-        color: #283593;
-        transition: all 0.2s ease-in-out;
+        /* transition: all 0.2s ease-in-out; */
+        transition: background-color 0.2s ease-in-out;
+        color: #fff;
+        font-size: 15px;
     }
-    .vChipSort.background { border: solid 2px #283593 !important; }
 
-    .vChipSort.selected i.fas,
-    .vChipSort:hover i.fas {
-        color: #ffffff;
+    #btFiltres button.selected {
+        position: relative;
+        padding: 2px 12px 2px 8px;
     }
-    .vChipSort.selected,
-    .vChipSort:hover {
+
+    #btFiltres button:hover {
         background-color: #283593 !important;
+    }
+    #btFiltres button.selected i.fas,
+    #btFiltres button:hover i.fas {
         color: #ffffff;
+        font-size: 11px;
+        /* position: absolute;
+        top: 5px;
+        left: 5px; */
+        left: 3px;
     }
 
-    .switch {
-        margin: 0;
-    }
     .bloc label { display: inline-block; }
-    .v-input.switch {
-        display:inline-block;
-    }
 
     #selectSort select {
         background-color: #dadada;
@@ -455,7 +437,14 @@ export default {
         color: #ffffffc4;
     }
 
-    .deleteFiltersBt {
+    .marginLegend {
         font-weight: bold;
+        color: #535b7b;
+        margin: 0 0 2px 0;
+    }
+    .linkDeleteFilters {
+        display: block;
+        text-decoration: underline;
+        font-size: 0.9em;
     }
 </style>
