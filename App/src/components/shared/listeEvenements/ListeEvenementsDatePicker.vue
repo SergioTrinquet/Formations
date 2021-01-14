@@ -117,7 +117,7 @@
             },
 
             
-             // Ajouté le 04/01/2021 : Flag pour réinitialisation des dates dans le datePicker
+             // Flag pour réinitialisation des dates dans le datePicker
             initDatePickerDates() { //console.log("initDatePickerDates", this.$store.state.initDatePickerDates); //TEST
                 return this.$store.state.initDatePickerDates;
             }
@@ -130,13 +130,15 @@
                 this.displayDatePicker = val;
             },
             
-            // Ajouté le 04/01/2021 : Appelé lors de suppression filtre 'dates' ds composant 'ListeEvenementsSortAndFilters'. Retire les dates sélectionnées dans le datePicker
+            // Appelé lors de suppression filtre 'dates' ds composant 'ListeEvenementsSortAndFilters'. Retire les dates sélectionnées dans le datePicker
             initDatePickerDates(val) {  console.log("WATCH de initDatePickerDates", val); //TEST
                 // Réinitialisation
                 if(val) {   //console.log("ON EST DEDANS !!!!"); //TEST
                     this.dateRange = [];
                     this.previousDateRange = [];
                     this.$store.commit('setInitDatePickerDates', false);
+
+                    this.$store.commit('setDateRangeText', this.dateRangeText);
                 }
             }
 
@@ -150,9 +152,9 @@
             // Quand validation des dates dans le date picker (pour filtre 'dates')
             validationDatePicker() {
                 // Affectation dans variable qui regroupe tous les filtres des nouvelles valeurs 'dates'
-                this.$store.commit('setSelectedFilters', { 'dateRange': this.dateRange });
+                this.$store.commit('setSelectedFilters', { 'dates': this.dateRange });
                 this.closeDatePicker();
-                this.previousDateRange = this.dateRange; // Pour gérer cas qd clic 'Annuler' sur Date picker : Permet l'affichage de la précédente période si modif sans enregistrer, puis annulation            
+                this.previousDateRange = this.dateRange; // Pour gérer cas qd clic 'Annuler' sur Date picker : Permet l'affichage de la précédente période si modif sans enregistrer, puis annulation
                 this.$store.commit('setDateRangeText', this.dateRangeText); // Pour partager texte dates avec autre composant "ListeEvenementsSortAndFilters"
             },
             // Qd click sur bouton 'Annuler' dans datePicker
