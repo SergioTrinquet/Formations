@@ -14,7 +14,7 @@
       floating
       disable-resize-watcher
     >
-      <v-list>
+      <!-- <v-list>
         <v-list-item-group>
         <v-subheader>Fermer<v-icon class="pl-2" v-on:click="sideNav = false">close</v-icon></v-subheader>
         <v-list-item>
@@ -28,15 +28,23 @@
         <v-list-item>AAA</v-list-item>
         <v-divider></v-divider>
          </v-list-item-group>
-      </v-list>
+      </v-list> -->
 
       <!-- <v-icon>fas fa-lock</v-icon> -->
       <div class="verticalMenu">
         <div>
-          <v-icon class="pr-2" v-on:click="sideNav = false">close</v-icon>
+          <v-icon class="mr-2" v-on:click="sideNav = false">close</v-icon>
         </div>
-        <div><a href="">BBB</a></div>
-        <div><a href="">BBB</a></div>
+
+        <div
+          v-for="(item, i) in menu"
+          v-bind:key="i" 
+        >
+          <router-link
+            :to="{ name: item.routeName }"
+          ><v-icon class="mr-2">{{ item.btMenu.icon }}</v-icon>{{ item.btMenu.intitule }}</router-link>
+        </div>
+
       </div>
 
     </v-navigation-drawer>
@@ -45,13 +53,12 @@
     <v-system-bar 
       height="30" 
       app 
-      fixed 
       color="primaireDark" 
       class="infosUser"
     >
       <div v-show="currentUser.role !== null">Bienvenue {{ currentUser.firstName + " " + currentUser.lastName | capitalizeOnEveryWords }}</div>
       <v-spacer></v-spacer>
-      <div class="userType">type utilisateur : {{ (currentUser.role == null) ? "pas identifié" : currentUser.role }}</div> 
+      <div>type utilisateur : {{ (currentUser.role == null) ? "pas identifié" : currentUser.role }}</div> 
     </v-system-bar>
 
 
@@ -61,7 +68,6 @@
       color="primaire"
       dark
       elevate-on-scroll
-      class="over"
     >
       
       <!-- Icone menu -->
@@ -80,7 +86,7 @@
         style="cursor: pointer;"
       >
         Formations
-      </router-link>
+      </router-link>    {{ currentUser.role }}
 
       <v-spacer></v-spacer>
 
@@ -93,8 +99,7 @@
         v-bind:key="i"
         :to="{ name: item.routeName }"
       >
-        <!-- <span><v-icon class="mr-2">{{ item.icon }}</v-icon>{{ item.intitule }}</span> -->
-          <span><v-icon class="mr-2">{{ item.btMenu.icon }}</v-icon>{{ item.btMenu.intitule }}</span>
+        <span><v-icon class="mr-2">{{ item.btMenu.icon }}</v-icon>{{ item.btMenu.intitule }}</span>
       </v-btn>
 
       <v-divider 
@@ -192,10 +197,16 @@ export default {
 
 <style scoped>
   .verticalMenu > div:first-child {
-    text-align: right;
+    height: 50px;
+    display: flex;
+    justify-content: end;
+  }
+  .verticalMenu > div:first-child .v-icon:hover {
+    transform: rotate(360deg);
+    transform-origin: center;
   }
   .verticalMenu > div > a {
-    padding: 10px 20px;
+    padding: 16px 20px;
     display: block;
     color: #ffffff;
     text-decoration: none;
@@ -206,23 +217,28 @@ export default {
   .verticalMenu > div > a:hover {
     background-color: rgba(255,255,255,0.1);
   }
+  .verticalMenu > div > a:first-child {
+    box-shadow: 0 1px rgba(255,255,255,0.1), 0 -1px rgba(255,255,255,0.1);
+  }
 
   .menuLabels span {
     font-size: 16px;
     letter-spacing: 0.06em;
   }
 
-  /* .over {
-    z-index: 10000 !important;
-  } */
-
   .infosUser {
     padding-left: 16px;
     padding-right: 16px;
-    /* z-index: 10001; */
   }
   .infosUser > div {
     color: #ffffff;
     font-size: 13px;
+    line-height: 11px;
   }
+
+  /* Surcharge pour .v-app-bar.v-app-bar--fixed */
+ /*  .v-app-bar.v-app-bar--fixed,
+  .infosUser {
+    z-index: 1;
+  } */
 </style>
