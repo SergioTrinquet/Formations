@@ -52,8 +52,8 @@
 
         props: [
             'modalDisplay',
-            'modalWidth',
-            'modalHeight',
+            'modalWidth',  /* Plus utile ! */
+            'modalHeight', /* Plus utile ! */
             'cssClass',
             'defaultTextNoItems',
             'listItems',
@@ -137,5 +137,14 @@
     }
     .defaultText {
         line-height: 35px;
+    }
+
+    @media screen and (max-width: 600px) {
+        .ItemsListContainer + .v-btn {
+            width: 100% !important;
+            padding: 25px 20px !important;
+            border-radius: 0;
+            margin: 4px 0 0 0;
+        }
     }
 </style>
