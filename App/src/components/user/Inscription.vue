@@ -7,8 +7,7 @@
                 col-sm-10 offset-sm-1  
                 col-md-8 offset-md-2"
             >
-                <!-- <app-errorMsg :message="msgError" v-if="msgError !== null"></app-errorMsg> -->
-               
+
                 <app-modal :display="displayModalWelcome">
                     <div>Bienvenue parmi nous {{ currentUser.firstName + " " + currentUser.lastName }}</div>
                     <v-btn @click="displayModalWelcome = !displayModalWelcome" depressed>Fermer</v-btn>
@@ -134,15 +133,12 @@ export default {
         msgHint() {
             return this.inscription.password === "" ? "6 caractères minimum, sans espaces, contenant au moins un chiffre" : "";
         },
-        /* msgError() {
-            return this.$store.state.msgError;
-        }, */
         rules() {
             return this.$store.state.inputRules;
         }
     },
     watch: {
-        // Ici, écouteur pour capter qd l'enregistrement d'un nv participant a fonctionné : Redirection vers page 'events'
+        // On capte qd l'enregistrement d'un nv participant a fonctionné : Redirection vers page 'events'
         currentUser(val) {     console.log("Passage dans le watch ds 'inscription.vue'"); //TEST
             if(val.id !== '') {
                 // Apparition msg bienvenue
@@ -156,11 +152,9 @@ export default {
     },
     methods: {
         onValidate() {
-            //console.log(document.querySelectorAll('input[type="text"]')); //TEST
             this.$refs.form.validate();
 
             if(this.valid) {
-                alert('Formulaire validé !!'); // TEST
                 // Sur saisie : Retrait espaces inutiles et on met tout en minuscules
                 const newParticipant = {
                     prenom: this.inscription.prenom.trim().toLowerCase(),
@@ -171,7 +165,7 @@ export default {
                     confirmPassword: this.inscription.confirmPassword
                 };
 
-                this.$store.dispatch('addParticipant', newParticipant); // Inscription dans Firebase
+                this.$store.dispatch('addParticipant', newParticipant); // Inscription dans Firestore
             } else {
                 alert('Erreur(s) de saisie');
             }
