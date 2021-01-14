@@ -38,7 +38,6 @@ new Vue({
   render: h => h(App),
   created() {
     store.commit('setLoading', true);
-    
     // Check si un user est déjà connecté lors de l'arrivée sur le site, 
     // et authentification de celui-ci si c'est le cas
     firebase.auth().onAuthStateChanged((user) => {
@@ -51,7 +50,5 @@ new Vue({
         store.commit('setLoading', false);
       }
     });
-    // Chargement des utilisateurs => Utile pour 'checkDoublonParticipant'
-    //this.$store.dispatch('loadUtilisateurs'); // TEST : Mis en comm. le 20/05/2020
   }
 }).$mount('#app')
