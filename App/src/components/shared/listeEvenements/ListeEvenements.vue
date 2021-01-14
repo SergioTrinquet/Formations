@@ -8,13 +8,13 @@
             @eventClose="displayModalChangeEvent = !displayModalChangeEvent"
         ></app-modifEvenement>
 
-        <!-- Modal Filtre date : Ajouté le 31/12/2020 -->
+        <!-- Modal Filtre date -->
         <app-datePicker  
             v-if="paramsFiltersLoaded == true"
             :displayDP="displayModalDatePicker"
         ></app-datePicker>
 
-        <!-- Modal Filtre villes : Ajouté le 04/01/2021 -->
+        <!-- Modal Filtre villes -->
         <app-listOfCities 
             v-if="paramsFiltersLoaded == true"
             :displayCL="displayModalCitiesList"
@@ -66,10 +66,9 @@ export default {
         'app-sortAndFilters': sortAndFilters,
         'app-modifEvenement': modifEvenement,
         'app-encartsFormations': encartsFormations,
-        'app-datePicker': datePicker, // Ajouté le 31/12/2020
-        'app-listOfCities': listOfCities // Ajouté le 04/01/2021
+        'app-datePicker': datePicker,
+        'app-listOfCities': listOfCities
     },
-
 
     data() {
         return {
@@ -80,21 +79,18 @@ export default {
         }
     },
 
-
     computed: {
         eventToModify() {
             return this.$store.state.eventToModify;
-        }
-
-        // Ajouté le 31/12/2020
-        , displayModalDatePicker() {
+        },
+        displayModalDatePicker() {
             return this.$store.state.displayModalDatePicker;
         },
         displayModalCitiesList() {
             return this.$store.state.displayModalCitiesList;
         },
         // Ajouté le 04/01/2021
-        filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection dans ''", this.$store.state.selectedFilters); //TEST
+        filtersSelection() {    console.warn(">>>>>> COMPUTED filtersSelection dans ''", this.$store.state.selectedFilters); //TEST
             return this.$store.state.selectedFilters;
         },
 
@@ -122,8 +118,6 @@ export default {
     // FIN Ajouté le 04/01/2021
 
 
-
-
     // Ajouté le 04/01/2021
     async mounted() {
         await this.$store.dispatch('paramsFiltreEvenements'); // Récupération des données necessaires au paramétrage des filtres
@@ -140,6 +134,6 @@ export default {
 <style scoped>
     .margeTriEtFiltres {
         background-color: #ffffff;
-        min-width: 250px;
+        min-width: 240px;
     }
 </style>
