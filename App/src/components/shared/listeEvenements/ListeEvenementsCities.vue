@@ -3,16 +3,14 @@
     <!-- Encart filtre villes -->
     <app-itemsSelectionModal 
         :modalDisplay="displayModalListeVilles"
-        @onCloseModal="closeModal()"
-        modalWidth="100vw" 
-        modalHeight="50vh"
-        cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
+        @onCloseModal="closeModal()" 
+        cssClass="modalCitiesSize   col-xs-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
         @onSendItems="sendItems($event)"
         defaultTextNoItems="- Aucune ville sélectionnée -"
         :listItems="listeVillesComplete"
         :nbMaxItems="nbMaxVilles"
         :textError="'Pas plus de ' + nbMaxVilles + ' villes svp'"
-        :selectedItems="villesSelection"
+        :selectedItems="selectedCities"
     ></app-itemsSelectionModal>
 
 </template>
@@ -57,12 +55,11 @@
                 return this.$store.state.paramsFiltersEvenements.villes.map(v => v.toUpperCase());
             },
 
-            // Ajouté le 05/01/2021
-            villesSelection() { console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'villesSelection'", this.$store.state.selectedFilters.villes); //TEST
+            
+            selectedCities() { console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
                 let villes = this.$store.state.selectedFilters.villes;
                 return typeof villes == 'undefined' ? [] : villes;
-            },
-            // FIN Ajout le 05/01/2021
+            }
         },
 
         watch: {
@@ -80,14 +77,8 @@
             },
             closeModal() {
                 this.$store.commit('setDisplayModalCitiesList', false);
-            },
+            }
 
-
-            // A CENTRALISER QUELQUE PART DANS UN COMPOSANT PARENT CAR SE TROUVE DANS PLUSIEURS COMPOSANTS
-            /* async loadEventsWithSelectedFilters() {
-                await this.$store.dispatch('loadEvenements', this.filtersSelection); // Appel requete avec filtres sélectionnés
-                this.$store.commit('setInitPagination', true); // Retour 1ere page 
-            } */
         }
 
 
@@ -95,5 +86,17 @@
 </script>
 
 <style>
-
+    .modalCitiesSize { 
+        height: 50vh;
+        width: 100vw;
+    }
+    @media screen and (max-width: 600px) {
+        .modalCitiesSize { 
+            position: fixed !important;
+            top: 20px;
+            left: 20px;
+            height: calc(100vh - 40px); 
+            width: calc(100vw - 40px);
+        }
+    }
 </style>
