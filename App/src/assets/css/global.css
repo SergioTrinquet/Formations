@@ -79,3 +79,9 @@ body .tooltip {
 .iconCloseModal.white.modalError:hover {
     color: #ff5252;
 }
+
+/* Surcharge */
+.v-app-bar.v-app-bar--fixed,
+.v-system-bar--fixed {
+    z-index: 1;
+}
