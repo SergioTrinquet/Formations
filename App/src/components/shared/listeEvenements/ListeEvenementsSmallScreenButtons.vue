@@ -2,54 +2,94 @@
     <div class="flex-wrapper justify-center">
 
         <v-overlay :value="displayModalTypeClassements" opacity="0.75">
-        
             <div class="modal">
-                <div class="header primaire">Classement</div>
+                <div class="header primaire">CLASSEMENT</div>
                 <v-icon class="close" @click="displayModalTypeClassements = false">fas fa-times</v-icon>   
-                <div class="orderButtons">
-                    <button :class="['primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'">Par ordre<br />croissant</button>
-                    <button :class="['primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'">Par ordre<br />décroissant</button>
+                <!-- TEST : A VIRER !!!-->
+                <div style="position: absolute; margin-top:100px;">
+                    <div>sortDirection => {{ sortDirection }}</div>
+                    <div>
+                        sortSelect => {{ sortSelect }}
+                        sortingParameters => {{ sortingParameters }}
+                    </div>
                 </div>
-                sortDirection => {{ sortDirection }} <!-- TEST -->
-                <div v-for="(item, i) in sortItemsList" :key="i"  class="radioButtons">
-                    <label><input type="radio" :value="item.sortType" v-model="sortSelect" />{{ item.libelle }}</label>
+                <!-- FIN TEST : A VIRER !!!-->
+                <div class="directionOrderButtons">
+                    <button :class="['primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'"><v-icon v-if="sortDirection == 'asc'">fas fa-check-circle</v-icon>Par ordre<br />croissant</button>
+                    <button :class="['primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'"><v-icon v-if="sortDirection == 'desc'">fas fa-check-circle</v-icon>Par ordre<br />décroissant</button>
                 </div>
-                sortSelect => {{ sortSelect }} <!-- TEST -->
-                sortingParameters => {{ sortingParameters }} <!-- TEST -->
+                <div v-for="item in sortItemsList" :key="item.sortType" class="typeOrderButtons">
+                    <button :class="(sortSelect == item.sortType ? 'primaire' : 'primaireLight')" :value="item.sortType" @click="getTypeOrder" >
+                        <v-icon v-if="sortSelect == item.sortType">fas fa-check-circle</v-icon>
+                        {{ item.libelle }}
+                    </button>
+                </div>
                 <v-btn class="bt_green modalSmallDevice" depressed @click="sortBy">Valider</v-btn>
             </div>
+        </v-overlay>
 
+
+        <v-overlay :value="displayModalTypeFilters" opacity="0.75">
+            <div class="modal">
+                <div class="header primaire">FILTRES</div>
+                <v-icon class="close" @click="displayModalTypeFilters = false">fas fa-times</v-icon>   
+                <!-- <div>listeFiltres: {{ listeFiltres }}</div> --><!-- TEST -->
+                <!-- <div>indicateurNbFiltres: {{ indicateurNbFiltres }}</div> --><!-- TEST -->
+
+                <div class="blocFilterButtons">
+                    <div class="chbxOldTrainingsWrapper" v-if="currentUser.role == 'Admin'">
+                        <app-displayOldTrainings></app-displayOldTrainings>
+                    </div>
+                    <div class="typeFilterButtons" v-if="currentUser.role == 'Participant'">
+                        <app-participantFilter>
+                            <template v-slot:iconRight>
+                                <v-icon v-if="mesFormations">fas fa-times-circle</v-icon>
+                            </template>
+                        </app-participantFilter>
+                    </div>
+                    <div v-for="(filtre, i) in listeFiltres" :key="i" class="typeFilterButtons">
+                        <v-icon v-if="filtre.selected == true" @click="deleteFilter(filtre.libelle)">fas fa-times-circle</v-icon>
+                        <button :class="(filtre.selected == true? 'primaire' : 'primaireLight')" @click="filterBy(i)" >
+                            par {{ filtre.libelle }}
+                        </button>
+                        <div v-if="filtre.libelle == 'dates'" class="txtSelection">{{ dateRangeText }}</div>
+                        <div v-if="filtre.libelle == 'villes'" class="txtSelection">{{ selectedCities.join(", ") }}</div>
+                    </div>  
+                </div>
+            </div>
         </v-overlay>
 
 
         <div class="flex-item">
-            <v-btn class="bt primaireLighter first" depressed @click="displayModalTypeClassements = true">Classement</v-btn>
+            <v-btn class="bt primaireLighter first" depressed @click="displayModalTypeClassements = true">
+                Classement
+            </v-btn>
         </div>
+
         <div class="flex-item">
-            <div class="overlay" :class="{display: displayTypeFilters}"></div>
-            <v-btn class="bt primaireLighter" depressed @click="displayTypeFilters = !displayTypeFilters">Filtres</v-btn>
-            <v-card class="blocListeFiltres primaireLighter" :class="{display: displayTypeFilters}">
-                <ul>
-                    <li v-for="(filtre, i) in listeFiltres" :key="filtre" 
-                        @click="filterBy(i)"
-                    >
-                        {{ filtre.libelle }}
-                    </li>
-                </ul>
-            </v-card>
+            <v-btn class="bt primaireLighter" depressed @click="displayModalTypeFilters = true">
+                Filtres
+                <span class="indicateurNbFiltres" v-if="indicateurNbFiltres > 0">{{ indicateurNbFiltres }}</span>
+            </v-btn>
         </div>
+
     </div>
 </template>
 
 <script>
+    import participantFilter from '@/components/participants/ListeEvenementsFilter';
+    import displayOldTrainings from '@/components/administrateur/ListeEvenementsFilter';
+
     export default {
+        components: {
+            'app-displayOldTrainings': displayOldTrainings,
+            'app-participantFilter': participantFilter
+        },
+
         data() {
             return {
                 displayModalTypeClassements: false,
-                displayTypeFilters: false,
-
-                displayModalDatePickers: false,
-                displayModalListeVilles: false,
+                displayModalTypeFilters: false,
 
                 // Existe aussi dans le 'ListeEvenementsSortAndFilters', donc à metter dans les 2 cas dans le state du Vuex 
                 // et l'appeler ensuite dans un Computed
@@ -62,9 +102,9 @@
                 sortDirection: "asc",
 
                 listeFiltres: [
-                { libelle: 'dates', selected: false },
-                { libelle: 'villes', selected: false }
-            ],
+                    { libelle: 'dates', selected: false },
+                    { libelle: 'villes', selected: false }
+                ]
             }
         },
 
@@ -76,7 +116,45 @@
             // Récupération des valeurs de classement (ordre et type)
             sortingParameters() {
                 return this.$store.state.sortingParameters;
+            },
+
+            /* selectedFilters() { console.log("selectedFilters", this.$store.state.selectedFilters); //TEST
+                return this.$store.state.selectedFilters;
+            }  */
+            // Récupération des dates sélectionnées dans le datepicker (s'il y en a)
+            selectedDateRange() {   //console.log("COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
+                let dates = this.$store.state.selectedFilters.dates;
+                return typeof dates == 'undefined' ? [] : dates;
+            },
+            // Récupération des villes sélectionnées (s'il y en a)
+            selectedCities() {      //console.log("COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
+                let villes = this.$store.state.selectedFilters.villes;
+                return typeof villes == 'undefined' ? [] : villes;
+            },
+            pastEvents() {
+                let pastEvents = this.$store.state.selectedFilters.pastEvents;
+                return typeof pastEvents == 'undefined' ? false : pastEvents;
+            },
+            mesFormations() {
+                let mesFormations = this.$store.state.selectedFilters.mesFormations;
+                return (typeof mesFormations == 'undefined') ? false : mesFormations;
+            },
+
+            // Pour avoir sélection de(s) date(s) sous forme de texte
+            dateRangeText() {
+                return this.$store.state.dateRangeText;
+            },
+
+            // Pour afficher nb de filtres
+            indicateurNbFiltres() {
+                let nbFiltresActifs = 0;
+                if(this.selectedDateRange.length > 0) { nbFiltresActifs++ }
+                if(this.selectedCities.length > 0) { nbFiltresActifs++ }
+                if(this.pastEvents) { nbFiltresActifs++ }
+                if(this.mesFormations) { nbFiltresActifs++ }
+                return nbFiltresActifs;
             }
+
         },
 
         watch: {
@@ -84,17 +162,35 @@
             sortingParameters(val) {
                 this.sortSelect = val.type;
                 this.sortDirection = val.direction;
+            },
+
+            /* selectedFilters(val) {
+                //console.log("WATCH de selectedFilters", val); //TEST
+                if("dates" in val) {
+                    // FAIRE APPARAITRE Rond avec coche sur filtre 'dates' et rond avec incrementation sur intitulé bt 'Filtres'
+                }
+            } */
+            // Pour afficher icone de suppression du filtre 'dates' + pour comptage nb de filtres actifs
+            selectedDateRange(val) {
+                const idx = this.listeFiltres.findIndex(f => f.libelle == 'dates');
+                this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
+            },
+            // Pour afficher croix de suppression du filtre 'villes'
+            selectedCities(val) {
+                const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
+                this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
             }
+
         },
 
         methods: {
             // Quand clic sur type de filtre : Pour ouverture modal du filtre 'dates' ou 'villes'
             filterBy(idx) {
-                const chip = this.listeFiltres[idx];
-                if(chip.libelle == "dates") {
-                    this.displayModalDatePickers = true
+                const button = this.listeFiltres[idx];
+                if(button.libelle == "dates") {
+                    this.$store.commit('setDisplayModalDatePicker', true);
                 } else {
-                    this.displayModalListeVilles = true
+                    this.$store.commit('setDisplayModalCitiesList', true);
                 }
             },
 
@@ -103,6 +199,32 @@
                 this.$store.commit('setSortingParameters', { type: this.sortSelect, direction: this.sortDirection });
                 this.displayModalTypeClassements = false;
             },
+
+            // EN COURS : 08/01/2021
+            deleteFilter(libelleFiltre) {
+                let payload = {};
+                payload[libelleFiltre] = [];
+                   //console.log("EN COURS", libelleFiltre, "payload =>", payload); //TEST
+                // Affectation dans variable du state ds Vuex qui regroupe ttes les valeurs des filtres
+                this.$store.commit('setSelectedFilters', payload);
+
+                if(libelleFiltre == 'dates') {
+                    this.$store.commit('setInitDatePickerDates', true); // Réinitialisation des dates dans le datePicker
+                }
+            }
+
+            , getTypeOrder(e) {
+                this.sortSelect = e.target.value;
+            }
+        },
+
+        mounted() {
+            /* // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
+            window.addEventListener('click', (e) => {
+                if(e.target.classList.contains("overlay")) {
+                    this.displayTypeFilters = false;
+                }
+            }) */
         }
     }
 </script>
@@ -130,10 +252,10 @@
         background-color: rgba(255, 255, 255, 0.9);
         color: #494949;
         position: fixed;
-        top: 10px;
-        left: 10px;
-        width: calc(100vw - 20px);
-        height: calc(100vh - 20px);
+        top: 20px;
+        left: 20px;
+        width: calc(100vw - 40px);
+        height: calc(100vh - 40px);
         z-index: 5;
         box-sizing: border-box;
         padding: 5px;
@@ -142,8 +264,8 @@
     }
     .header {
         color: #fff;
-        font-size: 1.5em;
-        padding: 10px 15px;
+        font-size: 1.2em;
+        padding: 13px 15px;
     }
     .v-icon.close {
         font-size: 1.5em;
@@ -152,27 +274,88 @@
         position: fixed;
     }
 
-    .orderButtons {
+    .directionOrderButtons {
         display: flex;
         justify-content: center;
         margin-top: auto;
+        margin-bottom: 30px;
     }
-    .orderButtons button {
-        padding: 10px;
-        color: #fff;
+    .directionOrderButtons button {
+        padding: 11px;
         font-size: 1em;
         line-height: 0.9em;
         width: 40%;
     }
-    .orderButtons button:first-child {
-        border-radius: 4px 0 0 4px;
+    .directionOrderButtons button:first-child {
+        /* border-radius: 4px 0 0 4px; */
+        border-radius: 50px 0 0 50px;
         box-shadow: -1px 0 0 #fff inset;
     }
-    .orderButtons button:last-child {
-        border-radius: 0 4px 4px 0;
+    .directionOrderButtons button:last-child {
+        /* border-radius: 0 4px 4px 0; */
+        border-radius: 0 50px 50px 0;
     }
-    .orderButtons .lighter { 
+    .directionOrderButtons .lighter { 
         opacity: 0.75;
+    }
+
+    .blocFilterButtons {
+        margin: auto 0;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+    }
+    .typeFilterButtons {
+        position: relative;
+    }
+
+    .directionOrderButtons button,
+    .typeFilterButtons button:not(.v-icon),
+    .typeOrderButtons button {
+        position: relative;
+        color: #fff;
+        transition: all 0.3s ease-in-out;
+    }
+    .directionOrderButtons button:hover,
+    .typeFilterButtons button:not(.v-icon):hover,
+    .typeOrderButtons button:hover {
+        background-color: #3949ab !important;
+    }
+    
+    .typeFilterButtons button:not(.v-icon),
+    .typeOrderButtons button {
+        display: block;
+        padding: 12px;
+        border-radius: 50px;
+        width: 80%;
+        font-size: 1.2em;
+    }
+    .typeFilterButtons button:not(.v-icon),
+    .chbxOldTrainingsWrapper { 
+        margin: 30px 10%;
+    }
+    .typeOrderButtons button {
+        margin: 11px 10%;
+    }
+    .directionOrderButtons button i.v-icon,
+    .typeOrderButtons button i.v-icon {
+        position: absolute;
+        font-size: 4vw;
+        top: calc(50% - 2vw);
+        left: 7%;
+    }
+
+    .typeFilterButtons button.v-icon,
+    .typeFilterButtons button .v-icon {
+        position: absolute;
+        z-index: 1;
+        right: 14%;
+        top: 50%;
+        transform: translate(0, -50%);
+    }
+    .typeFilterButtons button .v-icon {
+        right: 4%;
+        pointer-events: none;
     }
 
     .modalSmallDevice {
@@ -182,58 +365,41 @@
         border-radius: 0;
     }
 
-    .radioButtons {
-        font-size: 1.2em; 
-        text-align: center;
-    }
-    .radioButtons label {
-        width: 100%;
+    .indicateurNbFiltres {
+        border-radius: 50%;
+        background-color: #fff;
+        font-size: 11px;
         display: inline-block;
-        border-bottom: dotted 1px #4e4e4e;
-        padding: 10px;
-    }
-    .radioButtons input[type="radio"] {
-        margin-right: 10px;
-    }
-
-    .blocListeFiltres {
-        display: none;
-        color: #fff;
-        border-radius: 0 !important;
-    }
-    .blocListeFiltres.display {
-        display: block;
+        font-weight: bold;
+        color: #3949ab;
+        margin: 0 0 0 7px;
+        width: 18px;
     }
 
-    .blocListeFiltres ul {
-        list-style: none;
-        padding: 0;
-    }
-    .blocListeFiltres li {
+    .txtSelection {
+        position: absolute;
+        width: 80%;
+        margin: -24px 0 0 10%;
+        font-weight: bold;
+        font-size: 0.9em;
+        line-height: 0.9em;
         text-align: center;
-        padding: 15px 20px;
-        font-size: 1.1em;
-        cursor: pointer;
-    }
-    .blocListeFiltres li:hover {
-        background-color: #6576ce;
-    }
-    .blocListeFiltres li:first-child {
-        border-top: dotted 1px #fff;
-        border-bottom: dotted 1px #fff; 
+        font-style: italic;
+        color: #909090;
     }
 
-    .overlay {
-        position: fixed; 
-        width:100%; 
-        height:0%; 
-        top:0; 
-        left:0; 
-        background-color: rgba(0,0,0,0.75); 
-        display:none;
-    }
-    .overlay.display {
-        display:block !important;
-        height: 100% !important;
+    .chbxOldTrainingsWrapper {
+        display: block;
+        padding: 14px 14px 14px 20px;
+        border-radius: 4px;
+        border-radius: 50px;
+        width: 80%;
+        /* font-size: 1.2em; */   
+        font-size: 4.2vw !important;
+        justify-content: center;
+        border: solid 3px #3949ab;
+        color: #3949ab;
+
+        position: relative;
     }
 </style>
