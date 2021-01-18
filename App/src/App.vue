@@ -74,19 +74,12 @@
       <div class="d-sm-none">
         <v-icon class="mr-1" v-on:click="sideNav = !sideNav">menu</v-icon>
         <v-divider
-          class="mx-4"
+          class="mx-2"
           vertical
         ></v-divider>
       </div>
 
-      <router-link 
-        tag="div" 
-        :to="direction" 
-        class="white--text title" 
-        style="cursor: pointer;"
-      >
-        Formations
-      </router-link>    {{ currentUser.role }}
+      <div class="white--text title">Formations</div>
 
       <v-spacer></v-spacer>
 
@@ -157,10 +150,6 @@ export default {
     },
     currentUser() {
       return this.$store.getters.currentUser;
-    },
-    // ICI: A REFAIRE !!!!! : S'INSPIRER DU CODE DS LE WATCH (CURRENTUSER) 
-    direction() {
-      return (this.currentUser.role == "Participant" ? "events" : "/");
     },
 
     // TEST
