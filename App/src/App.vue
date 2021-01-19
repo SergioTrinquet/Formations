@@ -5,8 +5,10 @@
     <app-loading :loading="loading"></app-loading><!-- Loader général -->
     <app-errorMsg :message="msgError"></app-errorMsg><!-- Encart d'erreur général -->
 
+
     <!-- Menu marge gauche -->
     <v-navigation-drawer 
+      v-if="displayMenu"
       class="d-sm"
       v-model="sideNav"
       dark
@@ -14,23 +16,6 @@
       floating
       disable-resize-watcher
     >
-      <!-- <v-list>
-        <v-list-item-group>
-        <v-subheader>Fermer<v-icon class="pl-2" v-on:click="sideNav = false">close</v-icon></v-subheader>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title>AAA</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider></v-divider>
-        <v-list-item>AAA</v-list-item>
-        <v-divider></v-divider>
-        <v-list-item>AAA</v-list-item>
-        <v-divider></v-divider>
-         </v-list-item-group>
-      </v-list> -->
-
-      <!-- <v-icon>fas fa-lock</v-icon> -->
       <div class="verticalMenu">
         <div>
           <v-icon class="mr-2" v-on:click="sideNav = false">close</v-icon>
@@ -44,9 +29,7 @@
             :to="{ name: item.routeName }"
           ><v-icon class="mr-2">{{ item.btMenu.icon }}</v-icon>{{ item.btMenu.intitule }}</router-link>
         </div>
-
       </div>
-
     </v-navigation-drawer>
 
     <!-- 1ere ligne Header -->
@@ -71,15 +54,18 @@
     >
       
       <!-- Icone menu -->
-      <div class="d-sm-none">
-        <v-icon class="mr-1" v-on:click="sideNav = !sideNav">menu</v-icon>
+      <div class="d-sm-none" v-if="displayMenu">
+        <v-icon 
+          class="mr-1" 
+          v-on:click="sideNav = !sideNav"
+        >menu</v-icon>
         <v-divider
           class="mx-2"
           vertical
         ></v-divider>
       </div>
 
-      <div class="white--text title">Formations</div>
+      <div class="white--text title">Formations</div>   <!-- displayMenu => {{ displayMenu }} -->
 
       <v-spacer></v-spacer>
 
@@ -132,7 +118,8 @@ export default {
   filters: { capitalizeOnEveryWords },
 
   data: () => ({
-    sideNav: false
+    sideNav: false,
+    displayMenu: false
   }),
 
   computed: {
@@ -148,8 +135,11 @@ export default {
     pageRedirection() {
       return this.$store.getters.pageRedirection;
     },
-    currentUser() {
-      return this.$store.getters.currentUser;
+    currentUser() {   //console.warn("computed : currentUser => ", this.$store.getters.currentUser); //TEST
+      const currentUser = this.$store.getters.currentUser;
+      this.redirection(currentUser);
+      this.displayVerticalMenu(currentUser);
+      return currentUser;
     },
 
     // TEST
@@ -160,23 +150,41 @@ export default {
 
   },
 
-  watch: {
-    currentUser(val) { console.warn("watch : currentUser => ", val); //TEST
-      // Redirection vers la bonne page en fonction du profil de la personne loguée :
-      // Si déconnexion ou bien pas encore logué => Redirection vers pg d'accueil,
-      // Si utilisateur logué en tant que Participant ou bien Animateur => Redirection vers pg de liste des formations
-      let pr = null;
-      pr = this.pageRedirection.find(pr => pr.roles.includes(val.role));
-      if(typeof pr !== "undefined" && pr.routeName !== '') {
-        this.$router.push({ name: pr.routeName });
-      }
-    }
-  },
 
   methods: {
+    // Redirection vers la bonne page en fonction du profil de la personne loguée :
+    // Si déconnexion ou bien pas encore logué => Redirection vers pg d'accueil,
+    // Si utilisateur logué en tant que Participant ou bien Animateur => Redirection vers pg de liste des formations
+    redirection(currentUser) {
+        let pr = null;
+        pr = this.pageRedirection.find(pr => pr.roles.includes(currentUser.role));
+        if(typeof pr !== "undefined" && pr.routeName !== '') {
+          // Passe dans le 'catch' qd même route est pushé une 2eme fois de suite: 
+          // Seul moyen d'éviter de soulever un log d'erreur est de faire un catch vide
+          this.$router.push({ name: pr.routeName }).catch(() => {});
+        }
+    },
+
+    // Affichage ou non menu hamburger et menu vertical
+    displayVerticalMenu(currentUser) {
+      const rolesWithMenu = this.$store.state.pages
+                              .filter(p => 'btMenu' in p)
+                              .map(p => p.roles);
+      let flag = false;
+      for(const roles of rolesWithMenu) {
+        if(roles.includes(currentUser.role)) {
+          flag = true;
+          break;
+        }
+      }
+      this.displayMenu = flag;
+    },
+
     signOut() {
       this.$store.dispatch('signOut');
     },
+
+
 
     CallStateFF_currentUser() { this.$store.dispatch('FF_currentUser'); } // TEST
   }
@@ -224,10 +232,4 @@ export default {
     font-size: 13px;
     line-height: 11px;
   }
-
-  /* Surcharge pour .v-app-bar.v-app-bar--fixed */
- /*  .v-app-bar.v-app-bar--fixed,
-  .infosUser {
-    z-index: 1;
-  } */
 </style>
