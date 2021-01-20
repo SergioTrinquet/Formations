@@ -87,7 +87,7 @@
                         </v-card-text>
                         <v-divider></v-divider>
                         <v-card-actions>
-                            <div class="mx-auto my-1">    <!-- {{ valid }} -->
+                            <div class="mx-auto my-1">
                                 <v-btn v-on:click="onValidate" :disabled="!valid" class="mr-5 validate"><v-icon class="mr-2">fas fa-check</v-icon>Enregistrer</v-btn>
                                 <v-btn v-on:click="onReset" class="reinit"><v-icon class="mr-2">fas fa-times</v-icon>Réinitialiser</v-btn>
                             </div>

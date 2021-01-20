@@ -110,11 +110,9 @@
             }
         }
 
-        // Ajouté le 17/01/2021
         , mounted() {
             this.selectedCheckboxes = this.selectedItems;
         }
-        // FIN Ajouté le 17/01/2021
 
     }
 </script>
