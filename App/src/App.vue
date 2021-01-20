@@ -65,7 +65,7 @@
         ></v-divider>
       </div>
 
-      <div class="white--text title">Formations</div>   <!-- displayMenu => {{ displayMenu }} -->
+      <div class="white--text title">Formations</div>
 
       <v-spacer></v-spacer>
 
@@ -119,7 +119,7 @@ export default {
 
   data: () => ({
     sideNav: false,
-    displayMenu: false
+    //displayMenu: false
   }),
 
   computed: {
@@ -138,8 +138,22 @@ export default {
     currentUser() {   //console.warn("computed : currentUser => ", this.$store.getters.currentUser); //TEST
       const currentUser = this.$store.getters.currentUser;
       this.redirection(currentUser);
-      this.displayVerticalMenu(currentUser);
       return currentUser;
+    },
+
+    // Affichage ou non menu hamburger avec navigation verticale
+    displayMenu() {
+      const rolesWithMenu = this.$store.state.pages
+                              .filter(p => 'btMenu' in p)
+                              .map(p => p.roles);
+      let display = false;
+      for(const roles of rolesWithMenu) {
+        if(roles.includes(this.currentUser.role)) {
+          display = true;
+          break;
+        }
+      }
+      return display;
     },
 
     // TEST
@@ -163,21 +177,6 @@ export default {
           // Seul moyen d'éviter de soulever un log d'erreur est de faire un catch vide
           this.$router.push({ name: pr.routeName }).catch(() => {});
         }
-    },
-
-    // Affichage ou non menu hamburger et menu vertical
-    displayVerticalMenu(currentUser) {
-      const rolesWithMenu = this.$store.state.pages
-                              .filter(p => 'btMenu' in p)
-                              .map(p => p.roles);
-      let flag = false;
-      for(const roles of rolesWithMenu) {
-        if(roles.includes(currentUser.role)) {
-          flag = true;
-          break;
-        }
-      }
-      this.displayMenu = flag;
     },
 
     signOut() {
