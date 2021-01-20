@@ -6,13 +6,13 @@
                 <div class="header primaire">CLASSEMENT</div>
                 <v-icon class="close" @click="displayModalTypeClassements = false">fas fa-times</v-icon>   
                 <!-- TEST : A VIRER !!!-->
-                <div style="position: absolute; margin-top:100px;">
+                <!-- <div style="position: absolute; margin-top:100px;">
                     <div>sortDirection => {{ sortDirection }}</div>
                     <div>
                         sortSelect => {{ sortSelect }}
                         sortingParameters => {{ sortingParameters }}
                     </div>
-                </div>
+                </div> -->
                 <!-- FIN TEST : A VIRER !!!-->
                 <div class="directionOrderButtons">
                     <button :class="['primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'"><v-icon v-if="sortDirection == 'asc'">fas fa-check-circle</v-icon>Par ordre<br />croissant</button>
@@ -78,7 +78,7 @@
 
 <script>
     import participantFilter from '@/components/participants/ListeEvenementsFilter';
-    import displayOldTrainings from '@/components/administrateur/ListeEvenementsFilter';
+    import displayOldTrainings from '@/components/administrateur/ListeEvenementsOption';
 
     export default {
         components: {
@@ -218,14 +218,14 @@
             }
         },
 
-        mounted() {
-            /* // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
+        /* mounted() {
+            // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
             window.addEventListener('click', (e) => {
                 if(e.target.classList.contains("overlay")) {
                     this.displayTypeFilters = false;
                 }
-            }) */
-        }
+            })
+        } */
     }
 </script>
 
