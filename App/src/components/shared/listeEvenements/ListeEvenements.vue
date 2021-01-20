@@ -3,41 +3,35 @@
 
         <!-- Modal pour modification d'un évènement (exclusivement avec profil administrateur) -->
         <app-modifEvenement 
-            :displayModalChangeEvent="displayModalChangeEvent"
-            :theEvent="eventToModify" 
+            v-if="displayModalChangeEvent"
             @eventClose="displayModalChangeEvent = !displayModalChangeEvent"
+            :theEvent="eventToModify" 
         ></app-modifEvenement>
 
         <!-- Modal Filtre date -->
-        <app-datePicker  
-            v-if="paramsFiltersLoaded == true"
-            :displayDP="displayModalDatePicker"
-        ></app-datePicker>
+        <app-datePicker v-if="paramsFiltersLoaded && displayModalDatePicker"></app-datePicker>
 
         <!-- Modal Filtre villes -->
-        <app-listOfCities 
-            v-if="paramsFiltersLoaded == true"
-            :displayCL="displayModalCitiesList"
-        ></app-listOfCities>
+        <app-listOfCities v-if="paramsFiltersLoaded && displayModalCitiesList"></app-listOfCities>
 
         <!-- Subheader -->
-        <app-header 
-            v-if="eventsLoaded == true"
-        ></app-header>
+        <app-header v-if="eventsLoaded"></app-header>
 
 
         <v-row>
             <v-col cols="2" class="pa-0 hidden-xs-only margeTriEtFiltres">
             
                 <!-- Marge filtres -->
-                <app-sortAndFilters  v-if="paramsFiltersLoaded == true"></app-sortAndFilters>
+                <app-marginSortAndFilters  v-if="paramsFiltersLoaded && loadComponent"></app-marginSortAndFilters>
 
             </v-col>
             <v-col class="pa-0">
                 <v-row class="ma-0">
 
-                    <v-col class="col-12 offset-0 col-sm-10 offset-sm-1 col-lg-8 offset-lg-2">
-
+                    <v-col class="col-12 offset-0 col-sm-10 offset-sm-1 col-lg-8 offset-lg-2"> 
+                        
+                        <!-- <div style="background-color: yellow; position: fixed; z-index: 10; top: 50%; left: 50%;">loadComponent: {{ loadComponent }}</div> -->
+                        
                         <!-- Encarts descriptifs des formations -->
                         <app-encartsFormations :eventsLoaded="eventsLoaded"></app-encartsFormations>
                 
@@ -52,18 +46,28 @@
 
 <script>
 import header from '@/components/shared/listeEvenements/ListeEvenementsHeader';
-import sortAndFilters from '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters';
 import encartsFormations from '@/components/shared/listeEvenements/ListeEvenementsCards';
-import datePicker from '@/components/shared/listeEvenements/ListeEvenementsDatePicker';
-import listOfCities from '@/components/shared/listeEvenements/ListeEvenementsCities';
-import modifEvenement from '@/components/administrateur/ListeEvenementModification';
+
+// Le composants suivants ne seront pas chargés directement mais scindés de 'app.js' et chargés 
+// de manière asynchrone après coup en tache de fond (lazy loading + code splitting)
+const marginSortAndFilters = () => import(/* webpackChunkName: "marginSortAndFilters" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters')
+const datePicker = () => import(/* webpackChunkName: "datePicker" */ '@/components/shared/listeEvenements/ListeEvenementsDatePicker')
+const listOfCities = () => import(/* webpackChunkName: "ListeEvenementsCities" */ '@/components/shared/listeEvenements/ListeEvenementsCities')
+const modifEvenement = () => import(/* webpackChunkName: "ListeEvenementModification" */ '@/components/administrateur/ListeEvenementModification')
+
+/* TEST */
+//import loaderComponent from '@/components/shared/base/TEST_loader'
+//const marginSortAndFilters = () => ({
+//    component: import(/* webpackChunkName: "marginSortAndFilters" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters'),
+//    loading: loaderComponent
+//})
 
 
 export default {
 
     components: { 
         'app-header': header,
-        'app-sortAndFilters': sortAndFilters,
+        'app-marginSortAndFilters': marginSortAndFilters,
         'app-modifEvenement': modifEvenement,
         'app-encartsFormations': encartsFormations,
         'app-datePicker': datePicker,
@@ -80,7 +84,7 @@ export default {
     },
 
     computed: {
-        eventToModify() {
+        eventToModify() {       console.warn(">>>>>> COMPUTED eventToModify", this.$store.state.eventToModify); //TEST
             return this.$store.state.eventToModify;
         },
         displayModalDatePicker() {
@@ -94,6 +98,13 @@ export default {
             return this.$store.state.selectedFilters;
         },
 
+
+        // Ajouté le 18/01/2021 : Pour loader ou non le composant 'marge des classement et filtres' en fonction de l taille de l'écran ///////////////////
+        loadComponent() {    //console.log("Je suis dans 'loadComponent'"); //TEST
+            let screenSize = this.$vuetify.breakpoint.name; // Pour connaitre dans quel catégorie de dimension se trouve le Viewport
+            return (screenSize !== 'xs') ? true : false;
+        }
+        /////////////////////
     },
     watch: {
         eventToModify() {
@@ -101,10 +112,9 @@ export default {
         }
 
         // Ajouté le 04/01/2021
-        , filtersSelection(val) { 
-            console.log("YYYYYYYYYY", val); this.loadEventsWithSelectedFilters() 
+        , filtersSelection() { 
+            this.loadEventsWithSelectedFilters() 
         }
-
     },
 
 
@@ -118,7 +128,6 @@ export default {
     // FIN Ajouté le 04/01/2021
 
 
-    // Ajouté le 04/01/2021
     async mounted() {
         await this.$store.dispatch('paramsFiltreEvenements'); // Récupération des données necessaires au paramétrage des filtres
         this.paramsFiltersLoaded = true;

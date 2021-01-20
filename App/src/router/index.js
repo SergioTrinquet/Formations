@@ -2,12 +2,15 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import Accueil from '@/components/Accueil'
-import AdminCreationEvenement from '@/components/administrateur/CreationEvenement'
 import SharedListeEvenements from '@/components/shared/listeEvenements/ListeEvenements'
-import ListeParticipants from '@/components/animateurs/ListeParticipants'
-import Inscription from '@/components/user/Inscription'
-import Connection from '@/components/user/Login'
-import UnknownURL from '@/components/shared/base/404'
+
+// Remplacement de la version synchrone classique par un chargement asynchrone lorsque l'utilisateur veut aller sur cette page :
+// Le composant asynchrone sera automatiquement scindé par webpack sous la forme d'un fichier .js distinct de 'app.js', et chargé en prefetch         
+const AdminCreationEvenement = () => import(/* webpackChunkName: "AdminCreationEvenement" */ '@/components/administrateur/CreationEvenement')
+const AnimateurListeParticipants = () => import(/* webpackChunkName: "AnimateurListeParticipants" */ '@/components/animateurs/ListeParticipants')
+const Inscription = () => import(/* webpackChunkName: "Inscription" */ '@/components/user/Inscription')
+const Connection = () => import(/* webpackChunkName: "Connexion" */ '@/components/user/Login')
+const UnknownURL = () => import(/* webpackChunkName: "404" */ '@/components/shared/base/404')
 
 import Redirect from './redirect'
 
@@ -39,20 +42,12 @@ export default new VueRouter({
         {
             path: '/listParticipants',
             name: 'participants_list',
-            component: ListeParticipants,
+            component: AnimateurListeParticipants,
             props: true, // Qd on ne veut pas écrire '$route.params.XXX' à chaque fois dans le composant mais utiliser à la place une prop (du genre 'XXX' plus court)
             beforeEnter: (to, from, next) => {
                 Redirect('participants_list', next);
             }
         },
-        /* {
-            path: '/events',
-            name: 'events',
-            component: SharedListeEvenements,
-            beforeEnter: (to, from, next) => {
-                Redirect('events', next);
-            }
-        }, */
         {
             path: '/signUp',
             name: 'sign_up',

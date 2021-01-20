@@ -2,7 +2,6 @@
 
     <!-- Encart filtre villes -->
     <app-itemsSelectionModal 
-        :modalDisplay="displayModalListeVilles"
         @onCloseModal="closeModal()" 
         cssClass="modalCitiesSize   col-xs-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
         @onSendItems="sendItems($event)"
@@ -19,53 +18,24 @@
     import itemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
 
     export default {
-        props: {
-            // Pour apparition ou non du date picker qd click sur menu 'dates'
-            displayCL: {
-                type: Boolean,
-                required: true
-            }
-        },
-        
         components: { 
             'app-itemsSelectionModal': itemsSelectionModal
         },
 
         data() {
             return {
-                displayModalListeVilles: false,
                 nbMaxVilles: 3
             }
         },
 
         computed: {
-            // Computed pour les paramètres d'initialisation des filtres 'dates' et 'villes'
-            /* dataFilters() {
-                let paramsFiltersEvenements = this.$store.state.paramsFiltersEvenements;
-                return {
-                    villes: paramsFiltersEvenements.villes.map(v => v.toUpperCase()), 
-                    //dates: {
-                    //  min: paramsFiltersEvenements.minDate, 
-                    //  max: paramsFiltersEvenements.maxDate
-                    //}
-                }
-            }, */
             // Pour alimenter la liste des villes proposées ds le modal
             listeVillesComplete() {
                 return this.$store.state.paramsFiltersEvenements.villes.map(v => v.toUpperCase());
             },
-
-            
-            selectedCities() { console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
+            selectedCities() { //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
                 let villes = this.$store.state.selectedFilters.villes;
                 return typeof villes == 'undefined' ? [] : villes;
-            }
-        },
-
-        watch: {
-            // Affectation dans une variable locale de la valeur de la prop qui permet l'affichage ou non du date picker
-            displayCL(val) {
-                this.displayModalListeVilles = val;
             }
         },
 
@@ -80,7 +50,6 @@
             }
 
         }
-
 
     }
 </script>

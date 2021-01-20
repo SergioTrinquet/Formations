@@ -1,7 +1,7 @@
 <template>
 
     <!-- Calendrier sélection dates -->
-    <v-overlay :value="displayDatePicker" opacity="0.75">  
+    <v-overlay opacity="0.75">
         <!-- TEST -->dateRange: {{ dateRange }} <br/>selectedDateRange: {{ selectedDateRange }} <!-- | previousDateRange: {{ previousDateRange }} -->
         <div class="initDatesText">{{ initDateRangeText }}</div>
         <v-date-picker 
@@ -33,14 +33,6 @@
     import dateToInt from '@/mixins/dateToInt';
 
     export default {
-        props: {
-            // Pour apparition du date picker qd click sur bouton 'dates'
-            displayDP: {
-                type: Boolean,
-                required: true
-            }
-        },
-
         mixins: [
             datePickersAllowedDates,
             formatageDate,
@@ -51,8 +43,7 @@
         data() {
             return {
                 dateRange: [],
-                previousDateRange: [],
-                displayDatePicker: false
+                previousDateRange: []
             }
         },
 
@@ -125,11 +116,6 @@
         },
 
         watch: {
-            // Affectation dans une variable locale de la valeur de la prop qui permet l'affichage ou non du date picker
-            displayDP(val) {
-                this.displayDatePicker = val;
-            },
-            
             // Appelé lors de suppression filtre 'dates' ds composant 'ListeEvenementsSortAndFilters'. Retire les dates sélectionnées dans le datePicker
             initDatePickerDates(val) {  console.log("WATCH de initDatePickerDates", val); //TEST
                 // Réinitialisation
@@ -141,7 +127,6 @@
                     this.$store.commit('setDateRangeText', this.dateRangeText);
                 }
             }
-
         },
 
         methods: {

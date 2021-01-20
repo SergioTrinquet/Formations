@@ -1,7 +1,5 @@
 <template>
-
     <app-modal 
-        :display="modalDisplay" 
         :width="modalWidth" 
         :height="modalHeight" 
         :cssClass="cssClass"
@@ -51,7 +49,6 @@
         ],
 
         props: [
-            'modalDisplay',
             'modalWidth',  /* Plus utile ! */
             'modalHeight', /* Plus utile ! */
             'cssClass',
@@ -91,13 +88,6 @@
                     this.msgAlert = null;
                 }
             }
-
-            // Qd apparition modal, récupération des villes sélectionnées
-            , modalDisplay(val) {
-                if(val) {
-                    this.selectedCheckboxes = this.selectedItems;
-                }
-            }
         },
 
         methods: {
@@ -119,6 +109,13 @@
                 this.$emit('onCloseModal');
             }
         }
+
+        // Ajouté le 17/01/2021
+        , mounted() {
+            this.selectedCheckboxes = this.selectedItems;
+        }
+        // FIN Ajouté le 17/01/2021
+
     }
 </script>
 

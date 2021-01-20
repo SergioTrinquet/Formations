@@ -1,7 +1,6 @@
 <template>
 
     <app-modal 
-        :display="displayModalChangeEvent" 
         width="100vw"
         height="90vh"
         cssClass="col-10 offset-1 col-md-8 offset-md-2"
@@ -15,7 +14,11 @@
             cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
             header="Ajouter un animateur"
         >
-            <app-creationAnimateur @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"></app-creationAnimateur>
+            <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
+            <app-creationAnimateur 
+                v-if="displayModalAddAnimateur"
+                @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"
+            ></app-creationAnimateur>
         </app-modal>
 
 
@@ -62,7 +65,9 @@
 </template>
 
 <script>
-    import creationAnimateur from '@/components/administrateur/CreationAnimateur';
+    //import creationAnimateur from '@/components/administrateur/CreationAnimateur';
+    const creationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
+
     import FormEvenement from '@/components/administrateur/FormEvenement'; 
     import inputsEvenement from '@/components/administrateur/InputsEvenement';
 
@@ -70,10 +75,6 @@
         props: {
             theEvent: {
                 //type: Object,
-                required: true
-            },
-            displayModalChangeEvent: {
-                type: Boolean,
                 required: true
             }
         },

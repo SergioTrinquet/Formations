@@ -15,7 +15,11 @@
             cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
             header="Ajouter un animateur"
         >
-            <app-creationAnimateur @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"></app-creationAnimateur>
+            <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
+            <app-creationAnimateur 
+              v-if="displayModalAddAnimateur" 
+              @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"
+            ></app-creationAnimateur>
         </app-modal>
 
 
@@ -32,9 +36,9 @@
         <v-card 
             tile
             elevation="2"
-            class="my-10"
+            class="my-5"
         >
-            <v-toolbar flat dense color="secondaire" dark>{{ titre }}</v-toolbar>
+            <v-toolbar flat dense color="primaireLight" dark>{{ titre }}</v-toolbar>
 
             <app-formEvenement 
                 :evenement="evenement" 
@@ -58,7 +62,8 @@
 <script>  
   import FormEvenement from '@/components/administrateur/FormEvenement';
   import inputsEvenement from '@/components/administrateur/InputsEvenement';
-  import creationAnimateur from '@/components/administrateur/CreationAnimateur';
+  //import creationAnimateur from '@/components/administrateur/CreationAnimateur';
+  const creationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
 
   export default {
     components: {
@@ -107,18 +112,6 @@
             this.$router.push({ name: 'events_list' });
         }
     }
-
-
-    /* computed: {
-      currentUser() { return this.$store.getters.currentUser.role; }
-    },
-    mounted() {
-      if(this.currentUser !== 'Admin') {
-        alert("Vous n'avez pas les droits d'accès à cette page.\nVous allez être redirigé vers la page d'accueil."); 
-        this.$router.push({ name: 'accueil' }); // Redirection vers la page d'accueil
-      }
-    } */
-
 
   }
 </script>
