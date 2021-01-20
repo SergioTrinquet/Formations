@@ -175,7 +175,13 @@ import formatageDate from '@/mixins/formatageDate';
 import datePickersAllowedDates from '@/mixins/datePickerAllowedDates';
 
 export default {
-    props: ['evenement'],
+    //props: ['evenement'],
+    props: {
+          evenement: {
+              type: Object,
+              required: true
+          }
+      },
 
     mixins: [
       formatageDate, 
@@ -211,7 +217,7 @@ export default {
         rules() {
             return this.$store.state.inputRules;
         },
-        listSelectAnimateurs() {    console.log("listSelectAnimateurs", this.$store.getters.selectAnimateurs);
+        listSelectAnimateurs() {
             return this.$store.getters.selectAnimateurs;
         },
         animateurs_rule() {
