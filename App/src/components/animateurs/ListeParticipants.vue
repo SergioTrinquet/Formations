@@ -9,7 +9,7 @@
         </app-modal>
 
         <div class="linkBack">
-            <a @click="$router.go(-1)"><v-icon>fas fa-arrow-left</v-icon>Retour <span class="facultatif">à la liste des formations</span></a>
+            <a @click="quitPage"><v-icon>fas fa-arrow-left</v-icon>Retour <span class="facultatif">à la liste des formations</span></a>
         </div>
         <!-- <div>{{ $route.params.event }}</div> -->
         <!-- <div style="margin: 30px 0 0 0">{{ event }}</div> -->
@@ -158,7 +158,7 @@
 
         methods: {
             // Gestion opacité du bandeau sous le header
-            setBandeauOpacity() {
+            /* setBandeauOpacity() {
                 window.addEventListener("scroll", () => {
                     this.scrollYvalue = window.scrollY;
                     let flag = false;
@@ -171,7 +171,28 @@
                         flag = false;
                     }
                 });
+            }, */
+
+            NEW_setBandeauOpacity() {
+                this.scrollYvalue = window.scrollY;
+                let flag = false;
+                if(this.scrollYvalue > this.scrollYvalueforNoOpacity) {
+                    this.scrollYvalue = this.scrollYvalueforNoOpacity;
+                    if(!flag) { this.displayBackgroundColor() }
+                    flag = true;
+                } else {
+                    this.displayBackgroundColor();
+                    flag = false;
+                }
             },
+            quitPage() {
+                window.removeEventListener("scroll", this.NEW_setBandeauOpacity);
+                this.$router.go(-1);
+            },
+            /////////////////////
+
+
+
             displayBackgroundColor() {
                 let valOpacity = this.scrollYvalue / this.scrollYvalueforNoOpacity;
                 document.querySelector(".linkBack").style.backgroundColor = `rgba(255, 255, 255, ${valOpacity})`;
@@ -220,12 +241,15 @@
 
         async mounted() {
             // Pour gérer l'opacité du bandeau sous le header
-            this.setBandeauOpacity();
+            //this.setBandeauOpacity(); // Ancienne version au 18/01/2021
+            window.addEventListener("scroll", this.NEW_setBandeauOpacity);
+
             // Chargement des participants de la formation
             await this.$store.dispatch('getParticipantsEvenement', this.$route.params.event.id_evenement);
             // Pour rendre ou non les éléments du formulaire modifiables
             this.enableForm();
         }
+
     }
 </script>
 
