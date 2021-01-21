@@ -120,15 +120,6 @@
         </v-text-field>
 
         <v-text-field
-            v-model="evenement.image"
-            type="text"
-            label="URL"
-            :rules="rules.mandatory"
-            light
-        >
-        </v-text-field>
-
-        <v-text-field
             v-model="evenement.coordonnees.x"
             type="text"
             label="Latitude"
@@ -175,7 +166,6 @@ import formatageDate from '@/mixins/formatageDate';
 import datePickersAllowedDates from '@/mixins/datePickerAllowedDates';
 
 export default {
-    //props: ['evenement'],
     props: {
           evenement: {
               type: Object,

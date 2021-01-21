@@ -33,7 +33,6 @@
             </div>
             <div class="mainInfos">
                 <div class="description">{{ event.description }}</div>
-                <div>image: {{ event.image }}</div>
                 <div class="blockData">
                     <div class="map" :id="'map_' + i" :data-x="event.coordonnees.x"  :data-y="event.coordonnees.y"></div>
                     <div class="otherData">

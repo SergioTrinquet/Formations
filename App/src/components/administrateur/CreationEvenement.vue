@@ -86,7 +86,6 @@
           adresse: '',
           CP: '',
           ville: '',
-          image: '', // optionnel : Le garde-t-on ?
           coordonnees: {
             x: null,
             y: null
