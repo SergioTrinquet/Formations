@@ -20,7 +20,7 @@ export default new Vuex.Store({
             { roles: [null], routeName: 'sign_up', btMenu: { icon: 'account_circle', intitule: 'S\'inscrire' } },
             { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' }    },
             { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer un évènement' } },
-            { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' } },
+            { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' }, redirection: true },
             { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true },
             { roles: ['Animateur'],  routeName: 'participants_list' }
         ],
@@ -38,7 +38,7 @@ export default new Vuex.Store({
         animateurs: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'region'
 
         /* evenements: [{
-            id_ev: '', titre: '', description: '', date: '', heure: '', CP: '', adresse: '', image: '', coordonnees: [], // optionnel : Le garde-t-on ?
+            id_ev: '', titre: '', description: '', date: '', heure: '', CP: '', adresse: '', coordonnees: [], // optionnel : Le garde-t-on ?
             id_animateurs: [], //id de(s) (l')animateur(s)
             id_participants: [], //id des participants
             id_createurEvenement: '', // id créateur evenement
@@ -54,6 +54,15 @@ export default new Vuex.Store({
                 v => /^[\S]+$/g.test(v) || 'Les espaces ne sont pas autorisés !'
             ]
         },
+        sortItemsList: [
+            { libelle: 'date', sortType: 'date' },
+            { libelle: 'intitulé', sortType: 'titre' },
+            { libelle: 'nbr de participants', sortType: 'NbParticipants' }
+        ],
+        filtersList: [
+            { libelle: 'dates', selected: false },
+            { libelle: 'villes', selected: false }
+        ],
         closeModalAnimateur: false,
         selectAnimateurs: [],
         addedAnimateur: null,
@@ -74,23 +83,19 @@ export default new Vuex.Store({
 
         participantsPresenceRecordDone: false, // EN COURS
 
-        displayModalDatePicker: false, // Ajouté le 28/12/2020
-        displayModalCitiesList: false, // Ajouté le 28/12/2020
-        selectedFilters: {}, // Ajouté le 28/12/2020
-        dateRangeText: "", // Ajouté le 31/12/2020
-        initPagination: false, // Ajouté le 30/12/2020
-        initDatePickerDates: false, // Ajouté le 04/01/2021
+        displayModalDatePicker: false,
+        displayModalCitiesList: false,
+        selectedFilters: {},
+        dateRangeText: "",
+        initPagination: false,
 
+        
         FF_currentUser: 'Vide' //TEST
     },
 
 
 
     mutations: {
-        /* setLoadedUtilisateurs(state, payload) {
-            state.utilisateurs = payload;
-        }, */
-
         // Appelé dans pages création et modification évènement pour alimenter liste déroulante des animateurs
         setLoadedAnimateurs(state, payload) {
             state.selectAnimateurs = payload;
@@ -179,9 +184,6 @@ export default new Vuex.Store({
         setParamsFiltersEvenements(state, payload) {
             state.paramsFiltersEvenements = payload;
         },
-        /* setNbEventsFiltered(state, payload) {
-            state.nbEventsFiltered = payload;
-        }, */
         setSelectedPage(state, payload) {
             state.selectedPage = payload;
         },
@@ -219,8 +221,6 @@ export default new Vuex.Store({
         setParticipantsPresenceRecord(state, payload) {
             state.participantsPresenceRecordDone = payload;
         },
-
-        // Ajouté le 28/12/2020
         setDisplayModalDatePicker(state, payload) {
             state.displayModalDatePicker = payload;
         },
@@ -230,7 +230,7 @@ export default new Vuex.Store({
         setDateRangeText(state, payload) {
             state.dateRangeText = payload;
         },
-        setSelectedFilters(state, payload) {    //console.log(payload); //TEST
+        setSelectedFilters(state, payload) {    console.log("VUEX setSelectedFilters", payload); //TEST
             // Quand personne loguée est un Administrateur
             if("pastEvents" in payload) {
                 if(payload.pastEvents) {
@@ -254,10 +254,10 @@ export default new Vuex.Store({
             }
 
             // Peu importe le profil de la personne loguée
-            if("dateRange" in payload) { 
-                if(payload.dateRange.length > 0) {
-                    //state.selectedFilters.dates = payload.dateRange; // <= NON, pas de reactivité qd mise à jour tableau de cette façon !!!
-                    state.selectedFilters = Object.assign({}, state.selectedFilters, { dates: payload.dateRange });
+            if("dates" in payload) { 
+                if(payload.dates.length > 0) {
+                    //state.selectedFilters.dates = payload.dates; // <= NON, pas de reactivité qd mise à jour tableau de cette façon !!!
+                    state.selectedFilters = Object.assign({}, state.selectedFilters, { dates: payload.dates });
                 } else {
                     const selectedFilters = Object.assign({}, state.selectedFilters);
                     delete selectedFilters.dates;
@@ -274,9 +274,6 @@ export default new Vuex.Store({
                     state.selectedFilters = selectedFilters;
                 }
             }
-        },
-        setInitDatePickerDates(state, payload) {
-            state.initDatePickerDates = payload;
         },
 
 
@@ -314,26 +311,6 @@ export default new Vuex.Store({
             .finally(() => { commit('setLoading', false) });
         },
 
-        
-        // PAS UTILISE ACTUELLEMENT : Au chargement du site, récupération des utilisateurs 
-        /* loadUtilisateurs({commit}) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
-
-            firebase.firestore().collection("utilisateurs").get()
-            .then((querySnapshot) => {
-                let utilisateurs = [];
-                querySnapshot.forEach((doc) => {
-                    utilisateurs.push(doc.data());
-                });
-                commit('setLoadedUtilisateurs', utilisateurs);
-            })
-            .catch((err) => { 
-                console.error("Echec du chargement de la liste des utilisateurs !", err);
-                commit('setMessageError', err.message); 
-            })
-            .finally(() => { commit('setLoading', false) });
-        }, */
 
         // Inscription : Ajout participant
         addParticipant({commit}, payload) {
@@ -595,8 +572,7 @@ export default new Vuex.Store({
 
 
         // Profil Administrateur et Participant : Chargement de la liste des évènements
-        /* async loadEvenements({state, commit}, payload = null) { */ // Mis en comm. le 05/01/2021
-        async loadEvenements({state, commit}, payload) { // Ajouté le 05/01/2021
+        async loadEvenements({state, commit}, payload) {
             commit('setLoading', true);
             commit('setMessageError', null);
 
@@ -614,38 +590,36 @@ export default new Vuex.Store({
             console.log(">>>>>>===== payload dans 'loadEvenements =====<<<<<<", payload); //TEST
             //for(var prop in payload) { console.log("Propriété de payload", prop); } //TEST
             
-            // Ici par défaut, les évènements doivent être ceux après la date du jour et classés par date.
-            // Si des paramètres de filtres sont passés, ils prendront la place de ceux par défaut
-            /* if(payload == null) { 
-                // Sélection et classement des évènements par défaut (qd arrivée sur la page ou quand aucun filtre et aucun tri)
-                collectionEvenements = collectionEvenements.where("date" , ">=", currentDate).orderBy("date");
-            } else { */  // Mis en comm. le 05/01/2021
+            // Par défaut (si pas de filtre(s) sémectionné(s), les évènements affichés sont ceux après la date du jour et classés par date.
 
-                // Si pas de filtre sur date(s) et pas affichage des évènements antérieurs à la date du jour
-                if(!("dates" in payload) && !("pastEvents" in payload)) {
-                    //console.log("payload n'a pas la propriété 'dates' ni de propriété 'pastEvents'"); //TEST
-                    collectionEvenements = collectionEvenements.where("date" , ">=", currentDate);
-                }
+            // Si pas de filtre sur date(s) et pas affichage des évènements antérieurs à la date du jour
+            if(!("dates" in payload) && !("pastEvents" in payload)) {
+                collectionEvenements = collectionEvenements.where("date" , ">=", currentDate);
+            }
 
-                if("dates" in payload) {
-                    // Check si tableau de dates a une date...
-                    if(payload.dates.length == 1) {
-                        collectionEvenements = collectionEvenements.where("date" , "==", payload.dates[0]);
-                    } else { //... ou deux
-                        for(let i=0; i < payload.dates.length; i++) {
-                            collectionEvenements = collectionEvenements.where("date" , (i == 0 ? ">=" : "<="), payload.dates[i]);
-                        }
+            // Quand filtre sur "dates"
+            if("dates" in payload) {
+                // Check si tableau de dates a une date...
+                if(payload.dates.length == 1) {
+                    collectionEvenements = collectionEvenements.where("date" , "==", payload.dates[0]);
+                } else { //... ou deux
+                    for(let i=0; i < payload.dates.length; i++) {
+                        collectionEvenements = collectionEvenements.where("date" , (i == 0 ? ">=" : "<="), payload.dates[i]);
                     }
                 }
-                
-                if("villes" in payload) {
-                    // TODO: Checker si 'in' avec une seule ville fonctionne! Sinon faire une condition avec "==" si 1 ville et 'in' si plusieurs
-                    collectionEvenements = collectionEvenements.where('ville' , 'in', payload.villes);
-                }
+            }
+            
+            // Quand filtre sur "villes"
+            if("villes" in payload) {
+                collectionEvenements = collectionEvenements.where('ville' , 'in', payload.villes);
+            }
 
+            // Condition ci-dessous obligatoire car sinon erreur dans le cas ou filtre sr une seule date, car
+            // la clause 'order by' ne peut pas contenir un champ avec un filtre d'égalité sur la date
+            if(!("dates" in payload && payload.dates.length == 1)) {
                 collectionEvenements = collectionEvenements.orderBy("date");
+            }
                 
-            /* } */ // Mis en comm. le 05/01/2021
             
 
             
@@ -663,7 +637,7 @@ export default new Vuex.Store({
                 });
 
                 console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
-                // Ici problème car pas possible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
+                // Ici problème car impossible de rajouter la close 'where' suivante à cause de restrictions liées à Firestore. On est obligé de filtrer après avoir récupérer les data via code JS plus bas
                 //collectionEvenements = collectionEvenements.where(firebase.firestore.FieldPath.documentId(), "in", evenementsParticipantOuAnimateur).orderBy(firebase.firestore.FieldPath.documentId());
             }
 
@@ -679,9 +653,6 @@ export default new Vuex.Store({
                 if(evenementsParticipantOuAnimateur !== null) {
                     docs = docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
                 }
-
-                // Pour communiquer le nb d'évènements après filtre(s) mais avant pagination : Sert au calcul du nb de pages notamment
-                //commit('setNbEventsFiltered', docs.length);
 
                 ///// Partie Pagination /////
                 /* var artPerPg = state.nbEventsPerPage;
@@ -724,7 +695,6 @@ export default new Vuex.Store({
                         "animateurs": listeAnimateurs,
                         "titre": data.titre,
                         "coordonnees":{"y": data.coordonnees.y,"x": data.coordonnees.x},
-                        "image": data.image,
                         "CP": data.CP,
                         "date": data.date,
                         "adresse": data.adresse,
