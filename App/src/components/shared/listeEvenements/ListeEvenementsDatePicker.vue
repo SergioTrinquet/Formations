@@ -13,8 +13,8 @@
             color="primaire"
             first-day-of-week="1"
             :show-current="pickerDate"
-            :min="dataFilters.dates.min"
-            :max="dataFilters.dates.max"
+            :min="initDatesFilter.min"
+            :max="initDatesFilter.max"
             :allowed-dates="allButWeekends"
             :title-date-format="formatAffichageTitleDatepicker"
         >
@@ -48,34 +48,29 @@
         },
 
         computed: {
-            // Ajouté le 05/01/2021 : Recup valeurs dates de filtrage de la var. ds le Vuex
+            // Recup. valeurs dates de filtrage de la var. ds le Vuex
             selectedDateRange() { console.log("COMPOSANT datePicker : Je suis ds le COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
                 let dates = this.$store.state.selectedFilters.dates;
                 return typeof dates == 'undefined' ? [] : dates;
             },
-            // FIN Ajout le 05/01/2021
 
 
-            // Computed pour les paramètres d'initialisation des filtres 'dates' et 'villes'
-            dataFilters() {
-                let paramsFiltersEvenements = this.$store.state.paramsFiltersEvenements;
+            // Récup. des paramètres d'initialisation du filtre 'dates'
+            initDatesFilter() {
                 return {
-                    //villes: paramsFiltersEvenements.villes.map(v => v.toUpperCase()), 
-                    dates: {
-                        min: paramsFiltersEvenements.minDate, 
-                        max: paramsFiltersEvenements.maxDate
-                    }
+                    min: this.$store.state.paramsFiltersEvenements.minDate, 
+                    max: this.$store.state.paramsFiltersEvenements.maxDate
                 }
             },
 
             // Pour affichage au dessus du date picker : Donne la tranche de dates pendant lesquelles il y a des formations programmées
             initDateRangeText() {
                 let txt = "";
-                if(typeof this.dataFilters.dates.min != 'undefined') {
-                    if(this.dataFilters.dates.min == this.dataFilters.dates.max) {
-                        txt = `Seule date sélectionnable : ${this.formatDate(this.dataFilters.dates.min)}`;
+                if(typeof this.initDatesFilter.min != 'undefined') {
+                    if(this.initDatesFilter.min == this.initDatesFilter.max) {
+                        txt = `Seule date sélectionnable : ${this.formatDate(this.initDatesFilter.min)}`;
                     } else {
-                        txt = `Entre le ${this.formatDate(this.dataFilters.dates.min)} et le ${this.formatDate(this.dataFilters.dates.max)}`;
+                        txt = `Entre le ${this.formatDate(this.initDatesFilter.min)} et le ${this.formatDate(this.initDatesFilter.max)}`;
                     }
                 }
                 return txt;
@@ -84,7 +79,7 @@
             // Pour attribut du date picker : Sensé sélectionner le mois quand ouverture du date picker, mais bug
             pickerDate() {
                 //return "2021-05-03";
-                const minDate = this.dataFilters.dates.min;
+                const minDate = this.initDatesFilter.min;
                 const currentDate = this.getCurrentDate();
                 
                 if(currentDate < this.dateToInteger(minDate)) {
@@ -94,6 +89,7 @@
                 }
             },
 
+            // Affiche la sélection de(s) date(s) dans le datePicker
             dateRangeText() {
                 let titleDatePicker = "";
                 if(this.dateRange.length == 0) {
@@ -105,27 +101,6 @@
                     titleDatePicker = `Du ${this.formatDate(this.dateRange[0])} au ${this.formatDate(this.dateRange[1])}`;
                 }
                 return titleDatePicker;
-            },
-
-            
-             // Flag pour réinitialisation des dates dans le datePicker
-            initDatePickerDates() { //console.log("initDatePickerDates", this.$store.state.initDatePickerDates); //TEST
-                return this.$store.state.initDatePickerDates;
-            }
-
-        },
-
-        watch: {
-            // Appelé lors de suppression filtre 'dates' ds composant 'ListeEvenementsSortAndFilters'. Retire les dates sélectionnées dans le datePicker
-            initDatePickerDates(val) {  console.log("WATCH de initDatePickerDates", val); //TEST
-                // Réinitialisation
-                if(val) {   //console.log("ON EST DEDANS !!!!"); //TEST
-                    this.dateRange = [];
-                    this.previousDateRange = [];
-                    this.$store.commit('setInitDatePickerDates', false);
-
-                    this.$store.commit('setDateRangeText', this.dateRangeText);
-                }
             }
         },
 
@@ -159,12 +134,10 @@
             }
         },
 
-        // Ajouté le 05/01/2021 : A l'arrivée sur le composant, récupération des dates potentiellement déjà sélectionnées avant et stockées dans le Vuex
+        // A l'arrivée sur le composant, récupération des dates potentiellement déjà sélectionnées avant et stockées dans le Vuex
         async mounted() {
-            //console.log("Dans le MOUNTED de DatePicker : Récup des dates à partir du Vuex"); //TEST
             this.dateRange = this.selectedDateRange;
         }
-        // FIN Ajouté le 05/01/2021
 
     }
 </script>
