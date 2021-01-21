@@ -90,27 +90,22 @@
             return {
                 displayModalTypeClassements: false,
                 displayModalTypeFilters: false,
-
-                // Existe aussi dans le 'ListeEvenementsSortAndFilters', donc à metter dans les 2 cas dans le state du Vuex 
-                // et l'appeler ensuite dans un Computed
-                sortItemsList: [
-                    { libelle: 'date', sortType: 'date' },
-                    { libelle: 'intitulé', sortType: 'titre' },
-                    { libelle: 'nbr de participants', sortType: 'NbParticipants' }
-                ],
-                sortSelect: "date",
-                sortDirection: "asc",
-
-                listeFiltres: [
-                    { libelle: 'dates', selected: false },
-                    { libelle: 'villes', selected: false }
-                ]
+                sortSelect: "",
+                sortDirection: "",
+                listeFiltres: []
             }
         },
 
         computed: {
             currentUser() {
                 return this.$store.getters.currentUser;
+            },
+
+            sortItemsList() {
+                return this.$store.state.sortItemsList;
+            },
+            filtersList() {
+                return this.$store.state.filtersList;
             },
 
             // Récupération des valeurs de classement (ordre et type)
@@ -141,7 +136,7 @@
             },
 
             // Pour avoir sélection de(s) date(s) sous forme de texte
-            dateRangeText() {
+            dateRangeText() { console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
                 return this.$store.state.dateRangeText;
             },
 
@@ -154,12 +149,11 @@
                 if(this.mesFormations) { nbFiltresActifs++ }
                 return nbFiltresActifs;
             }
-
         },
 
         watch: {
             // Affectation des variables de classement aux variables locales
-            sortingParameters(val) {
+            sortingParameters(val) { console.warn("WATCH de sortingParameters", val); //TEST
                 this.sortSelect = val.type;
                 this.sortDirection = val.direction;
             },
@@ -200,16 +194,16 @@
                 this.displayModalTypeClassements = false;
             },
 
-            // EN COURS : 08/01/2021
+            
             deleteFilter(libelleFiltre) {
                 let payload = {};
                 payload[libelleFiltre] = [];
-                   //console.log("EN COURS", libelleFiltre, "payload =>", payload); //TEST
+                   //console.log(libelleFiltre, "payload =>", payload); //TEST
                 // Affectation dans variable du state ds Vuex qui regroupe ttes les valeurs des filtres
                 this.$store.commit('setSelectedFilters', payload);
 
                 if(libelleFiltre == 'dates') {
-                    this.$store.commit('setInitDatePickerDates', true); // Réinitialisation des dates dans le datePicker
+                    this.$store.commit('setDateRangeText', ""); // Retrait texte date
                 }
             }
 
@@ -218,14 +212,21 @@
             }
         },
 
-        /* mounted() {
-            // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
+        
+            
+        mounted() {    
+            // Affectation des variables locales avec valeurs venant du Vuex
+            this.listeFiltres = this.filtersList;
+            this.sortSelect = this.sortingParameters.type;
+            this.sortDirection = this.sortingParameters.direction;
+
+            /* // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
             window.addEventListener('click', (e) => {
                 if(e.target.classList.contains("overlay")) {
                     this.displayTypeFilters = false;
                 }
-            })
-        } */
+            }) */
+        }
     }
 </script>
 
