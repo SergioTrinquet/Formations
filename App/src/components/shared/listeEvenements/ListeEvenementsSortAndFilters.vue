@@ -25,7 +25,6 @@
             <div class="bloc" id="btFiltres">
                 <div class="marginLegend">Filtres</div>
 
-                <!-- Ajouté le 11/01/2021 -->
                 <app-participantFilter v-if="currentUser.role == 'Participant'">
                     <template v-slot:iconLeft>
                         <v-icon left v-show="mesFormations">fas fa-check</v-icon>
@@ -61,8 +60,9 @@
             <a @click="deleteAllFilters" class="linkDeleteFilters">Supprimer tous mes filtres</a>
         </div>
 
-        <!-- TEST --><span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; 
-        width: 210px; font-size: 15px; line-height: 18px;">Computed filtersSelection => {{ filtersSelection }}</span>
+        <!-- TEST -->
+        <!-- <span style="display: inline-block; background-color: green; color: #ffffff; margin: 20px 0; 
+        width: 210px; font-size: 15px; line-height: 18px;">Computed filtersSelection => {{ filtersSelection }}</span> -->
 
     </div>
 
@@ -74,7 +74,7 @@ import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
 import deleteItemFromArray from '@/mixins/deleteItemFromArray';
 import participantFilter from '@/components/participants/ListeEvenementsFilter';
-import displayOldTrainings from '@/components/administrateur/ListeEvenementsFilter';
+import displayOldTrainings from '@/components/administrateur/ListeEvenementsOption';
 
 export default {
     mixins: [
@@ -91,26 +91,21 @@ export default {
 
     data() {
         return {
-            sortItemsList: [
-                { libelle: 'date', sortType: 'date' },
-                { libelle: 'intitulé', sortType: 'titre' },
-                { libelle: 'nbr de participants', sortType: 'NbParticipants' }
-            ],
-            sortSelect: "date",
-            sortDirection: 'asc',
-
-            listeFiltres: [
-                { libelle: 'dates', selected: false },
-                { libelle: 'villes', selected: false }
-            ],
-
-            dateRange: [],
+            sortSelect: "",
+            sortDirection: "",
+            listeFiltres: []
         }
     },
 
     computed: {
         currentUser() {
             return this.$store.getters.currentUser;
+        },
+        sortItemsList() {
+            return this.$store.state.sortItemsList;
+        },
+        filtersList() {
+            return this.$store.state.filtersList;
         },
         // Récupération des valeurs de classement (ordre et type)
         sortingParameters() {
@@ -135,23 +130,9 @@ export default {
             let mesFormations = this.filtersSelection.mesFormations;
             return (typeof mesFormations == 'undefined') ? false : mesFormations;
         },
-        dateRangeText() {   console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
+        dateRangeText() {   //console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
             return this.$store.state.dateRangeText;
         },
-
-        // A VIRER A TERME !! (04/01/2021)
-        // Computed pour les paramètres d'initialisation des filtres 'dates' et 'villes'
-        dataFilters() {
-            let paramsFiltersEvenements = this.$store.state.paramsFiltersEvenements;
-            return {
-                villes: paramsFiltersEvenements.villes.map(v => v.toUpperCase()), 
-                dates: {
-                    min: paramsFiltersEvenements.minDate, 
-                    max: paramsFiltersEvenements.maxDate
-                }
-            }
-        },
-
         // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
         flagEventDeleted() {
             return this.$store.state.flagEventDeleted;
@@ -171,67 +152,6 @@ export default {
             this.sortBy();
         },
 
-        // A VIRER A TERME !!!!!!!!! : Code à transférer ds les composants concernés (04/01/2021)
-        // Déclenché qd clic sur 'Anciennes formations'
-        dataFilters(val, oldVal) {
-            console.warn("WATCH => dataFilters", val, oldVal); //TEST
-
-            if(Object.keys(oldVal).length > 0 && oldVal.constructor === Object) { // Check si oldVal n'est pas un objet vide (cas à l'arrivée ds la page)
- 
-                // Actions sur les chips qd cas de figure ou après désélection de 'formations passées', les filtres sélectionnés doivent être corrigés
-                // Si 'formations passées' est désactivé...
-                if(this.pastEvents == false) {
-                    let alertMsg = "";
-                    // Filtre 'dates'
-                    if(this.dateRange.length > 0) { // Si l'utilisateur a sélectionné une ou des dates dans les filtres...
-                        this.dateRange.forEach((d, i) => {
-                            if(this.dateToInteger(d) < this.getCurrentDate()) {
-                                console.log("La " + i + "eme date "  + d + " est < à date du jour !!!"); // TEST
-                                alert("La " + i + "eme date "  + d + " est < à date du jour !!!"); //TEST
-                            }
-                        });
-                        // - Si juste 1 date
-                        // Si date 0 < date du jour => On supprime la date 0 (equivaut à suppression du filtre 'dates')
-                        // - Si 2 dates
-                        // Si date 0 < date du jour ET date 1 > date du jour => On échange date 0 par date du jour ou date de la 1ere formation après date du jour
-                        // Si date 0 < date du jour ET date 1 < date du jour => On supprime les 2 dates (equivaut à suppression du filtre 'dates')
-                        
-                        // donc :
-                        
-                        const currentDate = this.getCurrentDate();
-                        if(this.dateRange.length == 1 && (this.dateToInteger(this.dateRange[0]) < currentDate) || 
-                        this.dateRange.length == 2 && (this.dateToInteger(this.dateRange[0]) < currentDate) && (this.dateToInteger(this.dateRange[1]) < currentDate)) {
-                           this.dateRange = [];
-                           alertMsg = "La suppression de l'affichage des formations passées est incompatible avec la sélection des dates que vous avez entrées pour filtrer les données : Le filtre 'date' est supprimé !";
-                        }
-                        if(this.dateRange.length == 2 && (this.dateToInteger(this.dateRange[0]) < currentDate) && (this.dateToInteger(this.dateRange[1]) > currentDate)) {
-                            this.dateRange[0] = [currentDate.slice(0, 4), "-", currentDate.slice(4, 6), "-", currentDate.slice(6, 8)].join('');
-                            alertMsg = "La suppression de l'affichage des formations passées est incompatible avec la sélection des dates que vous avez entrées pour filtrer les données : Le filtre 'date' est modifié, la plage de dates antérieure à aujourd'hui est supprimée !";
-                        }
-                        console.warn("this.dateRange => ", this.dateRange); //TEST
-                    }
-
-                    // Filtre 'villes'
-                    if(this.selectedCities.length > 0) { // Si l'utilisateur a sélectionné une ou plusieurs villes dans les filtres...
-                        // Ici comparaison des villes entre oldVal et val pour voir différence et 
-                        // isoler les intrus pour les exclure
-                        if(oldVal.villes.length > val.villes.length) {
-                            // On isole la/les ville(s) qui n'accueillent plus de formations suite au bt 'formations passées' désactivée
-                            let villesToDelete = oldVal.villes.filter(v => val.villes.indexOf(v) === -1);
-                            //console.log("villesToDelete : ", villesToDelete); //TEST
-                            this.selectedCities = this.selectedCities.filter(v => villesToDelete.indexOf(v) === -1);
-                            //console.log("Villes qui restent dans 'selectedCities': ", this.selectedCities); //TEST
-                            alertMsg += `\nLa suppression de l'affichage des formations passées est incompatible avec certaines villes sélectionnées pour filtrer les données : le(s) filtre(s) ${villesToDelete.join(", ")} a/ont été supprimé(s) !`
-                        }
-                    }
-
-                    if(alertMsg !== "") { alert(alertMsg); }
-                }
-                
-                this.loadEventsWithSelectedFilters(); // Exec requete Firestore d'affichage des formations avec les filtres
-            }
-        },
-
         flagEventDeleted(val) {
             if(val) {
                 this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
@@ -239,23 +159,15 @@ export default {
             }
         },
         
-        // Pour afficher icone de suppression du filtre 'dates' + pour comptage nb de filtres actifs
+        // Pour afficher ou non icone sur bt filtre 'Dates' en fonction de l'activation du filtre
         selectedDateRange(val) {
             const idx = this.listeFiltres.findIndex(f => f.libelle == 'dates');
-            if(val.length > 0) {
-                this.listeFiltres[idx].selected = true;
-            } else {
-                this.listeFiltres[idx].selected = false;
-            }
+            this.listeFiltres[idx].selected = (val.length > 0) ? true : false;
         },
-        // Pour afficher croix de suppression du filtre 'villes' + pour comptage nb de filtres actifs
+        // Pour afficher ou non icone sur bt filtre 'Villes' en fonction de l'activation du filtre
         selectedCities(val) {
             const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
-            if(val.length > 0) {
-                this.listeFiltres[idx].selected = true;
-            } else {
-                this.listeFiltres[idx].selected = false;
-            }
+            this.listeFiltres[idx].selected = (val.length > 0) ? true : false;
         }
 
     },
@@ -287,7 +199,7 @@ export default {
 
         deleteDatesFromFilter() {
             this.$store.commit('setSelectedFilters', { 'dates': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
-            this.$store.commit('setInitDatePickerDates', true); // Réinitialisation des dates dans le datePicker 
+            this.$store.commit('setDateRangeText', ""); // Retrait texte date
         },
         deleteCityFromFilter(ville) {  console.log("COMPOSANT Sort And Filters : Je suis ds 'deleteCityFromFilter'"); //TEST
             const newSelectionVilles = this.deleteItemFromArray(this.selectedCities, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectedCities'
@@ -299,6 +211,11 @@ export default {
         
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
+            // Si date(s) sélectionnée(s)
+            if(this.selectedDateRange.length > 0) {
+                this.$store.commit('setDateRangeText', ""); // Retrait texte date
+            }
+            
             let filters = { 'dates': [], 'villes': [] };
             if(this.currentUser.role == 'Participant') {
                 filters = Object.assign({}, filters, { 'mesFormations': false });
@@ -313,6 +230,13 @@ export default {
             await this.$store.dispatch('loadEvenements', this.filtersSelection); // Appel requete avec filtres sélectionnés
             this.$store.commit('setInitPagination', true);
         }
+    },
+
+
+    mounted() {    
+        this.listeFiltres = this.filtersList;
+        this.sortSelect = this.sortingParameters.type;
+        this.sortDirection = this.sortingParameters.direction;
     }
 
 }
@@ -323,7 +247,6 @@ export default {
         position: fixed;
         left: 0;
         margin-top: 50px;
-        /* border: solid 2px green; */
     }
     #sortAndFiltersEvents {
         background-color: #ffffff;
