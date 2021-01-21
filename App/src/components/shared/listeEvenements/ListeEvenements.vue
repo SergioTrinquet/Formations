@@ -22,7 +22,9 @@
             <v-col cols="2" class="pa-0 hidden-xs-only margeTriEtFiltres">
             
                 <!-- Marge filtres -->
-                <app-marginSortAndFilters  v-if="paramsFiltersLoaded && loadComponent"></app-marginSortAndFilters>
+                <!-- <app-marginSortAndFilters  v-if="paramsFiltersLoaded && loadComponent"></app-marginSortAndFilters> -->
+                <app-marginSortAndFilters  v-if="paramsFiltersLoaded"></app-marginSortAndFilters>
+
 
             </v-col>
             <v-col class="pa-0">
@@ -78,7 +80,6 @@ export default {
         return {
             displayModalChangeEvent: false,
             eventsLoaded: false,
-
             paramsFiltersLoaded: false // Ajouté le 04/01/2021
         }
     },
@@ -98,21 +99,20 @@ export default {
             return this.$store.state.selectedFilters;
         },
 
-
-        // Ajouté le 18/01/2021 : Pour loader ou non le composant 'marge des classement et filtres' en fonction de l taille de l'écran ///////////////////
+        /* // Ajouté le 18/01/2021 : Pour loader ou non le composant 'marge des classement et filtres' en fonction de l taille de l'écran ///////////////////
         loadComponent() {    //console.log("Je suis dans 'loadComponent'"); //TEST
             let screenSize = this.$vuetify.breakpoint.name; // Pour connaitre dans quel catégorie de dimension se trouve le Viewport
             return (screenSize !== 'xs') ? true : false;
         }
-        /////////////////////
+        ///////////////////// */
     },
     watch: {
         eventToModify() {
             this.displayModalChangeEvent = true; // Pour faire apparaitre le modal de modification d'une formation
-        }
+        },
 
         // Ajouté le 04/01/2021
-        , filtersSelection() { 
+        filtersSelection() { 
             this.loadEventsWithSelectedFilters() 
         }
     },
@@ -144,5 +144,6 @@ export default {
     .margeTriEtFiltres {
         background-color: #ffffff;
         min-width: 240px;
+        min-height: calc(100vh - 86px);
     }
 </style>

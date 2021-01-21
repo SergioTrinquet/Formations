@@ -2,9 +2,12 @@
     <div class="wrapSubHeader">
 
         <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
-        <app-smallScreenButtons  
+        <!-- <app-smallScreenButtons  
             class="hidden-sm-and-up" 
             v-if="loadComponent"
+        ></app-smallScreenButtons> -->
+        <app-smallScreenButtons  
+            class="hidden-sm-and-up" 
         ></app-smallScreenButtons>
         <!-- <div style="background-color: pink; position: fixed; z-index: 10; top: 40%; left: 50%;">loadComponent: {{ loadComponent }}</div> -->
                         
@@ -92,11 +95,11 @@
 
 
 
-            // Ajouté le 18/01/2021 : Pour connaitre dans quel catégorie de dimension se trouve le Viewport et permettre chargement du composant contenant classement et filtres ou non///////////////////
+            /* // Ajouté le 18/01/2021 : Pour connaitre dans quel catégorie de dimension se trouve le Viewport et permettre chargement du composant contenant classement et filtres ou non///////////////////
             loadComponent() {
                 return (this.$vuetify.breakpoint.name == 'xs') ? true : false;
             }
-            /////////////////////
+            ///////////////////// */
 
         },
 
@@ -138,8 +141,7 @@
     background-color: #ffffff; 
     line-height: 17px; 
     padding:8px 20px; 
-    width: 100%; 
-    /* opacity: 0.6; */
+    width: 100%;
     box-shadow: 0 3px 3px rgba(0,0,0,0.12);
 }
 
