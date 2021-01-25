@@ -111,9 +111,6 @@ export default {
         },
         rules() {
             return this.$store.state.inputRules;
-        },
-        closeModalAnimateur() { 
-            return this.$store.state.closeModalAnimateur;
         }
     },
     methods: {
@@ -125,11 +122,7 @@ export default {
             this.$store.dispatch('addAnimateur', this.animateur)
             .then(() => {
                 // On ferme l'encart quand le traitement asynchrone d'enregistrement d'un nouvel animateur est terminé
-                if(this.closeModalAnimateur) {
-                    this.onClose(); 
-                    // Réinitialisation de la variable signalant ordre de fermeture de l'encart
-                    this.$store.commit('setCloseModalAnimateur', false);
-                }
+                this.onClose(); 
             });
         }
     }
@@ -139,15 +132,5 @@ export default {
 <style scoped>
 .wrapper {
     padding: 25px;
-}
-.inputLeft {
-  display: inline-block;
-  width:45%; 
-  margin-right: 5%;
-}
-.inputRight {
-  display: inline-block;
-  width:45%; 
-  margin-left: 5%;
 }
 </style>
