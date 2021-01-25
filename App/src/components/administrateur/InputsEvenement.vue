@@ -148,7 +148,7 @@
             item-color="primaire"
             small-chips
             light
-            :item-text="e => e.prenom + ' ' + e.nom"
+            :item-text="e => e.prenom + ' ' + e.nom + ' (' + e.region + ')'"
             item-value="id"
             return-object
         >
