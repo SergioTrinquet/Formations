@@ -18,7 +18,7 @@ export default new Vuex.Store({
         pages: [
             { roles: [null],  routeName: 'accueil', redirection: true },
             { roles: [null], routeName: 'sign_up', btMenu: { icon: 'account_circle', intitule: 'S\'inscrire' } },
-            { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' }    },
+            { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' } },
             { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer un évènement' } },
             { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' }, redirection: true },
             { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true },
@@ -34,15 +34,6 @@ export default new Vuex.Store({
 
         /* utilisateurs: [{ id: '', firstName: '', lastName: '', role: '', email: '', password: '', evenements: [], //liste des id evenements }], */
         utilisateurs: [],
-        
-        animateurs: [], // Tableau destiné à stocker objets aux propriétés 'id' et 'region'
-
-        /* evenements: [{
-            id_ev: '', titre: '', description: '', date: '', heure: '', CP: '', adresse: '', coordonnees: [], // optionnel : Le garde-t-on ?
-            id_animateurs: [], //id de(s) (l')animateur(s)
-            id_participants: [], //id des participants
-            id_createurEvenement: '', // id créateur evenement
-        }], */
         evenements: [],
         
         inputRules: {
@@ -63,7 +54,6 @@ export default new Vuex.Store({
             { libelle: 'dates', selected: false },
             { libelle: 'villes', selected: false }
         ],
-        closeModalAnimateur: false,
         selectAnimateurs: [],
         addedAnimateur: null,
         displayModalRecordedEvent: false,
@@ -88,7 +78,8 @@ export default new Vuex.Store({
         selectedFilters: {},
         dateRangeText: "",
         initPagination: false,
-
+        displayModalSignIn: false,
+        displayModalSignUp: false,
         
         FF_currentUser: 'Vide' //TEST
     },
@@ -96,6 +87,13 @@ export default new Vuex.Store({
 
 
     mutations: {
+        setDisplayModalSignIn(state, payload) {
+            state.displayModalSignIn = payload;
+        },
+        setDisplayModalSignUp(state, payload) {
+            state.displayModalSignUp = payload;
+        },
+
         // Appelé dans pages création et modification évènement pour alimenter liste déroulante des animateurs
         setLoadedAnimateurs(state, payload) {
             state.selectAnimateurs = payload;
@@ -142,16 +140,13 @@ export default new Vuex.Store({
             };
             const animateur = {
                 id: payload.id_utilisateur,
-                profession: payload.region
+                region: payload.region
             };
             //console.log("mutation 1 : " + JSON.stringify(user)); console.log("mutation 2 : " + JSON.stringify(participant)); //TEST
             
             state.utilisateurs.push(user);
-            state.animateurs.push(animateur); // Pas rempli initialement => A CORRIGER
-
-            state.selectAnimateurs.push({ id: animateur.id, nom: user.lastName, prenom: user.firstName });
+            state.selectAnimateurs.push({ id: animateur.id, nom: user.lastName, prenom: user.firstName, region: payload.region });
             state.addedAnimateur = animateur.id;
-            state.closeModalAnimateur = true;
         },
 
         fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
@@ -177,9 +172,6 @@ export default new Vuex.Store({
         },
         setMessageError(state, payload) {
             state.msgError = payload;
-        },
-        setCloseModalAnimateur(state, payload) {
-            state.closeModalAnimateur = payload;
         },
         setParamsFiltersEvenements(state, payload) {
             state.paramsFiltersEvenements = payload;
@@ -313,7 +305,7 @@ export default new Vuex.Store({
 
 
         // Inscription : Ajout participant
-        addParticipant({commit}, payload) {
+        createParticipant({commit}, payload) {
             // Quand User créé dans Firebase, Id créé et renvoyé dans la promesse
             commit('setLoading', true);
             commit('setMessageError', null);
@@ -340,6 +332,7 @@ export default new Vuex.Store({
                 })
                 .then(docRef => {
                     commit('fillDataCurrentUser', { data: newParticipant, id_user: docRef.id }); // Mise à jour données utilisateur en cours
+                    commit('setDisplayModalSignUp', true);
                 })
                 .catch(error => { throw error });
 
@@ -376,6 +369,7 @@ export default new Vuex.Store({
                     querySnapshot.forEach(function (doc) {
                         console.log('signIn', doc.id, ' => ', doc.data()); //TEST
                         commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id });
+                        commit('setDisplayModalSignIn', true);
                     });
                 });
             })
@@ -427,7 +421,8 @@ export default new Vuex.Store({
                     animateurs.push({
                         id: doc.id,
                         nom: doc.data().lastName,
-                        prenom: doc.data().firstName
+                        prenom: doc.data().firstName,
+                        region: doc.data().region
                     });
 
                 });
@@ -452,10 +447,11 @@ export default new Vuex.Store({
                 role: 'Animateur',
                 email: payload.email,
                 password: payload.password,
-                evenements: []
+                evenements: [],
+                region: payload.region // Ajout le 21/01/2021
             }
 
-            // Check si demande vient bien d'Administrateur (donc si c'est Administrateur qui est logué)         
+            // Check si demande vient bien d'un Administrateur (donc si c'est un Administrateur qui est logué)         
             if(state.currentUser.role == "Admin") {
 
                 // Appel coté serveur pour création d'utilisateur sans se connecter (et changer) via admin SDK car impossible coté client
@@ -465,13 +461,15 @@ export default new Vuex.Store({
                         email: newAnimateur.email,
                         password: newAnimateur.password
                     }
-                ).then((json) => {
+                ).then(json => {
                     
                     const db = firebase.firestore();
                     return db.collection('utilisateurs').add({ ...newAnimateur, id_auth: json.data.userRecord_uid })
-                    .then((docRef) => { 
-                        //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST                           
-                        return db.collection('animateurs').add({ id_utilisateur: docRef.id, region: payload.region })
+                    .then(docRef => { 
+                        //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST     
+                        
+                        // Mis en comm. le 21/01/2021                      
+                        /* return db.collection('animateurs').add({ id_utilisateur: docRef.id, region: payload.region })
                         .then(() => {
                             //console.log("Document écrit dans collection 'animateurs' avec l'ID: ", docRef.id); //TEST                       
                             commit('addAnimateur', { ...newAnimateur, id_utilisateur: docRef.id, region: payload.region });
@@ -479,15 +477,18 @@ export default new Vuex.Store({
                         .catch((error) => { 
                             console.error("Error adding document dans collection 'animateurs' : ", error);
                             throw error;
-                        });
+                        }); */
+
+                        // Ajout le 21/01/2021
+                        commit('addAnimateur', { ...newAnimateur, id_utilisateur: docRef.id, region: payload.region });
                     })
-                    .catch((error) => {
-                        console.error("Error adding document dans collection 'utilisateurs' : ", error);
+                    .catch(error => {
+                        console.error("Erreur lors de l'ajout d'un document dans collection 'utilisateurs' : ", error);
                         throw error;
                     });
                     
                 })
-                .catch((error) => {
+                .catch(error => {
                     // >>> IMPORTANT ! <<< : Si Animateur déjà créé, soulève une erreur mais Vue CLI (et webpack en particuliers) au lieu de renvoyer l'intitulé exact de l'erreur provenant de NOde.js, renvoie un message d'erreur générique qui est trop vague => Voir comment remédier à cela
                     console.error("==> ", JSON.stringify(error)); //TEST
                     console.error("Code d'erreur : " + error.code + " | Message d'erreur : " + error.message); //TEST
@@ -620,8 +621,6 @@ export default new Vuex.Store({
                 collectionEvenements = collectionEvenements.orderBy("date");
             }
                 
-            
-
             
             // lorsque profil 'Participant' ou 'Animateur'
             if((payload !== null && "mesFormations" in payload) || (state.currentUser.role == "Animateur")) {
@@ -1405,6 +1404,24 @@ export default new Vuex.Store({
             return state.eventParticipants.sort((a, b) => a.lastName > b.lastName);
         },
 
+        // 25/01/2021 : Getters représentant données des filtres sélectionnés
+        selectedDateRange(state) {
+            let dates = state.selectedFilters.dates;
+            return typeof dates == 'undefined' ? [] : dates;
+        },
+        selectedCities(state) {
+            let villes = state.selectedFilters.villes;
+            return typeof villes == 'undefined' ? [] : villes;
+        },
+        pastEvents(state) {
+            let pastEvents = state.selectedFilters.pastEvents;
+            return typeof pastEvents == 'undefined' ? false : pastEvents;
+        },
+        mesFormations(state) {
+            let mesFormations = state.selectedFilters.mesFormations;
+            return (typeof mesFormations == 'undefined') ? false : mesFormations;
+        },
+        // FIN : 25/01/2021
 
         FF_currentUser(state) { return state.FF_currentUser; } //TEST
     }
