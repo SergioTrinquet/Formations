@@ -106,6 +106,14 @@
 
       <!-- JUSTE POUR TEST --><div style="position: fixed; top 90px;">{{ "FF_currentUser => " + FF_currentUser }}<button v-on:click="CallStateFF_currentUser" style="background-color:red; color: #fff;">Appel FF_currentUser</button></div>
       
+      <!-- Modal de bienvenue pour nouveaux inscrits et nouveaux connectés -->
+      <app-modal :display="displayModalWelcome">
+        <div class="mx-10 my-5">
+          <div class="modalTxt">{{ texteModalWelcome }}<br />{{ currentUser.firstName + " " + currentUser.lastName }}</div>
+          <v-btn @click="closeModalWelcome" depressed>Fermer</v-btn>
+        </div>
+      </app-modal>
+
       <router-view></router-view>
     </v-content>
   </v-app>
@@ -118,8 +126,7 @@ export default {
   filters: { capitalizeOnEveryWords },
 
   data: () => ({
-    sideNav: false,
-    //displayMenu: false
+    sideNav: false
   }),
 
   computed: {
@@ -135,10 +142,8 @@ export default {
     pageRedirection() {
       return this.$store.getters.pageRedirection;
     },
-    currentUser() {   //console.warn("computed : currentUser => ", this.$store.getters.currentUser); //TEST
-      const currentUser = this.$store.getters.currentUser;
-      this.redirection(currentUser);
-      return currentUser;
+    currentUser() {   console.warn("computed : currentUser => ", this.$store.getters.currentUser); //TEST
+      return this.$store.getters.currentUser;
     },
 
     // Affichage ou non menu hamburger avec navigation verticale
@@ -156,6 +161,25 @@ export default {
       return display;
     },
 
+    displayModalSignIn() {
+      return this.$store.state.displayModalSignIn;
+    },
+    displayModalSignUp() {
+      return this.$store.state.displayModalSignUp;
+    },
+    displayModalWelcome() {     //console.log("displayModalSignIn =>", this.$store.state.displayModalSignIn, "displayModalSignUp =>", this.$store.state.displayModalSignUp, "displayModalWelcome => ", this.$store.state.displayModalSignIn || this.$store.state.displayModalSignUp); //TEST
+      return this.displayModalSignIn || this.displayModalSignUp;
+    },
+    texteModalWelcome() {
+      let txt = "";
+      if(this.displayModalSignIn) {
+        txt = "Heureux de vous retrouver"
+      } else if(this.displayModalSignUp) {
+        txt = "Bienvenue parmi nous"
+      }
+      return txt;
+    },
+
     // TEST
     FF_currentUser() {
       return this.$store.getters.FF_currentUser;
@@ -164,12 +188,25 @@ export default {
 
   },
 
+  watch: {
+    currentUser(val, oldVal) {   
+      console.error("(APP.VUE) WATCH : currentUser => ", "Ancien role => " + oldVal.role, "Nouveau role => " + val.role); //TEST
+      
+      // NOTE : Ne passe pas dans ce Watch qd pas logué/inscrit 
+      // Si val == oldVal, pas de redirection, sinon redirection
+      if(oldVal.role !== val.role) {
+        console.error("Ancien role different de nv role : On redirige !!");
+        this.redirection(val);
+      }
+    }
+
+  },
 
   methods: {
     // Redirection vers la bonne page en fonction du profil de la personne loguée :
     // Si déconnexion ou bien pas encore logué => Redirection vers pg d'accueil,
-    // Si utilisateur logué en tant que Participant ou bien Animateur => Redirection vers pg de liste des formations
-    redirection(currentUser) {
+    // Dans tous les autres cas (si utilisateur logué en tant que Participant, Animateur ou Administrateur) => Redirection vers pg de liste des formations
+    redirection(currentUser) {    console.log(">>>>> Methode 'redirection' dans App.vue <<<<<"); //TEST
         let pr = null;
         pr = this.pageRedirection.find(pr => pr.roles.includes(currentUser.role));
         if(typeof pr !== "undefined" && pr.routeName !== '') {
@@ -183,7 +220,13 @@ export default {
       this.$store.dispatch('signOut');
     },
 
-
+    closeModalWelcome() {
+      if(this.displayModalSignIn) {
+        this.$store.commit('setDisplayModalSignIn', false);
+      } else if(this.displayModalSignUp) {
+        this.$store.commit('setDisplayModalSignUp', false);
+      }
+    },
 
     CallStateFF_currentUser() { this.$store.dispatch('FF_currentUser'); } // TEST
   }
@@ -230,5 +273,9 @@ export default {
     color: #ffffff;
     font-size: 13px;
     line-height: 11px;
+  }
+
+  .modalTxt {
+    line-height: 20px;
   }
 </style>
