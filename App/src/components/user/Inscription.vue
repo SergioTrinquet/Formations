@@ -8,12 +8,6 @@
                 col-md-8 offset-md-2"
             >
 
-                <app-modal :display="displayModalWelcome">
-                    <div>Bienvenue parmi nous {{ currentUser.firstName + " " + currentUser.lastName }}</div>
-                    <v-btn @click="displayModalWelcome = !displayModalWelcome" depressed>Fermer</v-btn>
-                </app-modal>
-
-                    
                 <v-card
                     elevation="2"
                     class="my-10"
@@ -88,8 +82,8 @@
                         <v-divider></v-divider>
                         <v-card-actions>
                             <div class="mx-auto my-1">
-                                <v-btn v-on:click="onValidate" :disabled="!valid" class="mr-5 validate"><v-icon class="mr-2">fas fa-check</v-icon>Enregistrer</v-btn>
-                                <v-btn v-on:click="onReset" class="reinit"><v-icon class="mr-2">fas fa-times</v-icon>Réinitialiser</v-btn>
+                                <v-btn v-on:click="onValidate" :disabled="!valid" class="mr-5 bt_green" depressed>Enregistrer</v-btn>
+                                <!-- <v-btn v-on:click="onReset">Réinitialiser</v-btn> -->
                             </div>
                         </v-card-actions>
                     </v-form>
@@ -117,8 +111,7 @@ export default {
                 confirmation => confirmation === this.inscription.password || "Ne correspond pas !!"
             ],
             switchIcon1: false,
-            switchIcon2: false,
-            displayModalWelcome: false,
+            switchIcon2: false
 
             /* test_TextField: {
                 label: 'XXXX',
@@ -137,22 +130,9 @@ export default {
             return this.$store.state.inputRules;
         }
     },
-    watch: {
-        // On capte qd l'enregistrement d'un nv participant a fonctionné : Redirection vers page 'events'
-        currentUser(val) {     console.log("Passage dans le watch ds 'inscription.vue'"); //TEST
-            if(val.id !== '') {
-                // Apparition msg bienvenue
-                this.displayModalWelcome = true;
-                // Redirection au bout de 3 sec
-                setTimeout(() => {
-                    this.$router.push({ name: 'events' });
-                }, 3000);
-            }
-        }
-    },
     methods: {
         onValidate() {
-            this.$refs.form.validate();
+            //this.$refs.form.validate();
 
             if(this.valid) {
                 // Sur saisie : Retrait espaces inutiles et on met tout en minuscules
@@ -165,19 +145,14 @@ export default {
                     confirmPassword: this.inscription.confirmPassword
                 };
 
-                this.$store.dispatch('addParticipant', newParticipant); // Inscription dans Firestore
+                this.$store.dispatch('createParticipant', newParticipant); // Inscription dans Firestore
             } else {
                 alert('Erreur(s) de saisie');
             }
         },
-        onReset() {
+        /* onReset() {
             this.$refs.form.reset();
-        }
+        } */
     }
 }
 </script>
-
-<style scoped>
-    .validate { color: #039930; }
-    .reinit { color: #c40404; }
-</style>
