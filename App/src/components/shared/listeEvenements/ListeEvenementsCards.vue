@@ -2,7 +2,6 @@
     <div class="blocsEvent" v-if="events.length > 0">
         
         <!-- 
-        currentUser : {{ currentUser }} <br />
         rangeEvents: {{ rangeEvents }} <br/>
         sortingParameters.type: {{ sortingParameters.type }} - sortingParameters.direction: {{ sortingParameters.direction }}<br/>
         currentUser.role => {{ currentUser.role }}<br />
@@ -13,7 +12,7 @@
             :class="['blocEvent', isPast(event.date) ? 'obsolete' : '']"
             :data-past="isPast(event.date)"
         >       
-            <div class="dateEvent primaire">{{ formatDate(event.date) }}</div>
+            <div :class="['dateEvent', isPast(event.date) ? 'obsolete' : 'primaire']">{{ formatDate(event.date) }}</div>
             
             <app-bandeauInscription 
                 v-if="currentUser.role == 'Participant'" 
@@ -247,7 +246,7 @@
         margin: 100px 0 0 0;
     }
     .blocEvent.obsolete {
-        box-shadow: 0 0 0px 6px rgba(255,0,0,0.5) inset;
+        box-shadow: 0 0 0 4px #FF7F7F inset;
     }
     .dateEvent {
         color: #ffffff;
@@ -259,6 +258,9 @@
         position: absolute;
         letter-spacing: 0.05em;
         margin: -25px 0 0 15px;
+    }
+    .dateEvent.obsolete {
+        background-color: #FF7F7F;
     }
     .headerEvent,
     .nbParticipants {
