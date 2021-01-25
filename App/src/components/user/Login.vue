@@ -1,14 +1,5 @@
 <template>
-
     <v-container fluid>
-
-        <!-- <app-errorMsg :message="msgError" v-if="msgError !== null"></app-errorMsg> -->
-
-        <app-modal :display="displayModalWelcome">
-            <div>Heureux de vous retrouver {{ currentUser.firstName + " " + currentUser.lastName }}</div>
-            <v-btn @click="displayModalWelcome = !displayModalWelcome" depressed>Fermer</v-btn>
-        </app-modal>
-
         <v-row>
             <v-col
                 class="col-10 offset-1 
@@ -23,7 +14,6 @@
                     <v-toolbar flat dense color="secondaire" dark>Connexion</v-toolbar>
                     <v-form 
                         v-model="validConn"
-                        ref="formConn"
                     >
                         <v-card-text style="width:80%; margin: 0 10%;">
                         
@@ -51,9 +41,10 @@
                         </v-card-text>
                         <v-divider></v-divider>
                         <v-card-actions>
-                            <v-spacer></v-spacer> {{ currentUser.role }}
+                            <v-spacer></v-spacer>
                             <v-btn 
                                 class="bt_green" 
+                                depressed
                                 :disabled="!validConn"
                                 @click="onValidate"
                             ><v-icon class="mr-2 small">fas fa-check</v-icon>Valider</v-btn>
@@ -74,52 +65,20 @@ export default {
                 password: ''
             },
             switchIcon: false,
-            validConn: false,
-            displayModalWelcome: false
+            validConn: false
         }
     },
     computed: {
         msgHint() { 
             return this.connection.password === "" ? "6 caractères minimum, sans espaces, contenant au moins un chiffre" : "" 
         },
-        currentUser() {
-            return this.$store.getters.currentUser;
-        },
-        /* msgError() {
-            return this.$store.state.msgError;
-        }, */
         rules() {
             return this.$store.state.inputRules;
         }
     },
-    watch: {        
-        currentUser(val) {
-            // Redirection en fonction du role de l'utilisateur connecté
-            let pathName = '';
-            if(val.role == 'Participant') {
-                pathName = 'events';
-            } else if(val.role == 'Animateur') {
-                pathName = 'participants_list';
-            } else if(val.role == 'Admin') {
-                pathName = 'events_list';
-            } else {
-                this.msgError = "L'intitulé de votre role est erroné : " + val.role;
-            }
 
-            if(pathName != '') {
-                // Apparition msg bienvenue
-                this.displayModalWelcome = true;
-                // Redirection au bout de 3 sec
-                setTimeout(() => {
-                    this.$router.push({ name: pathName });
-                }, 3000);
-            }
-        }
-    },
     methods: {
         onValidate() {
-            //this.$refs.formConn.validate(); // <= Est-ce utile ou pas ? A tester !!
-
             if(this.validConn) {
                 // Check si login/passwd existe dans Firebase
                 this.$store.dispatch('signIn', this.connection);
