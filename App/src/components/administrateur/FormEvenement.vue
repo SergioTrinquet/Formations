@@ -10,7 +10,7 @@
                 class="bt_green ma-2"
                 light
             >
-                <v-icon small class="mr-2">fas fa-check</v-icon>Enregistrer
+               Enregistrer
             </v-btn>
         </div>
     </v-form>
@@ -40,7 +40,6 @@
         watch: {
             // Pour sélectionner dans le select le nouvel animateur venant d'être créé
             justAddedAnimateur(val) {
-                console.log("'justAddedAnimateur' dans 'CreationEvenement'", val); //TEST
                 this.evenement.id_animateurs.push(val);
             }
         },
@@ -56,7 +55,6 @@
                         adresse: this.evenement.adresse,
                         CP: this.evenement.CP,
                         ville: this.evenement.ville.toUpperCase(),
-                        image: this.evenement.image,
                         coordonnees: {
                             x: this.evenement.coordonnees.x,
                             y: this.evenement.coordonnees.y
