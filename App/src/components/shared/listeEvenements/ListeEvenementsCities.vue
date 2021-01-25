@@ -33,10 +33,9 @@
             listeVillesComplete() {
                 return this.$store.state.paramsFiltersEvenements.villes.map(v => v.toUpperCase());
             },
-            selectedCities() { //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
-                let villes = this.$store.state.selectedFilters.villes;
-                return typeof villes == 'undefined' ? [] : villes;
-            }
+            selectedCities() {      //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
+                return this.$store.getters.selectedCities;
+            },
         },
 
         methods: {

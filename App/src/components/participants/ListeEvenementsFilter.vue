@@ -13,8 +13,7 @@
     export default {
         computed: {
             mesFormations() {
-                let mesFormations = this.$store.state.selectedFilters.mesFormations;
-                return (typeof mesFormations == 'undefined') ? false : mesFormations;
+                return this.$store.getters.mesFormations;
             },
         },
 

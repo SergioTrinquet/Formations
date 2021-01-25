@@ -114,22 +114,19 @@ export default {
         filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection", this.$store.state.selectedFilters); //TEST
             return this.$store.state.selectedFilters;
         },
-        selectedDateRange() {   //console.log("COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
-            let dates = this.filtersSelection.dates;
-            return typeof dates == 'undefined' ? [] : dates;
+        selectedDateRange() {   console.log("COMPUTED de 'selectedDateRange'", this.$store.getters.selectedDateRange); //TEST
+            return this.$store.getters.selectedDateRange;
         },
-        selectedCities() {
-            let villes = this.filtersSelection.villes;
-            return typeof villes == 'undefined' ? [] : villes;
+        selectedCities() { 
+            return this.$store.getters.selectedCities;
         },
         pastEvents() {
-            let pastEvents = this.filtersSelection.pastEvents;
-            return typeof pastEvents == 'undefined' ? false : pastEvents;
+            return this.$store.getters.pastEvents;
         },
         mesFormations() {
-            let mesFormations = this.filtersSelection.mesFormations;
-            return (typeof mesFormations == 'undefined') ? false : mesFormations;
+            return this.$store.getters.mesFormations;
         },
+
         dateRangeText() {   //console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
             return this.$store.state.dateRangeText;
         },

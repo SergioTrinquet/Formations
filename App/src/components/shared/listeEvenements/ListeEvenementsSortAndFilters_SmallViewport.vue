@@ -100,7 +100,6 @@
             currentUser() {
                 return this.$store.getters.currentUser;
             },
-
             sortItemsList() {
                 return this.$store.state.sortItemsList;
             },
@@ -113,26 +112,19 @@
                 return this.$store.state.sortingParameters;
             },
 
-            /* selectedFilters() { console.log("selectedFilters", this.$store.state.selectedFilters); //TEST
-                return this.$store.state.selectedFilters;
-            }  */
             // Récupération des dates sélectionnées dans le datepicker (s'il y en a)
             selectedDateRange() {   //console.log("COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
-                let dates = this.$store.state.selectedFilters.dates;
-                return typeof dates == 'undefined' ? [] : dates;
+                return this.$store.getters.selectedDateRange;
             },
             // Récupération des villes sélectionnées (s'il y en a)
-            selectedCities() {      //console.log("COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
-                let villes = this.$store.state.selectedFilters.villes;
-                return typeof villes == 'undefined' ? [] : villes;
+            selectedCities() {      //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
+                return this.$store.getters.selectedCities;
             },
             pastEvents() {
-                let pastEvents = this.$store.state.selectedFilters.pastEvents;
-                return typeof pastEvents == 'undefined' ? false : pastEvents;
+                return this.$store.getters.pastEvents;
             },
             mesFormations() {
-                let mesFormations = this.$store.state.selectedFilters.mesFormations;
-                return (typeof mesFormations == 'undefined') ? false : mesFormations;
+                return this.$store.getters.mesFormations;
             },
 
             // Pour avoir sélection de(s) date(s) sous forme de texte
@@ -157,13 +149,6 @@
                 this.sortSelect = val.type;
                 this.sortDirection = val.direction;
             },
-
-            /* selectedFilters(val) {
-                //console.log("WATCH de selectedFilters", val); //TEST
-                if("dates" in val) {
-                    // FAIRE APPARAITRE Rond avec coche sur filtre 'dates' et rond avec incrementation sur intitulé bt 'Filtres'
-                }
-            } */
             // Pour afficher icone de suppression du filtre 'dates' + pour comptage nb de filtres actifs
             selectedDateRange(val) {
                 const idx = this.listeFiltres.findIndex(f => f.libelle == 'dates');
@@ -174,7 +159,6 @@
                 const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
                 this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
             }
-
         },
 
         methods: {

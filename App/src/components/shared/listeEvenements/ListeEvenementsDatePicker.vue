@@ -2,7 +2,7 @@
 
     <!-- Calendrier sélection dates -->
     <v-overlay opacity="0.75">
-        <!-- TEST -->dateRange: {{ dateRange }} <br/>selectedDateRange: {{ selectedDateRange }} <!-- | previousDateRange: {{ previousDateRange }} -->
+        <!-- TEST --><!-- dateRange: {{ dateRange }} <br/> --><!-- selectedDateRange: {{ selectedDateRange }} --> <!-- | previousDateRange: {{ previousDateRange }} -->
         <div class="initDatesText">{{ initDateRangeText }}</div>
         <v-date-picker 
             v-model="dateRange" 
@@ -49,11 +49,9 @@
 
         computed: {
             // Recup. valeurs dates de filtrage de la var. ds le Vuex
-            selectedDateRange() { console.log("COMPOSANT datePicker : Je suis ds le COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
-                let dates = this.$store.state.selectedFilters.dates;
-                return typeof dates == 'undefined' ? [] : dates;
+            selectedDateRange() {   //console.log("COMPOSANT datePicker : Je suis ds le COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
+                return this.$store.getters.selectedDateRange;
             },
-
 
             // Récup. des paramètres d'initialisation du filtre 'dates'
             initDatesFilter() {
