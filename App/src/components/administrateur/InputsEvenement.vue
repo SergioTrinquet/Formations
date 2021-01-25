@@ -237,17 +237,6 @@ export default {
 </script>
 
 <style scoped>
- .inputLeft {
-    display: inline-block;
-    width:45%; 
-    margin-right: 5%;
-  }
-  .inputRight {
-    display: inline-block;
-    width:45%; 
-    margin-left: 5%;
-  }
-
   .v-input {
     font-size: 0.95em;
   }

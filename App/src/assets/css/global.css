@@ -80,6 +80,14 @@ body .tooltip {
     color: #ff5252;
 }
 
+.inputLeft, 
+.inputRight {
+    display: inline-block;
+    width:45%; 
+}
+.inputLeft { margin-right: 5%; }
+.inputRight { margin-left: 5%; }
+
 /* Surcharge */
 .v-app-bar.v-app-bar--fixed,
 .v-system-bar--fixed {
