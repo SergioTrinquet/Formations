@@ -1,62 +1,81 @@
 <template>
     <div class="flex-wrapper justify-center">
 
-        <v-overlay :value="displayModalTypeClassements" opacity="0.75">
-            <div class="modal">
-                <div class="header primaire">CLASSEMENT</div>
-                <v-icon class="close" @click="displayModalTypeClassements = false">fas fa-times</v-icon>   
-                <!-- TEST : A VIRER !!!-->
-                <!-- <div style="position: absolute; margin-top:100px;">
-                    <div>sortDirection => {{ sortDirection }}</div>
-                    <div>
-                        sortSelect => {{ sortSelect }}
-                        sortingParameters => {{ sortingParameters }}
+
+        <!-- <v-overlay :value="displayModalTypeClassements" opacity="0.75"> -->
+        <v-overlay :value="displayOverlayTypeClassements" opacity="0.75">
+
+            <transition 
+                name="scale" 
+                appear 
+                v-on:after-leave="displayOverlayTypeClassements = false"
+            >
+
+                <div class="modal" v-if="displayModalTypeClassements">
+                    <div class="header primaire">CLASSEMENT</div>
+                    <v-icon class="close" @click="displayModalTypeClassements = false">fas fa-times</v-icon>   
+                    <!-- TEST : A VIRER !!!-->
+                    <!-- <div style="position: absolute; margin-top:100px;">
+                        <div>sortDirection => {{ sortDirection }}</div>
+                        <div>
+                            sortSelect => {{ sortSelect }}
+                            sortingParameters => {{ sortingParameters }}
+                        </div>
+                    </div> -->
+                    <!-- FIN TEST : A VIRER !!!-->
+                    <div class="directionOrderButtons">
+                        <button :class="['primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'"><v-icon v-if="sortDirection == 'asc'">fas fa-check-circle</v-icon>Par ordre<br />croissant</button>
+                        <button :class="['primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'"><v-icon v-if="sortDirection == 'desc'">fas fa-check-circle</v-icon>Par ordre<br />décroissant</button>
                     </div>
-                </div> -->
-                <!-- FIN TEST : A VIRER !!!-->
-                <div class="directionOrderButtons">
-                    <button :class="['primaire', (sortDirection == 'asc' ? '' : 'lighter')]" @click="sortDirection = 'asc'"><v-icon v-if="sortDirection == 'asc'">fas fa-check-circle</v-icon>Par ordre<br />croissant</button>
-                    <button :class="['primaire', (sortDirection == 'desc' ? '' : 'lighter')]" @click="sortDirection = 'desc'"><v-icon v-if="sortDirection == 'desc'">fas fa-check-circle</v-icon>Par ordre<br />décroissant</button>
+                    <div v-for="item in sortItemsList" :key="item.sortType" class="typeOrderButtons">
+                        <button :class="(sortSelect == item.sortType ? 'primaire' : 'primaireLight')" :value="item.sortType" @click="getTypeOrder" >
+                            <v-icon v-if="sortSelect == item.sortType">fas fa-check-circle</v-icon>
+                            {{ item.libelle }}
+                        </button>
+                    </div>
+                    <v-btn class="bt_green modalSmallDevice" depressed @click="sortBy">Valider</v-btn>
                 </div>
-                <div v-for="item in sortItemsList" :key="item.sortType" class="typeOrderButtons">
-                    <button :class="(sortSelect == item.sortType ? 'primaire' : 'primaireLight')" :value="item.sortType" @click="getTypeOrder" >
-                        <v-icon v-if="sortSelect == item.sortType">fas fa-check-circle</v-icon>
-                        {{ item.libelle }}
-                    </button>
-                </div>
-                <v-btn class="bt_green modalSmallDevice" depressed @click="sortBy">Valider</v-btn>
-            </div>
+
+            </transition>
+
         </v-overlay>
 
 
-        <v-overlay :value="displayModalTypeFilters" opacity="0.75">
-            <div class="modal">
-                <div class="header primaire">FILTRES</div>
-                <v-icon class="close" @click="displayModalTypeFilters = false">fas fa-times</v-icon>   
-                <!-- <div>listeFiltres: {{ listeFiltres }}</div> --><!-- TEST -->
-                <!-- <div>indicateurNbFiltres: {{ indicateurNbFiltres }}</div> --><!-- TEST -->
+        <v-overlay :value="displayOverlayTypeFilters" opacity="0.75">
 
-                <div class="blocFilterButtons">
-                    <div class="chbxOldTrainingsWrapper" v-if="currentUser.role == 'Admin'">
-                        <app-displayOldTrainings></app-displayOldTrainings>
+            <transition 
+                name="scale" 
+                appear 
+                v-on:after-leave="displayOverlayTypeFilters = false"
+            >
+
+                <div class="modal" v-if="displayModalTypeFilters">
+                    <div class="header primaire">FILTRES</div>
+                    <v-icon class="close" @click="displayModalTypeFilters = false">fas fa-times</v-icon>   
+                    <div class="blocFilterButtons">
+                        <div class="chbxOldTrainingsWrapper" v-if="currentUser.role == 'Admin'">
+                            <app-displayOldTrainings></app-displayOldTrainings>
+                        </div>
+                        <div class="typeFilterButtons" v-if="currentUser.role == 'Participant'">
+                            <app-participantFilter>
+                                <template v-slot:iconRight>
+                                    <v-icon v-if="mesFormations">fas fa-times-circle</v-icon>
+                                </template>
+                            </app-participantFilter>
+                        </div>
+                        <div v-for="(filtre, i) in listeFiltres" :key="i" class="typeFilterButtons">
+                            <v-icon v-if="filtre.selected == true" @click="deleteFilter(filtre.libelle)">fas fa-times-circle</v-icon>
+                            <button :class="(filtre.selected == true? 'primaire' : 'primaireLight')" @click="filterBy(i)" >
+                                par {{ filtre.libelle }}
+                            </button>
+                            <div v-if="filtre.libelle == 'dates'" class="txtSelection">{{ dateRangeText }}</div>
+                            <div v-if="filtre.libelle == 'villes'" class="txtSelection">{{ selectedCities.join(", ") }}</div>
+                        </div>  
                     </div>
-                    <div class="typeFilterButtons" v-if="currentUser.role == 'Participant'">
-                        <app-participantFilter>
-                            <template v-slot:iconRight>
-                                <v-icon v-if="mesFormations">fas fa-times-circle</v-icon>
-                            </template>
-                        </app-participantFilter>
-                    </div>
-                    <div v-for="(filtre, i) in listeFiltres" :key="i" class="typeFilterButtons">
-                        <v-icon v-if="filtre.selected == true" @click="deleteFilter(filtre.libelle)">fas fa-times-circle</v-icon>
-                        <button :class="(filtre.selected == true? 'primaire' : 'primaireLight')" @click="filterBy(i)" >
-                            par {{ filtre.libelle }}
-                        </button>
-                        <div v-if="filtre.libelle == 'dates'" class="txtSelection">{{ dateRangeText }}</div>
-                        <div v-if="filtre.libelle == 'villes'" class="txtSelection">{{ selectedCities.join(", ") }}</div>
-                    </div>  
                 </div>
-            </div>
+
+            </transition>
+
         </v-overlay>
 
 
@@ -93,6 +112,10 @@
                 sortSelect: "",
                 sortDirection: "",
                 listeFiltres: []
+
+                // ESSAI AU 27/01/2021
+                , displayOverlayTypeClassements: false,
+                displayOverlayTypeFilters: false
             }
         },
 
@@ -106,7 +129,6 @@
             filtersList() {
                 return this.$store.state.filtersList;
             },
-
             // Récupération des valeurs de classement (ordre et type)
             sortingParameters() {
                 return this.$store.state.sortingParameters;
@@ -158,6 +180,14 @@
             selectedCities(val) {
                 const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
                 this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
+            },
+
+            // ESSAI AU 27/01/2021 : Pour transition CSS des modals
+            displayModalTypeClassements(val) {
+                if(val) { this.displayOverlayTypeClassements = true }
+            },
+            displayModalTypeFilters(val) {
+                if(val) { this.displayOverlayTypeFilters = true }
             }
         },
 
@@ -379,12 +409,11 @@
         border-radius: 4px;
         border-radius: 50px;
         width: 80%;
-        /* font-size: 1.2em; */   
-        font-size: 4.2vw !important;
+        font-size: 1.2em;   
+        /* font-size: 4.2vw !important; */
         justify-content: center;
         border: solid 3px #3949ab;
         color: #3949ab;
-
         position: relative;
     }
 </style>

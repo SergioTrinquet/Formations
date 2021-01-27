@@ -9,11 +9,12 @@
 
         
         <!-- Modal de création d'animateurs -->
-        <app-modal 
-            :display="displayModalAddAnimateur" 
+        <app-modal  
+            :display="displayModalAddAnimateur"
             :width="modalWidth" 
             cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
             header="Ajouter un animateur"
+            transition="scale"
         >
             <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
             <app-creationAnimateur 
@@ -33,26 +34,28 @@
 
 
         <!-- Encart de saisie pour nouvelle formation -->
-        <v-card 
-            tile
-            elevation="2"
-            class="my-5"
-        >
-            <v-toolbar flat dense color="primaireLight" dark>{{ titre }}</v-toolbar>
+        <transition name="fadeInFromBottom" appear>
+          <v-card 
+              tile
+              elevation="2"
+              class="my-5"
+          >
+              <v-toolbar flat dense color="primaireLight" dark>{{ titre }}</v-toolbar>
 
-            <app-formEvenement 
-                :evenement="evenement" 
-                @eventResultValidation="resultValidation($event)"
-            >
-                <div class="col-10 offset-1 my-6">
-                    <app-inputsEvenement
-                        :evenement="evenement"
-                        @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
-                    ></app-inputsEvenement>
-                </div>
-            </app-formEvenement>
+              <app-formEvenement 
+                  :evenement="evenement" 
+                  @eventResultValidation="resultValidation($event)"
+              >
+                  <div class="col-10 offset-1 my-6">
+                      <app-inputsEvenement
+                          :evenement="evenement"
+                          @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
+                      ></app-inputsEvenement>
+                  </div>
+              </app-formEvenement>
 
-        </v-card>
+          </v-card>
+        </transition>
 
       </v-col>
     </v-row>

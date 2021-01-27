@@ -1,23 +1,60 @@
 <template>
-    <v-overlay :value="display" opacity="0.75">
+    <!-- Version originale -->
+    <!-- <v-overlay :value="display" opacity="0.75">
         <div :class="['customModal', cssClass]" :style="style">
             <div v-if="msgAlert !== null && typeof msgAlert !== 'undefined'" class="alert" ref="alert">{{ msgAlert }}</div>
             <div v-if="header" class="headerModal primaireLight">{{ header }}</div>
             <slot></slot>
         </div>
+    </v-overlay> -->
+
+    <!-- Version au 28/01/2021 -->
+    <v-overlay :value="display" opacity="0.75">
+        <transition :name="transition" appear>
+            <div :class="['customModal', cssClass]" :style="style">
+                <div v-if="msgAlert !== null && typeof msgAlert !== 'undefined'" class="alert" ref="alert">{{ msgAlert }}</div>
+                <div v-if="header" class="headerModal primaireLight">{{ header }}</div>
+                <slot></slot>
+            </div>
+        </transition>
     </v-overlay>
+
 </template>
 
 <script>
 export default {
-    props: [
+    /* props: [
         'display', 
         'width', 
         'height',
         'cssClass',
         'header',
         'msgAlert'
-    ],
+    ], */
+    props: {
+        display: {
+            //type: Boolean // Empeche modal de s'ouvrir ds certains cas ?
+        }, 
+        width: {
+            type: String
+        }, 
+        height: {
+            type: String
+        },
+        cssClass: {
+            type: String
+        },
+        header: {
+            type: String
+        },
+        msgAlert: {
+            type: String
+        },
+        transition: {
+            type: String,
+            default: "fadeInFromBottom"
+        }
+    },
     computed: {
         style() {
             return (this.width ? 'width:' + this.width + ';' : '') + (this.height ? 'height:' + this.height + ';' : '')

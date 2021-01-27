@@ -13,6 +13,7 @@
             width="100vw" 
             cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
             header="Ajouter un animateur"
+            transition="scale"
         >
             <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
             <app-creationAnimateur 

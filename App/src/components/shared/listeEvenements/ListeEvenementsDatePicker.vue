@@ -3,25 +3,31 @@
     <!-- Calendrier sélection dates -->
     <v-overlay opacity="0.75">
         <!-- TEST --><!-- dateRange: {{ dateRange }} <br/> --><!-- selectedDateRange: {{ selectedDateRange }} --> <!-- | previousDateRange: {{ previousDateRange }} -->
-        <div class="initDatesText">{{ initDateRangeText }}</div>
-        <v-date-picker 
-            v-model="dateRange" 
-            elevation="15"
-            range
-            scrollable 
-            light
-            color="primaire"
-            first-day-of-week="1"
-            :show-current="pickerDate"
-            :min="initDatesFilter.min"
-            :max="initDatesFilter.max"
-            :allowed-dates="allButWeekends"
-            :title-date-format="formatAffichageTitleDatepicker"
-        >
-            <v-spacer></v-spacer>
-            <v-btn text color="primaire" @click="cancelDatePicker">Annuler</v-btn>
-            <v-btn text color="primaire" @click="validationDatePicker">OK</v-btn>
-        </v-date-picker>
+        
+        <transition name="fadeInFromTop" appear><div>
+        
+            <div class="initDatesText">{{ initDateRangeText }}</div>
+            <v-date-picker
+                v-model="dateRange" 
+                elevation="15"
+                range
+                scrollable 
+                light
+                color="primaire"
+                first-day-of-week="1"
+                :show-current="pickerDate"
+                :min="initDatesFilter.min"
+                :max="initDatesFilter.max"
+                :allowed-dates="allButWeekends"
+                :title-date-format="formatAffichageTitleDatepicker"
+            >
+                <v-spacer></v-spacer>
+                <v-btn text color="primaire" @click="cancelDatePicker">Annuler</v-btn>
+                <v-btn text color="primaire" @click="validationDatePicker">OK</v-btn>
+            </v-date-picker>
+
+        </div></transition>
+
     </v-overlay>
 
 </template>
@@ -100,6 +106,7 @@
                 }
                 return titleDatePicker;
             }
+
         },
 
         methods: {

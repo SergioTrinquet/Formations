@@ -1,9 +1,8 @@
 <template>
     <app-modal 
-        :width="modalWidth" 
-        :height="modalHeight" 
         :cssClass="cssClass"
         :msgAlert="msgAlert"
+        transition="fadeInFromTop"
     >
         <v-icon 
             light 
@@ -49,8 +48,6 @@
         ],
 
         props: [
-            'modalWidth',  /* Plus utile ! */
-            'modalHeight', /* Plus utile ! */
             'cssClass',
             'defaultTextNoItems',
             'listItems',

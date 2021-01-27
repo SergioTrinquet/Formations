@@ -43,21 +43,32 @@
                     <span class="email">Adresse mail</span>
                     <span>Présence</span>
                 </div>
-                <div v-for="(participant, i) in eventParticipants" :key="i" class="lgnParticipant">
-                    <span>{{ participant.lastName | capitalizeOnEveryWords }}</span>
-                    <span>{{ participant.firstName | capitalizeOnEveryWords }}</span>
-                    <span>{{ participant.profession | capitalizeOnEveryWords }}</span>
-                    <span class="email">{{ participant.email }}</span>
-                    <span>
-                        <input 
-                            type="checkbox" 
-                            v-model="presences" 
-                            :value="participant.id" 
-                            @change="selectionParticipant" 
-                            :disabled="disabledForm" 
-                        />
-                    </span>
-                </div>
+
+                <transition-group 
+                    v-on:beforeEnter="beforeEnter" 
+                    v-on:enter="enter" appear
+                >
+                
+                    <div v-for="(participant, i) in eventParticipants" :key="i" class="lgnParticipant"
+                        :data-index="i"
+                    >
+                        <span>{{ participant.lastName | capitalizeOnEveryWords }}</span>
+                        <span>{{ participant.firstName | capitalizeOnEveryWords }}</span>
+                        <span>{{ participant.profession | capitalizeOnEveryWords }}</span>
+                        <span class="email">{{ participant.email }}</span>
+                        <span>
+                            <input 
+                                type="checkbox" 
+                                v-model="presences" 
+                                :value="participant.id" 
+                                @change="selectionParticipant" 
+                                :disabled="disabledForm" 
+                            />
+                        </span>
+                    </div>
+
+                </transition-group>
+
                 <!-- TEST -->
                 <!-- presences => {{ presences }} 
                 <br />initialStatePresences => {{ initialStatePresences }} -->
@@ -157,23 +168,20 @@
         },
 
         methods: {
-            // Gestion opacité du bandeau sous le header
-            /* setBandeauOpacity() {
-                window.addEventListener("scroll", () => {
-                    this.scrollYvalue = window.scrollY;
-                    let flag = false;
-                    if(this.scrollYvalue > this.scrollYvalueforNoOpacity) {
-                        this.scrollYvalue = this.scrollYvalueforNoOpacity;
-                        if(!flag) { this.displayBackgroundColor() }
-                        flag = true;
-                    } else {
-                        this.displayBackgroundColor();
-                        flag = false;
-                    }
-                });
-            }, */
+            // Pour animation sur liste de noms sur entrée page
+            beforeEnter(el){
+                el.style.opacity = 0;
+                el.style.transform = "translateX(-50px)";
+                el.style.transition = "all 0.10s ease-out"
+            },
+            // Pour animation sur liste de noms sur entrée page (suite)
+            enter(el) {   //console.log(el.dataset.index); //TEST
+                var delay = el.dataset.index * 100;
+                setTimeout(() => { el.style.opacity = 1; el.style.transform = "translateX(0)" }, delay);
+            },
 
-            NEW_setBandeauOpacity() {
+            // Gestion opacité du bandeau sous le header
+            setBandeauOpacity() {
                 this.scrollYvalue = window.scrollY;
                 let flag = false;
                 if(this.scrollYvalue > this.scrollYvalueforNoOpacity) {
@@ -186,11 +194,9 @@
                 }
             },
             quitPage() {
-                window.removeEventListener("scroll", this.NEW_setBandeauOpacity);
+                window.removeEventListener("scroll", this.setBandeauOpacity);
                 this.$router.go(-1);
             },
-            /////////////////////
-
 
 
             displayBackgroundColor() {
@@ -241,8 +247,7 @@
 
         async mounted() {
             // Pour gérer l'opacité du bandeau sous le header
-            //this.setBandeauOpacity(); // Ancienne version au 18/01/2021
-            window.addEventListener("scroll", this.NEW_setBandeauOpacity);
+            window.addEventListener("scroll", this.setBandeauOpacity);
 
             // Chargement des participants de la formation
             await this.$store.dispatch('getParticipantsEvenement', this.$route.params.event.id_evenement);
@@ -256,10 +261,12 @@
 <style scoped>
     .linkBack {
         position: fixed;
+        z-index: 1;
         width: 100%;
         text-align: right;
         padding: 10px;
         background-color: rgba(255, 255, 255, 0);
+        /* box-shadow: 0px 4px 4px #0000001a; */
         /* transition: all 1s ease-in-out; */
     }
     .linkBack a {
