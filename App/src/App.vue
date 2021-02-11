@@ -107,9 +107,12 @@
       <!-- JUSTE POUR TEST --><div style="position: fixed; top 90px;">{{ "FF_currentUser => " + FF_currentUser }}<button v-on:click="CallStateFF_currentUser" style="background-color:red; color: #fff;">Appel FF_currentUser</button></div>
       
       <!-- Modal de bienvenue pour nouveaux inscrits et nouveaux connectés -->
-      <app-modal :display="displayModalWelcome">
+      <app-modal :display="displayModalWelcome" :cssClass="'shadow'" transition="scale">
         <div class="mx-10 my-5">
-          <div class="modalTxt">{{ texteModalWelcome }}<br />{{ currentUser.firstName + " " + currentUser.lastName }}</div>
+          <div class="modalTxt">
+            {{ texteModalWelcome }}<br />
+            {{ currentUser.firstName + " " + currentUser.lastName | capitalizeOnEveryWords }}
+          </div>
           <v-btn @click="closeModalWelcome" depressed>Fermer</v-btn>
         </div>
       </app-modal>
@@ -167,7 +170,7 @@ export default {
     displayModalSignUp() {
       return this.$store.state.displayModalSignUp;
     },
-    displayModalWelcome() {     //console.log("displayModalSignIn =>", this.$store.state.displayModalSignIn, "displayModalSignUp =>", this.$store.state.displayModalSignUp, "displayModalWelcome => ", this.$store.state.displayModalSignIn || this.$store.state.displayModalSignUp); //TEST
+    displayModalWelcome() {
       return this.displayModalSignIn || this.displayModalSignUp;
     },
     texteModalWelcome() {
