@@ -110,7 +110,16 @@ body .tooltip {
     transform: translateY(30px);
 }
 
+/* transition CSS */
+.fadeInFromBottom_2-enter-active {
+    transition: all 0.6s ease;
+}
+.fadeInFromBottom_2-enter {
+    opacity: 0;
+    transform: translateY(100px);
+}
 
+/* transition CSS */
 .fadeInFromTop-enter-active,
 .fadeInFromTop-leave-active {
     transition: all 0.4s ease-in-out;
