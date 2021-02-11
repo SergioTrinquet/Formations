@@ -10,9 +10,9 @@
 
                 <v-card
                     elevation="2"
-                    class="my-10"
+                    class="my-10 intro"
                 >
-                    <v-toolbar flat dense color="secondaire" dark>Inscription</v-toolbar>
+                    <v-toolbar flat dense color="primaireLight" dark>Inscription</v-toolbar>
                     <v-form
                         ref="form"
                         v-model="valid"
@@ -156,3 +156,20 @@ export default {
     }
 }
 </script>
+
+
+<style scoped>
+.intro {
+    animation: introInscription 0.6s;
+}
+@keyframes introInscription {
+    0% {
+        opacity: 0;
+        transform: translateY(100px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
