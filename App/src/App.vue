@@ -107,7 +107,11 @@
       <!-- JUSTE POUR TEST --><div style="position: fixed; top 90px;">{{ "FF_currentUser => " + FF_currentUser }}<button v-on:click="CallStateFF_currentUser" style="background-color:red; color: #fff;">Appel FF_currentUser</button></div>
       
       <!-- Modal de bienvenue pour nouveaux inscrits et nouveaux connectés -->
-      <app-modal :display="displayModalWelcome" :cssClass="'shadow'" transition="scale">
+      <app-modal 
+        :display="displayModalWelcome" 
+        :cssClass="'shadow'" 
+        transition="scale"
+      >
         <div class="mx-10 my-5">
           <div class="modalTxt">
             {{ texteModalWelcome }}<br />
