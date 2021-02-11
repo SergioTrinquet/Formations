@@ -229,9 +229,9 @@ export default {
 
     closeModalWelcome() {
       if(this.displayModalSignIn) {
-        this.$store.commit('setDisplayModalSignIn', false);
+        this.$store.commit('SET_DISPLAY_MODAL_SIGN_IN', false);
       } else if(this.displayModalSignUp) {
-        this.$store.commit('setDisplayModalSignUp', false);
+        this.$store.commit('SET_DISPLAY_MODAL_SIGN_UP', false);
       }
     },
 

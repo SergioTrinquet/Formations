@@ -37,7 +37,7 @@ new Vue({
   store,
   render: h => h(App),
   created() {
-    store.commit('setLoading', true);
+    store.commit('SET_LOADING', true);
     // Check si un user est déjà connecté lors de l'arrivée sur le site, 
     // et authentification de celui-ci si c'est le cas
     firebase.auth().onAuthStateChanged((user) => {
@@ -47,7 +47,7 @@ new Vue({
       }
       else { 
         console.warn("Pas de user"); //TEST
-        store.commit('setLoading', false);
+        store.commit('SET_LOADING', false);
       }
     });
   }

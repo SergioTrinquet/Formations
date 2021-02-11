@@ -117,10 +117,10 @@
             // Quand validation des dates dans le date picker (pour filtre 'dates')
             validationDatePicker() {
                 // Affectation dans variable qui regroupe tous les filtres des nouvelles valeurs 'dates'
-                this.$store.commit('setSelectedFilters', { 'dates': this.dateRange });
+                this.$store.commit('SET_SELECTED_FILTERS', { 'dates': this.dateRange });
                 this.closeDatePicker();
                 this.previousDateRange = this.dateRange; // Pour gérer cas qd clic 'Annuler' sur Date picker : Permet l'affichage de la précédente période si modif sans enregistrer, puis annulation
-                this.$store.commit('setDateRangeText', this.dateRangeText); // Pour partager texte dates avec autre composant "ListeEvenementsSortAndFilters"
+                this.$store.commit('SET_DATERANGE_TEXT', this.dateRangeText); // Pour partager texte dates avec autre composant "ListeEvenementsSortAndFilters"
             },
             // Qd click sur bouton 'Annuler' dans datePicker
             cancelDatePicker() {
@@ -129,7 +129,7 @@
             },
             // Fermeture datePicker
             closeDatePicker() {
-                this.$store.commit('setDisplayModalDatePicker', false);
+                this.$store.commit('SET_DISPLAY_MODAL_DATEPICKER', false);
             },
             // Classement par ordre chrono. des dates sélectionnées
             sortByDate(array) {

@@ -196,15 +196,15 @@
             filterBy(idx) {
                 const button = this.listeFiltres[idx];
                 if(button.libelle == "dates") {
-                    this.$store.commit('setDisplayModalDatePicker', true);
+                    this.$store.commit('SET_DISPLAY_MODAL_DATEPICKER', true);
                 } else {
-                    this.$store.commit('setDisplayModalCitiesList', true);
+                    this.$store.commit('SET_DISPLAY_MODAL_LIST_OF_CITIES', true);
                 }
             },
 
             // Affectation nvelles valeurs à la variable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
             sortBy() {
-                this.$store.commit('setSortingParameters', { type: this.sortSelect, direction: this.sortDirection });
+                this.$store.commit('SET_SORTING_PARAMETERS', { type: this.sortSelect, direction: this.sortDirection });
                 this.displayModalTypeClassements = false;
             },
 
@@ -212,12 +212,11 @@
             deleteFilter(libelleFiltre) {
                 let payload = {};
                 payload[libelleFiltre] = [];
-                   //console.log(libelleFiltre, "payload =>", payload); //TEST
                 // Affectation dans variable du state ds Vuex qui regroupe ttes les valeurs des filtres
-                this.$store.commit('setSelectedFilters', payload);
+                this.$store.commit('SET_SELECTED_FILTERS', payload);
 
                 if(libelleFiltre == 'dates') {
-                    this.$store.commit('setDateRangeText', ""); // Retrait texte date
+                    this.$store.commit('SET_DATERANGE_TEXT', ""); // Retrait texte date
                 }
             }
 
