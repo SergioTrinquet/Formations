@@ -152,7 +152,7 @@ export default {
         flagEventDeleted(val) {
             if(val) {
                 this.updateParamsFilters(); // Pour recharger les paramètres des filtres après chaque suppression de formation
-                this.$store.commit('setFlagEventDeleted', false);
+                this.$store.commit('SET_FLAG_EVENT_DELETED', false);
             }
         },
         
@@ -172,16 +172,16 @@ export default {
     methods: {
         // Affectation nvelles valeurs à la variable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
         sortBy() {
-            this.$store.commit('setSortingParameters', { type: this.sortSelect, direction: this.sortDirection });
+            this.$store.commit('SET_SORTING_PARAMETERS', { type: this.sortSelect, direction: this.sortDirection });
         },
 
         // Quand clic sur type de filtre : Pour ouverture modal du filtre 'dates' ou 'villes'
         filterBy(idx) {
             const button = this.listeFiltres[idx];
             if(button.libelle == "dates") {
-                this.$store.commit('setDisplayModalDatePicker', true);
+                this.$store.commit('SET_DISPLAY_MODAL_DATEPICKER', true);
             } else {
-                this.$store.commit('setDisplayModalCitiesList', true);
+                this.$store.commit('SET_DISPLAY_MODAL_LIST_OF_CITIES', true);
             }
         },
 
@@ -195,22 +195,22 @@ export default {
         },
 
         deleteDatesFromFilter() {
-            this.$store.commit('setSelectedFilters', { 'dates': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
-            this.$store.commit('setDateRangeText', ""); // Retrait texte date
+            this.$store.commit('SET_SELECTED_FILTERS', { 'dates': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
+            this.$store.commit('SET_DATERANGE_TEXT', ""); // Retrait texte date
         },
         deleteCityFromFilter(ville) {  console.log("COMPOSANT Sort And Filters : Je suis ds 'deleteCityFromFilter'"); //TEST
             const newSelectionVilles = this.deleteItemFromArray(this.selectedCities, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectedCities'
-            this.$store.commit('setSelectedFilters', { 'villes': newSelectionVilles }); // Envoi mise à jour de la liste des villes dans var. dans Vuex regroupant les valeurs des filtres
+            this.$store.commit('SET_SELECTED_FILTERS', { 'villes': newSelectionVilles }); // Envoi mise à jour de la liste des villes dans var. dans Vuex regroupant les valeurs des filtres
         },
         deleteMyTrainingsFilter() {
-            this.$store.commit('setSelectedFilters', { 'mesFormations': false }); // Retrait option affichage des anciennes formations
+            this.$store.commit('SET_SELECTED_FILTERS', { 'mesFormations': false }); // Retrait option affichage des anciennes formations
         },
         
         // Qd clic bouton 'Supprimer tous les filtres'
         deleteAllFilters() {
             // Si date(s) sélectionnée(s)
             if(this.selectedDateRange.length > 0) {
-                this.$store.commit('setDateRangeText', ""); // Retrait texte date
+                this.$store.commit('SET_DATERANGE_TEXT', ""); // Retrait texte date
             }
             
             let filters = { 'dates': [], 'villes': [] };
@@ -218,14 +218,7 @@ export default {
                 filters = Object.assign({}, filters, { 'mesFormations': false });
             }
             console.log("filters", filters); //TEST
-            this.$store.commit('setSelectedFilters', filters); // Réinitialisation des dates saisies et du filtre des villes dans var. dans Vuex regroupant les filtres la valeur des filtres
-        },
-
-        // A VIRER A TERME CAR DEJA DS COMPOSANT 'ListeEvenements.vue' !!!!!
-        async loadEventsWithSelectedFilters() {
-            //await this.$store.dispatch('loadEvenements', { dates: ["2020-03-15"], villes: ["Nice", "Brest"] }); //TEST
-            await this.$store.dispatch('loadEvenements', this.filtersSelection); // Appel requete avec filtres sélectionnés
-            this.$store.commit('setInitPagination', true);
+            this.$store.commit('SET_SELECTED_FILTERS', filters); // Réinitialisation des dates saisies et du filtre des villes dans var. dans Vuex regroupant les filtres la valeur des filtres
         }
     },
 
