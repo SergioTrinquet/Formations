@@ -14,7 +14,6 @@ export default new Vuex.Store({
     state:{
         loading: false,
         msgError: null,
-
         pages: [
             { roles: [null],  routeName: 'accueil', redirection: true },
             { roles: [null], routeName: 'sign_up', btMenu: { icon: 'account_circle', intitule: 'S\'inscrire' } },
@@ -69,12 +68,10 @@ export default new Vuex.Store({
         flagEventDeleted: false,
         eventParticipants: [],
         nbDaysListParticipantsFormEnable: 3,
-        filterMyTrainings: false,
-
-        participantsPresenceRecordDone: false, // EN COURS
-
+        myTrainingsFilterValue: false,
+        recordPresenceParticipantsDone: false,
         displayModalDatePicker: false,
-        displayModalCitiesList: false,
+        displayModalListOfCities: false,
         selectedFilters: {},
         dateRangeText: "",
         initPagination: false,
@@ -87,46 +84,35 @@ export default new Vuex.Store({
 
 
     mutations: {
-        setDisplayModalSignIn(state, payload) {
+        SET_DISPLAY_MODAL_SIGN_IN(state, payload) {
             state.displayModalSignIn = payload;
         },
-        setDisplayModalSignUp(state, payload) {
+        SET_DISPLAY_MODAL_SIGN_UP(state, payload) {
             state.displayModalSignUp = payload;
         },
-
         // Appelé dans pages création et modification évènement pour alimenter liste déroulante des animateurs
-        setLoadedAnimateurs(state, payload) {
+        SET_LOADED_ANIMATEURS(state, payload) {
             state.selectAnimateurs = payload;
         },
-
-        setLoadedEvenements(state, payload) {
+        SET_LOADED_EVENTS(state, payload) {
             state.evenements = payload;
         },
-        setInitPagination(state, payload) {
+        SET_INIT_PAGINATION(state, payload) {
             state.initPagination = payload;
         },
-
-        // Appelé lors création nouvel évènement par Administrateur : VRAIMENT UTILE ??
-        /* addEvenement(state, payload) {
-            state.evenements.push(payload);
-        }, */
-
-        deleteEvent(state, payload) {
+        DELETE_EVENT(state, payload) {
             state.evenements = state.evenements.filter(v => v.id_evenement != payload);
         },
-        setFlagEventDeleted(state, payload) {
+        SET_FLAG_EVENT_DELETED(state, payload) {
             state.flagEventDeleted = payload;
         },
-
-        setDisplayModalRecordedEvent(state, payload) {
+        SET_DISPLAY_MODAL_EVENT_RECORDED(state, payload) {
             state.displayModalRecordedEvent = payload;
         },
-
-        setDisplayModalModifiedEvent(state, payload) {
+        SET_DISPLAY_MODAL_EVENT_MODIFIED(state, payload) {
             state.displayModalModifiedEvent = payload;
         },
-
-        addAnimateur(state, payload) {
+        ADD_ANIMATEUR(state, payload) {
             // Ici recup de l'objet venant de 'addAnimateur' dans 'actions' et partage de ses propriétés 
             // que l'on dispatche dans les 2 objets 'utilisateurs' et 'animateurs'
             const user = {
@@ -148,8 +134,7 @@ export default new Vuex.Store({
             state.selectAnimateurs.push({ id: animateur.id, nom: user.lastName, prenom: user.firstName, region: payload.region });
             state.addedAnimateur = animateur.id;
         },
-
-        fillDataCurrentUser(state, payload) {  console.log("fillDataCurrentUser => ", payload); //TEST
+        SET_DATA_CURRENT_USER(state, payload) {  console.log("SET_DATA_CURRENT_USER => ", payload); //TEST
             state.currentUser = {
                 id_user: payload.id_user,
                 id_auth: payload.data.id_auth,
@@ -158,8 +143,7 @@ export default new Vuex.Store({
                 lastName: payload.data.lastName
             }
         },
-
-        signOut(state) {
+        SIGN_OUT(state) {
             state.currentUser = {
                 id_auth: '',
                 role: null,
@@ -167,34 +151,32 @@ export default new Vuex.Store({
                 lastName: ''
             }
         },
-        setLoading(state, payload) {
+        SET_LOADING(state, payload) {
             state.loading = payload;
         },
-        setMessageError(state, payload) {
+        SET_MESSAGE_ERROR(state, payload) {
             state.msgError = payload;
         },
-        setParamsFiltersEvenements(state, payload) {
+        SET_PARAMS_FILTERS_EVENTS(state, payload) {
             state.paramsFiltersEvenements = payload;
         },
-        setSelectedPage(state, payload) {
+        SET_SELECTED_PAGE(state, payload) {
             state.selectedPage = payload;
         },
-        setSortingParameters(state, payload) {
+        SET_SORTING_PARAMETERS(state, payload) {
             state.sortingParameters = payload;
         },
-        setEventNumParticipants(state, payload) {
+        SET_EVENT_ID_PARTICIPANTS(state, payload) {
             const idx = state.evenements.findIndex(e => e.id_evenement == payload.id_ev);
             state.evenements[idx].id_participants = payload.eventParticipants;
         },
-        setEventToModify(state, payload) {
+        SET_EVENT_TO_MODIFY(state, payload) {
             state.eventToModify = payload;
         },
-
-        setValueFilterMyTrainings(state, payload) {
-            state.filterMyTrainings = payload
+        SET_MYTRAININGS_FILTER_VALUE(state, payload) {
+            state.myTrainingsFilterValue = payload;
         },
-
-        setParticipantsListOfAnEvent(state, payload) {
+        SET_LIST_OF_PARTICIPANTS_FOR_AN_EVENT(state, payload) {
             let participantsList = [];
             payload.forEach(p => {
                 //console.log("p.data.presence", p.id + " " + p.data.lastName, p.presence); //TEST
@@ -209,20 +191,19 @@ export default new Vuex.Store({
             });
             state.eventParticipants = participantsList;
         },
-
-        setParticipantsPresenceRecord(state, payload) {
-            state.participantsPresenceRecordDone = payload;
+        SET_RECORD_PRESENCE_PARTICIPANTS(state, payload) {
+            state.recordPresenceParticipantsDone = payload;
         },
-        setDisplayModalDatePicker(state, payload) {
+        SET_DISPLAY_MODAL_DATEPICKER(state, payload) {
             state.displayModalDatePicker = payload;
         },
-        setDisplayModalCitiesList(state, payload) {
-            state.displayModalCitiesList = payload;
+        SET_DISPLAY_MODAL_LIST_OF_CITIES(state, payload) {
+            state.displayModalListOfCities = payload;
         },
-        setDateRangeText(state, payload) {
+        SET_DATERANGE_TEXT(state, payload) {
             state.dateRangeText = payload;
         },
-        setSelectedFilters(state, payload) {    console.log("VUEX setSelectedFilters", payload); //TEST
+        SET_SELECTED_FILTERS(state, payload) {    console.log("VUEX SET_SELECTED_FILTERS", payload); //TEST
             // Quand personne loguée est un Administrateur
             if("pastEvents" in payload) {
                 if(payload.pastEvents) {
@@ -282,8 +263,8 @@ export default new Vuex.Store({
     actions: {
         // On alimente le currentUser
         setCurrentUser({commit}, payload) { 
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             console.warn("action 'setCurrentUser' => ", payload); //TEST
 
@@ -293,22 +274,22 @@ export default new Vuex.Store({
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {    console.log(doc.id); //TEST
-                    commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id });
+                    commit('SET_DATA_CURRENT_USER', { data: doc.data(), id_user: doc.id });
                 });
             })
-            .catch((err) => { 
+            .catch(err => { 
                 console.error("Erreur lors de la récupération du currentUser", err);
-                commit('setMessageError', err.message); 
+                commit('SET_MESSAGE_ERROR', err.message); 
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
         // Inscription : Ajout participant
         createParticipant({commit}, payload) {
             // Quand User créé dans Firebase, Id créé et renvoyé dans la promesse
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
             .then(u => {
@@ -331,8 +312,8 @@ export default new Vuex.Store({
                     presence: []
                 })
                 .then(docRef => {
-                    commit('fillDataCurrentUser', { data: newParticipant, id_user: docRef.id }); // Mise à jour données utilisateur en cours
-                    commit('setDisplayModalSignUp', true);
+                    commit('SET_DATA_CURRENT_USER', { data: newParticipant, id_user: docRef.id }); // Mise à jour données utilisateur en cours
+                    commit('SET_DISPLAY_MODAL_SIGN_UP', true);
                 })
                 .catch(error => { throw error });
 
@@ -345,35 +326,35 @@ export default new Vuex.Store({
                 } else {
                     errMsg = error.message;
                 }
-                commit('setMessageError', errMsg);
+                commit('SET_MESSAGE_ERROR', errMsg);
             })
             .finally(() => {
-                commit('setLoading', false);
+                commit('SET_LOADING', false);
             });
             
         },
 
         // Connexion utilisateur (participant, animateur ou admin via email/password)
         signIn({commit}, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             firebase.auth().signInWithEmailAndPassword(payload.email, payload.password)
             .then((u) => {
-                // Recherche des données utilisateurs à partir de 'user.uid' pour pouvoir alimenter le currentUser via la fonction de mutation 'fillDataCurrentUser'
+                // Recherche des données utilisateurs à partir de 'user.uid' pour pouvoir alimenter le currentUser via la fonction de mutation 'SET_DATA_CURRENT_USER'
                 const db = firebase.firestore();
                 db.collection('utilisateurs')
                 .where("id_auth", "==", u.user.uid)
                 .get()
-                .then((querySnapshot) => {
+                .then(querySnapshot => {
                     querySnapshot.forEach(function (doc) {
                         console.log('signIn', doc.id, ' => ', doc.data()); //TEST
-                        commit('fillDataCurrentUser', { data: doc.data(), id_user: doc.id });
-                        commit('setDisplayModalSignIn', true);
+                        commit('SET_DATA_CURRENT_USER', { data: doc.data(), id_user: doc.id });
+                        commit('SET_DISPLAY_MODAL_SIGN_IN', true);
                     });
                 });
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error("Code d'erreur : " + error.code + " | Message d'erreur : " + error.message); //TEST
                 let msgError = "";
                 if(error.code == "auth/user-not-found") {
@@ -383,33 +364,33 @@ export default new Vuex.Store({
                 } else {
                     msgError = error.message;
                 }
-                commit('setMessageError', msgError);
+                commit('SET_MESSAGE_ERROR', msgError);
              })
              .finally(() => {
-                commit('setLoading', false);
+                commit('SET_LOADING', false);
              });
         },
 
         // Déconnexion
         signOut({commit}) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             firebase.auth().signOut()
-            .then(function() {
-                commit('signOut');
-            }).catch(function(error) {
-                commit('setMessageError', error.message);
+            .then(() => {
+                commit('SIGN_OUT');
+            }).catch(error => {
+                commit('SET_MESSAGE_ERROR', error.message);
             }).finally(() => {
-                commit('setLoading', false);
+                commit('SET_LOADING', false);
             });
         },
 
 
         // Pour alimentation liste déroulante dans form. de création d'Animateur
         loadAnimateurs({commit}) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
             db.collection('utilisateurs')
@@ -426,20 +407,20 @@ export default new Vuex.Store({
                     });
 
                 });
-                commit('setLoadedAnimateurs', animateurs);
+                commit('SET_LOADED_ANIMATEURS', animateurs);
             })
-            .catch((err) => {
+            .catch(err => {
                 console.error("Erreur dans 'loaAnimateurs'", err);
-                commit('setMessageError', err.message); 
+                commit('SET_MESSAGE_ERROR', err.message); 
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
         // Profil Administrateur exclusivement : Création d'un Animateur
         addAnimateur({state, commit}, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const newAnimateur = {
                 firstName: payload.prenom,
@@ -448,7 +429,7 @@ export default new Vuex.Store({
                 email: payload.email,
                 password: payload.password,
                 evenements: [],
-                region: payload.region // Ajout le 21/01/2021
+                region: payload.region
             }
 
             // Check si demande vient bien d'un Administrateur (donc si c'est un Administrateur qui est logué)         
@@ -464,42 +445,29 @@ export default new Vuex.Store({
                 ).then(json => {
                     
                     const db = firebase.firestore();
-                    return db.collection('utilisateurs').add({ ...newAnimateur, id_auth: json.data.userRecord_uid })
-                    .then(docRef => { 
-                        //console.log("Document écrit dans collection 'utilisateurs' avec l'ID: ", docRef.id); //TEST     
-                        
-                        // Mis en comm. le 21/01/2021                      
-                        /* return db.collection('animateurs').add({ id_utilisateur: docRef.id, region: payload.region })
-                        .then(() => {
-                            //console.log("Document écrit dans collection 'animateurs' avec l'ID: ", docRef.id); //TEST                       
-                            commit('addAnimateur', { ...newAnimateur, id_utilisateur: docRef.id, region: payload.region });
+                    return db.collection('utilisateurs')
+                        .add({ ...newAnimateur, id_auth: json.data.userRecord_uid })
+                        .then(docRef => { 
+                            commit('ADD_ANIMATEUR', { ...newAnimateur, id_utilisateur: docRef.id, region: payload.region });
                         })
-                        .catch((error) => { 
-                            console.error("Error adding document dans collection 'animateurs' : ", error);
+                        .catch(error => {
+                            console.error("Erreur lors de l'ajout d'un document dans collection 'utilisateurs' : ", error);
                             throw error;
-                        }); */
-
-                        // Ajout le 21/01/2021
-                        commit('addAnimateur', { ...newAnimateur, id_utilisateur: docRef.id, region: payload.region });
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors de l'ajout d'un document dans collection 'utilisateurs' : ", error);
-                        throw error;
-                    });
+                        });
                     
                 })
                 .catch(error => {
                     // >>> IMPORTANT ! <<< : Si Animateur déjà créé, soulève une erreur mais Vue CLI (et webpack en particuliers) au lieu de renvoyer l'intitulé exact de l'erreur provenant de NOde.js, renvoie un message d'erreur générique qui est trop vague => Voir comment remédier à cela
                     console.error("==> ", JSON.stringify(error)); //TEST
                     console.error("Code d'erreur : " + error.code + " | Message d'erreur : " + error.message); //TEST
-                    commit('setMessageError', error.message);
+                    commit('SET_MESSAGE_ERROR', error.message);
                 }).finally(() => {
-                    commit('setLoading', false);
+                    commit('SET_LOADING', false);
                 });
 
             } else {
-                commit('setMessageError', "Vous n'avez pas les droits pour ajouter un animateur");
-                commit('setLoading', false);
+                commit('SET_MESSAGE_ERROR', "Vous n'avez pas les droits pour ajouter un animateur");
+                commit('SET_LOADING', false);
             }
             
         },
@@ -507,8 +475,8 @@ export default new Vuex.Store({
         
         // Pour obtenir les infos nécessaires aux paramétrages des filtres dans page de liste des évènements
         async paramsFiltreEvenements({state, commit}, payload = null) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
 
@@ -535,9 +503,9 @@ export default new Vuex.Store({
                 .get()
                 .then(querySnapshot => querySnapshot.data().evenements)
                 .catch(err => { 
-                    commit('setLoading', false);
+                    commit('SET_LOADING', false);
                     console.error("Erreur lors de la récupération des paramètres de filtres (cas de profil 'Animateur')", err);
-                    commit('setMessageError', "Etape de récupération des paramètres de filtres (cas de profil 'Animateur') : " + err.message); 
+                    commit('SET_MESSAGE_ERROR', "Etape de récupération des paramètres de filtres (cas de profil 'Animateur') : " + err.message); 
                 });
             }
 
@@ -562,20 +530,20 @@ export default new Vuex.Store({
                 allDates = [...allDates].filter((date, i, self) => self.indexOf(date) == i);
                 allCities = [...allCities].filter((city, i, self) => self.indexOf(city) == i).sort();
 
-                commit('setParamsFiltersEvenements', { villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] });
+                commit('SET_PARAMS_FILTERS_EVENTS', { villes: allCities, minDate: allDates[0], maxDate: allDates[allDates.length - 1] });
             })
             .catch((err) => { 
                 console.error("Erreur lors de la récupération des paramètres de filtres", err);
-                commit('setMessageError', err.message); 
+                commit('SET_MESSAGE_ERROR', err.message); 
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
         // Profil Administrateur et Participant : Chargement de la liste des évènements
         async loadEvenements({state, commit}, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             // Récupération date du jour
             const today = new Date();
@@ -630,9 +598,9 @@ export default new Vuex.Store({
                 .get()
                 .then(querySnapshot => querySnapshot.data().evenements)
                 .catch(err => { 
-                    commit('setLoading', false);
+                    commit('SET_LOADING', false);
                     console.error("Erreur lors de la récupération des évènements du participant/de l'animateur", err);
-                    commit('setMessageError', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
+                    commit('SET_MESSAGE_ERROR', "Etape de récupération des évènements " + ("mesFormations" in payload ? "du participant" : ("profil" in payload && payload.profil == state.currentUser.role ? "de l'animateur" : "")) + " : " + err.message); 
                 });
 
                 console.log("evenementsParticipantOuAnimateur =>", evenementsParticipantOuAnimateur); //TEST
@@ -703,7 +671,7 @@ export default new Vuex.Store({
 
                 });
                 
-                commit('setLoadedEvenements', events);
+                commit('SET_LOADED_EVENTS', events);
 
                 /////// ICI FAIRE LE orderBy et la pagination !! ///////
                 /* }); */
@@ -712,17 +680,17 @@ export default new Vuex.Store({
             })
             .catch(err => { 
                 console.error("Erreur lors de la récupération des évènements", err);
-                commit('setMessageError', err.message); 
+                commit('SET_MESSAGE_ERROR', err.message); 
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
 
         // Profil Administrateur exclusivement : Ajout évènement
         addEvenement({state, commit}, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const newEvenement = {
                 ...payload,
@@ -735,8 +703,7 @@ export default new Vuex.Store({
             .add(newEvenement)
             .then((docRef) => {
                 console.log(docRef.id); //TEST
-                //commit('addEvenement', { ...newEvenement, id_ev: docRef.id });
-                
+
                 // Ajout id évènement à l'Animateur ou aux Animateurs s'ils sont plusieurs
                 const collectionUtilisateurs = db.collection('utilisateurs');
                 payload.id_animateurs.forEach(id_a => { // Boucle car potentiellement plusieurs animateurs à mettre à jour
@@ -746,7 +713,7 @@ export default new Vuex.Store({
                     .update({ evenements: firebase.firestore.FieldValue.arrayUnion(docRef.id) }) // On ajoute l'id de l'evenement au tableau d'id de la propriété 'evenements'
                     .then(() => { 
                         //console.log("Animateur " + id_a + " mis à jour avec la donnée ", docRef.id); //TEST 
-                        commit('setDisplayModalRecordedEvent', true);
+                        commit('SET_DISPLAY_MODAL_EVENT_RECORDED', true);
                     })
                     .catch(error => { 
                         console.error(`Erreur lors de l'update dans collection 'utilisateurs' (phase d'ajout de l'id evenement au tableau d'id de la propriété 'evenements' pour l'animateur '${id_a}')`, error);
@@ -759,8 +726,8 @@ export default new Vuex.Store({
                     throw new Error(`L'évènement '${docRef.id}' que vous venez de créer n'a pas d'animateur(s) affecté(s).`);
                 }
             })
-            .catch(error => { commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });
+            .catch(error => { commit('SET_MESSAGE_ERROR', error.message) })
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
@@ -768,8 +735,8 @@ export default new Vuex.Store({
         registerEvent({ state, commit }, payload) {
             // Dans collection 'evenements', ajout de l'id utilisateur (payload.id_user) dans la propriété 'id_participants' en vérifiant que l'id ne s'y trouve pas déjà (=> utilisateur déjà inscrit)
             // Dans collection 'utilisateur', ajout de l'id evenement (payload.id_event) dans propriété 'evenements' (en vérifiant que l'id evenement ne s'y trouve pas déjà)
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
             const collectionEvenements = db.collection('evenements');
@@ -829,28 +796,29 @@ export default new Vuex.Store({
                 });
             }).then(eventParticipants => {
                 // Mise à jour du state
-                commit('setEventNumParticipants', { 
+                commit('SET_EVENT_ID_PARTICIPANTS', { 
                     id_ev: payload.id_event, 
                     eventParticipants: eventParticipants 
                 });
 
                 // Cas ici ou il faut mettre à jour la liste des formations pour la/lesquelle(s) le participant s'est inscrit : 
                 // Si le filtre est activé, lorsque le participant se désinscrit d'une formation, celle-ci doit disparaitre de la liste filtrée
-                if(payload.registry == false && state.filterMyTrainings) {
-                    commit('deleteEvent', payload.id_event);
+                if(payload.registry == false && state.myTrainingsFilterValue) {
+                    commit('DELETE_EVENT', payload.id_event);
                 }
-
-                console.log("Transaction successfully committed!");
             })
-            .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });   
+            .catch(error => { 
+                console.error("Echec de la Transaction: ", error); 
+                commit('SET_MESSAGE_ERROR', error.message) 
+            })
+            .finally(() => { commit('SET_LOADING', false) });   
         },
 
 
         // Profil Administrateur uniquement : Modification d'un évènement
         modifyEvenement({ commit }, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
             
             const db = firebase.firestore();
             const collectionEvenements = db.collection('evenements');
@@ -929,11 +897,13 @@ export default new Vuex.Store({
                     transaction.update(collectionEvenements.doc(payload.id_event), fusionDataEvent); // Mise à jour dans Firestore
                 });
             }).then(() => {
-                commit('setDisplayModalModifiedEvent', true); // Apparition modal msg signalant que modif est effectuée
-                console.log("Transaction successfully committed!");
+                commit('SET_DISPLAY_MODAL_EVENT_MODIFIED', true); // Apparition modal msg signalant que modif est effectuée
             })
-            .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });
+            .catch(error => { 
+                console.error("Echec de la Transaction: ", error); 
+                commit('SET_MESSAGE_ERROR', error.message); 
+            })
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
@@ -944,8 +914,8 @@ export default new Vuex.Store({
             // - Retirer dans 'utilisateurs' l'id evenement du tableau 'evenements' quand il s'agit de participants
             // - supprimer l'évènement
             
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
 
@@ -1012,12 +982,15 @@ export default new Vuex.Store({
                 })
                 .catch(error => { throw error });
             }).then(() => {
-                commit('deleteEvent', payload); // Rafraichissement affichage écran
-                commit('setFlagEventDeleted', true); //Pour réinitialisation des filtres
+                commit('DELETE_EVENT', payload); // Rafraichissement affichage écran
+                commit('SET_FLAG_EVENT_DELETED', true); //Pour réinitialisation des filtres
                 console.log("Transaction successfully committed!");
             })
-            .catch((error) => { console.log("Transaction failed: ", error); commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });
+            .catch(error => { 
+                console.error("Echec de la Transaction: ", error); 
+                commit('SET_MESSAGE_ERROR', error.message); 
+            })
+            .finally(() => { commit('SET_LOADING', false) });
             /*============================== FIN Transaction ================================*/
             
 
@@ -1092,10 +1065,10 @@ export default new Vuex.Store({
                 await batch.commit();
                 console.log("Batch commité avec succès !!");
                 
-                commit('deleteEvent', payload); // Rafraichissement affichage écran
+                commit('DELETE_EVENT', payload); // Rafraichissement affichage écran
             })
-            .catch((error) => { commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });
+            .catch((error) => { commit('SET_MESSAGE_ERROR', error.message) })
+            .finally(() => { commit('SET_LOADING', false) });
             */
             /*=======  FIN Version batch V1 =======*/
 
@@ -1180,13 +1153,13 @@ export default new Vuex.Store({
                     batch.commit().then(() => { 
                         console.log("!! Batch commité avec succès !!"); //TEST
                         
-                        commit('deleteEvent', payload); // Rafraichissement affichage écran
+                        commit('DELETE_EVENT', payload); // Rafraichissement affichage écran
                     });
                 });
 
             })
-            .catch((error) => { commit('setMessageError', error.message) })
-            .finally(() => { commit('setLoading', false) });
+            .catch((error) => { commit('SET_MESSAGE_ERROR', error.message) })
+            .finally(() => { commit('SET_LOADING', false) });
             /*=======  FIN Version batch V2 =======*/
             /*============================== FIN batch ================================*/
 
@@ -1208,8 +1181,8 @@ export default new Vuex.Store({
         // Profil Animateur uniquement : Récupération des participants à la formation dont l'id est passé dans le payload.
         // Appelé quand clic sur bouton 'Liste des participants' ds pg de liste des formations
         getParticipantsEvenement({commit}, payload) {
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
 
@@ -1225,13 +1198,13 @@ export default new Vuex.Store({
                     let presence = "presence" in doc.data() ? doc.data().presence.filter(e => e.id_ev == payload) : null;
                     listeParticipants.push({ id: doc.id, data: doc.data(), presence: presence });
                 });
-                commit('setParticipantsListOfAnEvent', listeParticipants);
+                commit('SET_LIST_OF_PARTICIPANTS_FOR_AN_EVENT', listeParticipants);
             })
             .catch(error => { 
-                console.log("Erreur lors de la récupération des participants d'une formation", error); 
-                commit('setMessageError', error.message);
+                console.error("Erreur lors de la récupération des participants d'une formation", error); 
+                commit('SET_MESSAGE_ERROR', error.message);
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
         },
 
 
@@ -1239,8 +1212,8 @@ export default new Vuex.Store({
         async recordPresenceParticipants({ commit, dispatch }, payload) {
             console.log("payload dans 'recordPresenceParticipants' =>>", payload); //TEST
 
-            commit('setLoading', true);
-            commit('setMessageError', null);
+            commit('SET_LOADING', true);
+            commit('SET_MESSAGE_ERROR', null);
 
             const db = firebase.firestore();
             const collectionUtilisateurs = db.collection('utilisateurs'); 
@@ -1313,16 +1286,16 @@ export default new Vuex.Store({
                                 data.dataToUpdate
                             });
 
-                            this.commit('setParticipantsPresenceRecord', true); // Pour faire apparaitre modal comme quoi l'enregistrement est fait
+                            this.commit('SET_RECORD_PRESENCE_PARTICIPANTS', true); // Pour faire apparaitre modal comme quoi l'enregistrement est fait
                         })
                         .catch(error => {  throw error });
                 });
             })
             .catch(error => { 
                 console.log("Erreur lors de la phase d'enregistrement des présences des participants à une formation", error); 
-                commit('setMessageError', error.message);
+                commit('SET_MESSAGE_ERROR', error.message);
             })
-            .finally(() => { commit('setLoading', false) });
+            .finally(() => { commit('SET_LOADING', false) });
             
         },
         async concatAllDocs(context, payload) {
@@ -1387,11 +1360,6 @@ export default new Vuex.Store({
             // ou
             return state.pages.filter(p => 'redirection' in p);
         },
-        // IMPORTANT : Voir si soit on le supprime et on appelle ds le composant 'this.$store.state.events', soit on récupère la partie traitement des filtres/pagination/classement du composant à ici
-        events(state) {
-            return state.evenements;
-        },
-
         selectAnimateurs(state) {
             return state.selectAnimateurs.sort();
         },
@@ -1403,8 +1371,6 @@ export default new Vuex.Store({
         eventParticipants(state) {
             return state.eventParticipants.sort((a, b) => a.lastName > b.lastName);
         },
-
-        // 25/01/2021 : Getters représentant données des filtres sélectionnés
         selectedDateRange(state) {
             let dates = state.selectedFilters.dates;
             return typeof dates == 'undefined' ? [] : dates;
@@ -1421,7 +1387,8 @@ export default new Vuex.Store({
             let mesFormations = state.selectedFilters.mesFormations;
             return (typeof mesFormations == 'undefined') ? false : mesFormations;
         },
-        // FIN : 25/01/2021
+
+
 
         FF_currentUser(state) { return state.FF_currentUser; } //TEST
     }
