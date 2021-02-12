@@ -62,7 +62,6 @@
                         id_animateurs: this.evenement.animateurs.map(a => a.id)
                     }
 
-                    //console.log(event); //TEST
                     this.$emit('eventResultValidation', event);
                 } 
             }
