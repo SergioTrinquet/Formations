@@ -1,14 +1,5 @@
 <template>
-    <!-- Version originale -->
-    <!-- <v-overlay :value="display" opacity="0.75">
-        <div :class="['customModal', cssClass]" :style="style">
-            <div v-if="msgAlert !== null && typeof msgAlert !== 'undefined'" class="alert" ref="alert">{{ msgAlert }}</div>
-            <div v-if="header" class="headerModal primaireLight">{{ header }}</div>
-            <slot></slot>
-        </div>
-    </v-overlay> -->
 
-    <!-- Version au 28/01/2021 -->
     <v-overlay :value="display" opacity="0.75">
         <transition :name="transition" appear>
             <div :class="['customModal', cssClass]" :style="style">
@@ -23,14 +14,6 @@
 
 <script>
 export default {
-    /* props: [
-        'display', 
-        'width', 
-        'height',
-        'cssClass',
-        'header',
-        'msgAlert'
-    ], */
     props: {
         display: {
             //type: Boolean // Empeche modal de s'ouvrir ds certains cas ?
