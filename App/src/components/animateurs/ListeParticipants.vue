@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Modal final avec redirection vers liste des évènements -->
-        <app-modal :display="participantsPresenceRecordDone">
+        <app-modal :display="recordPresenceParticipantsDone">
             <div class="wrapperContentModal">
                 <div>Les données de l'appel sont enregistrées</div>
                 <v-btn @click="endRecordAppelParticipants" depressed>Fermer</v-btn>
@@ -130,8 +130,8 @@
             nbDaysListParticipantsFormEnable() {
                 return this.$store.state.nbDaysListParticipantsFormEnable;
             },
-            participantsPresenceRecordDone() {
-                return this.$store.state.participantsPresenceRecordDone;
+            recordPresenceParticipantsDone() {
+                return this.$store.state.recordPresenceParticipantsDone;
             }
         },
 
@@ -172,7 +172,7 @@
             beforeEnter(el){
                 el.style.opacity = 0;
                 el.style.transform = "translateX(-50px)";
-                el.style.transition = "all 0.10s ease-out"
+                el.style.transition = "all 0.10s ease"
             },
             // Pour animation sur liste de noms sur entrée page (suite)
             enter(el) {   //console.log(el.dataset.index); //TEST
@@ -240,7 +240,7 @@
                 this.$store.dispatch('recordPresenceParticipants', {id_formation: this.event.id_evenement, resultAppel: appel});
             },
             endRecordAppelParticipants() {
-                this.$store.commit('setParticipantsPresenceRecord', false);
+                this.$store.commit('SET_RECORD_PRESENCE_PARTICIPANTS', false);
                 this.$router.push({ name: 'events_list' });
             }
         },
