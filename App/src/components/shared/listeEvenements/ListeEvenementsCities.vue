@@ -1,8 +1,8 @@
 <template>
 
     <!-- Encart filtre villes -->
-    <app-itemsSelectionModal 
-        @onCloseModal="closeModal()" 
+    <ItemsSelectionModal 
+        @onCloseModal="closeModal" 
         cssClass="modalCitiesSize   col-xs-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
         @onSendItems="sendItems($event)"
         defaultTextNoItems="- Aucune ville sélectionnée -"
@@ -10,16 +10,16 @@
         :nbMaxItems="nbMaxVilles"
         :textError="'Pas plus de ' + nbMaxVilles + ' villes svp'"
         :selectedItems="selectedCities"
-    ></app-itemsSelectionModal>
+    ></ItemsSelectionModal>
 
 </template>
 
 <script>
-    import itemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
+    import ItemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
 
     export default {
         components: { 
-            'app-itemsSelectionModal': itemsSelectionModal
+            ItemsSelectionModal
         },
 
         data() {
@@ -33,19 +33,19 @@
             listeVillesComplete() {
                 return this.$store.state.paramsFiltersEvenements.villes.map(v => v.toUpperCase());
             },
-            selectedCities() {      //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
+            selectedCities() {
                 return this.$store.getters.selectedCities;
             },
         },
 
         methods: {
             // Appelé qd clic ajout d'une ville dans modal filtre 'villes'
-            sendItems(selectionVilles) {  //console.log("COMPOSANT Liste des Villes : Je suis ds 'sendItems'"); //TEST
+            sendItems(selectionVilles) {
                 // Affectation dans variable du state ds Vuex qui regroupe ttes les valeurs des filtres de la sélection des villes
-                this.$store.commit('setSelectedFilters', { 'villes': selectionVilles });
+                this.$store.commit('SET_SELECTED_FILTERS', { 'villes': selectionVilles });
             },
             closeModal() {
-                this.$store.commit('setDisplayModalCitiesList', false);
+                this.$store.commit('SET_DISPLAY_MODAL_LIST_OF_CITIES', false);
             }
 
         }
