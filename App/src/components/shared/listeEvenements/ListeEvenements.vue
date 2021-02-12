@@ -12,7 +12,7 @@
         <app-datePicker v-if="paramsFiltersLoaded && displayModalDatePicker"></app-datePicker>
 
         <!-- Modal Filtre villes -->
-        <app-listOfCities v-if="paramsFiltersLoaded && displayModalCitiesList"></app-listOfCities>
+        <app-listOfCities v-if="paramsFiltersLoaded && displayModalListOfCities"></app-listOfCities>
 
         <!-- Subheader -->
         <app-header v-if="eventsLoaded"></app-header>
@@ -91,8 +91,8 @@ export default {
         displayModalDatePicker() {
             return this.$store.state.displayModalDatePicker;
         },
-        displayModalCitiesList() {
-            return this.$store.state.displayModalCitiesList;
+        displayModalListOfCities() {
+            return this.$store.state.displayModalListOfCities;
         },
         // Ajouté le 04/01/2021
         filtersSelection() {    console.warn(">>>>>> COMPUTED filtersSelection dans ''", this.$store.state.selectedFilters); //TEST
@@ -122,7 +122,7 @@ export default {
     methods: {
         async loadEventsWithSelectedFilters() {
             await this.$store.dispatch('loadEvenements', this.filtersSelection); // Appel requete avec filtres sélectionnés
-            this.$store.commit('setInitPagination', true); // Retour 1ere page 
+            this.$store.commit('SET_INIT_PAGINATION', true); // Retour 1ere page 
         }
     },
     // FIN Ajouté le 04/01/2021
