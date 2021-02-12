@@ -16,10 +16,10 @@
             transition="scale"
         >
             <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
-            <app-creationAnimateur 
+            <CreationAnimateur 
                 v-if="displayModalAddAnimateur"
                 @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"
-            ></app-creationAnimateur>
+            ></CreationAnimateur>
         </app-modal>
 
 
@@ -40,7 +40,7 @@
 
 
         <!-- Contenu du modal : Formulaire de modif de l'évènement -->
-        <app-formEvenement 
+        <FormEvenement 
             :evenement="theEvent" 
             @eventResultValidation="resultValidation($event)"
         >
@@ -55,22 +55,20 @@
                 </div> -->
                 <!---->
 
-                <app-inputsEvenement
+                <InputsEvenement
                     :evenement="theEvent"
                     @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
-                ></app-inputsEvenement>
+                ></InputsEvenement>
             </div>
-        </app-formEvenement>      
+        </FormEvenement>      
 
     </app-modal>
 </template>
 
 <script>
-    //import creationAnimateur from '@/components/administrateur/CreationAnimateur';
-    const creationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
-
+    const CreationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
     import FormEvenement from '@/components/administrateur/FormEvenement'; 
-    import inputsEvenement from '@/components/administrateur/InputsEvenement';
+    import InputsEvenement from '@/components/administrateur/InputsEvenement';
 
     export default {
         props: {
@@ -81,9 +79,9 @@
         },
 
         components: {
-            'app-creationAnimateur': creationAnimateur,
-            'app-formEvenement': FormEvenement,
-            'app-inputsEvenement': inputsEvenement
+            CreationAnimateur,
+            FormEvenement,
+            InputsEvenement
         },
 
         data() {
@@ -107,7 +105,7 @@
                 await this.$store.dispatch('modifyEvenement', { id_event: this.theEvent.id_evenement, data_event: ev });
             },
             endActionModifiedEvent() {
-                this.$store.commit('setDisplayModalModifiedEvent', false);
+                this.$store.commit('SET_DISPLAY_MODAL_EVENT_MODIFIED', false);
                 this.onClose();
             }
         }
