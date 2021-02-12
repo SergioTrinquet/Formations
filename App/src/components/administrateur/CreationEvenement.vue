@@ -11,7 +11,7 @@
         <!-- Modal de création d'animateurs -->
         <app-modal  
             :display="displayModalAddAnimateur"
-            :width="modalWidth" 
+            width="100vw" 
             cssClass="col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3"
             header="Ajouter un animateur"
             transition="scale"
@@ -65,7 +65,6 @@
 <script>  
   import FormEvenement from '@/components/administrateur/FormEvenement';
   import inputsEvenement from '@/components/administrateur/InputsEvenement';
-  //import creationAnimateur from '@/components/administrateur/CreationAnimateur';
   const creationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
 
   export default {
@@ -79,8 +78,6 @@
       return {
         titre: "Création d'évènement",
         displayModalAddAnimateur: false,
-        modalWidth: "100vw",
-
         evenement: {
           titre: '',
           description: '',
@@ -110,7 +107,7 @@
             this.$store.dispatch('addEvenement', ev);
         },
         endCreationNewEvent() {
-            this.$store.commit('setDisplayModalRecordedEvent', false);
+            this.$store.commit('SET_DISPLAY_MODAL_EVENT_RECORDED', false);
             this.$router.push({ name: 'events_list' });
         }
     }
