@@ -57,7 +57,7 @@
                 return this.$store.state.nbEventsPerPage;
             },
             nbEventsDisplayed() {
-                return this.$store.getters.events.length;
+                return this.$store.state.evenements.length;
             },
 
             // Pour calculer le nb de pages dans liste déroulante partie pagination
@@ -109,12 +109,12 @@
             initPagination(val) { //console.log("WATCH de initPagination", val); //TEST
                 if(val) { 
                     this.selectedPage = 1;
-                    this.$store.commit('setInitPagination', false);
+                    this.$store.commit('SET_INIT_PAGINATION', false);
                 }
             },
 
             selectedPage() {
-                this.$store.commit('setSelectedPage', this.selectedPage);
+                this.$store.commit('SET_SELECTED_PAGE', this.selectedPage);
                 window.scrollTo(0,0); // Retour en haut de page
             }
         },

@@ -3,8 +3,7 @@
         
         <!-- 
         rangeEvents: {{ rangeEvents }} <br/>
-        sortingParameters.type: {{ sortingParameters.type }} - sortingParameters.direction: {{ sortingParameters.direction }}<br/>
-        currentUser.role => {{ currentUser.role }}<br />
+        sortingParameters.type: {{ sortingParameters.type }} - sortingParameters.direction: {{ sortingParameters.direction }}
         -->
 
         <v-card
@@ -14,10 +13,10 @@
         >       
             <div :class="['dateEvent', isPast(event.date) ? 'obsolete' : 'primaire']">{{ formatDate(event.date) }}</div>
             
-            <app-bandeauInscription 
+            <BandeauInscription 
                 v-if="currentUser.role == 'Participant'" 
                 :idParticipants="event.id_participants"
-            ></app-bandeauInscription>
+            ></BandeauInscription>
             
             <div class="headerEvent d-flex">
                 <span class="titreEvent flex-grow-1 align-self-center">{{ event.titre | uppercase }}</span>
@@ -56,11 +55,14 @@
             </v-card-actions>
         </v-card>
     </div>
-    <div v-else-if="events.length == 0 && eventsLoaded" class="msgNoEvents"><v-icon>far fa-grimace</v-icon>Pas d'évènements, désolé !</div>
+    <div v-else-if="events.length == 0 && eventsLoaded" class="msgNoEvents">
+        <v-icon>far fa-grimace</v-icon>Pas d'évènements, désolé !
+    </div>
+
 </template>
 
 <script>
-    import bandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
+    import BandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
     import cardButtonParticipant from '@/components/participants/ListeEvenementsCardButton';
     import cardButtonsAdmin from '@/components/administrateur/ListeEvenementsCardButtons';
     import cardButtonAnimateur from '@/components/animateurs/ListeEvenementsCardButton';
@@ -73,6 +75,12 @@
     import uppercase from '@/filters/uppercase.js';
 
     export default {
+       components: {
+            BandeauInscription
+        },
+
+        filters: { uppercase },
+
         mixins: [
             formatageDate, 
             currentDate, 
@@ -80,14 +88,11 @@
             map
         ],
 
-        filters: { uppercase },
-
-        components: {
-            'app-bandeauInscription': bandeauInscription
-        },
-
         props:{
-            eventsLoaded: { required: true, type: Boolean },
+            eventsLoaded: { 
+                required: true, 
+                type: Boolean 
+            },
         },
 
         data() {
@@ -133,7 +138,7 @@
                     return []; 
 
                 } else { //...Sinon si chargés...
-                    let events = this.$store.getters.events;
+                    let events = this.$store.state.evenements;
 
                     // Partie classements
                     switch(this.sortingParameters.type) {
