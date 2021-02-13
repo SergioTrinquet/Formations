@@ -55,8 +55,12 @@ export default new Vuex.Store({
         ],
         selectAnimateurs: [],
         addedAnimateur: null,
+        displayModalSignIn: false,
+        displayModalSignUp: false,
         displayModalRecordedEvent: false,
         displayModalModifiedEvent: false,
+        displayModalDatePicker: false,
+        displayModalListOfCities: false,
         paramsFiltersEvenements: {},
         nbEventsPerPage: 5,
         nbEventsFiltered: 0,
@@ -70,13 +74,9 @@ export default new Vuex.Store({
         nbDaysListParticipantsFormEnable: 3,
         myTrainingsFilterValue: false,
         recordPresenceParticipantsDone: false,
-        displayModalDatePicker: false,
-        displayModalListOfCities: false,
         selectedFilters: {},
         dateRangeText: "",
         initPagination: false,
-        displayModalSignIn: false,
-        displayModalSignUp: false,
         
         FF_currentUser: 'Vide' //TEST
     },
@@ -179,7 +179,6 @@ export default new Vuex.Store({
         SET_LIST_OF_PARTICIPANTS_FOR_AN_EVENT(state, payload) {
             let participantsList = [];
             payload.forEach(p => {
-                //console.log("p.data.presence", p.id + " " + p.data.lastName, p.presence); //TEST
                 participantsList.push({
                     id: p.id,
                     email: p.data.email, 
@@ -274,7 +273,11 @@ export default new Vuex.Store({
             .get()
             .then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {    console.log(doc.id); //TEST
-                    commit('SET_DATA_CURRENT_USER', { data: doc.data(), id_user: doc.id });
+                    commit('SET_DATA_CURRENT_USER', 
+                    { 
+                        data: doc.data(), 
+                        id_user: doc.id 
+                    });
                 });
             })
             .catch(err => { 
@@ -1348,42 +1351,42 @@ export default new Vuex.Store({
 
     
     getters: {
-        currentUser(state) {
+        getCurrentUser(state) {
             const fullDataCurrentUser = state.utilisateurs.find(u => u.id_auth == state.currentUser.id_auth);
             return (typeof fullDataCurrentUser == 'undefined' ? state.currentUser : fullDataCurrentUser);
         },
-        menu(state) {
+        getMenu(state) {
             return state.pages.filter(p => p.roles.indexOf(state.currentUser.role) > -1 && 'btMenu' in p);
         },
-        pageRedirection(state) {
+        getPageRedirection(state) {
             //return state.pages.filter(p => p.redirection == true); 
             // ou
             return state.pages.filter(p => 'redirection' in p);
         },
-        selectAnimateurs(state) {
+        getSelectAnimateurs(state) {
             return state.selectAnimateurs.sort();
         },
-        rangeEvents(state) {
+        getRangeEvents(state) {
             const from = ((parseInt(state.selectedPage) - 1) * state.nbEventsPerPage) + 1;
             const to = state.selectedPage * state.nbEventsPerPage;
             return { from: from, to: to };
         },
-        eventParticipants(state) {
+        getEventParticipants(state) {
             return state.eventParticipants.sort((a, b) => a.lastName > b.lastName);
         },
-        selectedDateRange(state) {
+        getSelectedDateRange(state) {
             let dates = state.selectedFilters.dates;
             return typeof dates == 'undefined' ? [] : dates;
         },
-        selectedCities(state) {
+        getSelectedCities(state) {
             let villes = state.selectedFilters.villes;
             return typeof villes == 'undefined' ? [] : villes;
         },
-        pastEvents(state) {
+        getPastEvents(state) {
             let pastEvents = state.selectedFilters.pastEvents;
             return typeof pastEvents == 'undefined' ? false : pastEvents;
         },
-        mesFormations(state) {
+        getMesFormations(state) {
             let mesFormations = state.selectedFilters.mesFormations;
             return (typeof mesFormations == 'undefined') ? false : mesFormations;
         },
