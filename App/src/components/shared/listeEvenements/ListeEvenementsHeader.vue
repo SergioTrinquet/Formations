@@ -2,15 +2,10 @@
     <div class="wrapSubHeader">
 
         <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
-        <!-- <app-smallScreenButtons  
-            class="hidden-sm-and-up" 
-            v-if="loadComponent"
-        ></app-smallScreenButtons> -->
         <app-smallScreenButtons  
             class="hidden-sm-and-up" 
         ></app-smallScreenButtons>
-        <!-- <div style="background-color: pink; position: fixed; z-index: 10; top: 40%; left: 50%;">loadComponent: {{ loadComponent }}</div> -->
-                        
+                       
 
         <div class="d-flex subHeader">
             <div class="align-self-center">
@@ -39,6 +34,8 @@
 </template>
 
 <script>
+    import { mapState } from 'vuex';
+
     const smallScreenButtons = () => import(/* webpackChunkName: "ListeEvenementsSortAndFilters_SmallViewport" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters_SmallViewport')
 
     export default {
@@ -53,9 +50,12 @@
         },
 
         computed: {
-            nbEventsPerPage() {
-                return this.$store.state.nbEventsPerPage;
-            },
+            ...mapState([
+                'nbEventsPerPage',
+                'sortingParameters',
+                'initPagination'    // Pour remettre à la 1ere page (WATCH)
+            ]),
+            
             nbEventsDisplayed() {
                 return this.$store.state.evenements.length;
             },
@@ -70,10 +70,6 @@
                 }
             },
 
-            sortingParameters() {
-                return this.$store.state.sortingParameters;
-            },
-
             textSortType() {
                 let text = "";
                 const type = this.sortingParameters.type;
@@ -86,21 +82,7 @@
                     text = (dir == 'asc' ? 'nb de participants (croissant)' : 'nb de participants (décroissant)');
                 }
                 return "classé(s) par " + text;
-            },
-
-            // Pour remettre à la 1ere page (WATCH)
-            initPagination() { //console.log("COMPUTED de initPagination", this.$store.state.initPagination); //TEST
-                return this.$store.state.initPagination;
-            },
-
-
-
-            /* // Ajouté le 18/01/2021 : Pour connaitre dans quel catégorie de dimension se trouve le Viewport et permettre chargement du composant contenant classement et filtres ou non///////////////////
-            loadComponent() {
-                return (this.$vuetify.breakpoint.name == 'xs') ? true : false;
             }
-            ///////////////////// */
-
         },
 
         watch: {

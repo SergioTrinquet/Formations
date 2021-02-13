@@ -99,6 +99,8 @@
     import participantFilter from '@/components/participants/ListeEvenementsFilter';
     import displayOldTrainings from '@/components/administrateur/ListeEvenementsOption';
 
+    import { mapState, mapGetters } from 'vuex';
+
     export default {
         components: {
             'app-displayOldTrainings': displayOldTrainings,
@@ -120,39 +122,20 @@
         },
 
         computed: {
-            currentUser() {
-                return this.$store.getters.currentUser;
-            },
-            sortItemsList() {
-                return this.$store.state.sortItemsList;
-            },
-            filtersList() {
-                return this.$store.state.filtersList;
-            },
-            // Récupération des valeurs de classement (ordre et type)
-            sortingParameters() {
-                return this.$store.state.sortingParameters;
-            },
+            ...mapState([
+                'sortItemsList',
+                'filtersList',
+                'sortingParameters',
+                'dateRangeText'
+            ]),
 
-            // Récupération des dates sélectionnées dans le datepicker (s'il y en a)
-            selectedDateRange() {   //console.log("COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
-                return this.$store.getters.selectedDateRange;
-            },
-            // Récupération des villes sélectionnées (s'il y en a)
-            selectedCities() {      //console.log("COMPOSANT Liste des Villes : Je suis ds le COMPUTED de 'selectedCities'", this.$store.state.selectedFilters.villes); //TEST
-                return this.$store.getters.selectedCities;
-            },
-            pastEvents() {
-                return this.$store.getters.pastEvents;
-            },
-            mesFormations() {
-                return this.$store.getters.mesFormations;
-            },
-
-            // Pour avoir sélection de(s) date(s) sous forme de texte
-            dateRangeText() { console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
-                return this.$store.state.dateRangeText;
-            },
+            ...mapGetters({
+                currentUser: 'getCurrentUser',
+                selectedDateRange: 'getSelectedDateRange',  // Récupération des dates sélectionnées dans le datepicker (s'il y en a)
+                selectedCities: 'getSelectedCities',    // Récupération des villes sélectionnées (s'il y en a)
+                pastEvents: 'getPastEvents',
+                mesFormations: 'getMesFormations'
+            }),
 
             // Pour afficher nb de filtres
             indicateurNbFiltres() {

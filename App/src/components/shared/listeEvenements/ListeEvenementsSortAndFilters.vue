@@ -69,6 +69,8 @@
 </template>
 
 <script>
+import { mapState, mapGetters } from 'vuex';
+
 import formatageDate from '@/mixins/formatageDate';
 import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
@@ -98,9 +100,26 @@ export default {
     },
 
     computed: {
-        currentUser() {
-            return this.$store.getters.currentUser;
-        },
+        ...mapState({
+            sortItemsList: 'sortItemsList',
+            filtersList: 'filtersList',
+            sortingParameters: 'sortingParameters',     // Récupération des valeurs de classement (ordre et type)
+            filtersSelection: 'selectedFilters',
+            dateRangeText: 'dateRangeText',
+            flagEventDeleted: 'flagEventDeleted'    // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
+        }),
+        
+        ...mapGetters({
+           currentUser: 'getCurrentUser',
+           selectedDateRange: 'getSelectedDateRange',
+           selectedCities: 'getSelectedCities',
+           pastEvents: 'getPastEvents',
+           mesFormations: 'getMesFormations'
+        }),
+
+        /* currentUser() {
+            return this.$store.getters.getCurrentUser;
+        }, 
         sortItemsList() {
             return this.$store.state.sortItemsList;
         },
@@ -114,26 +133,25 @@ export default {
         filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection", this.$store.state.selectedFilters); //TEST
             return this.$store.state.selectedFilters;
         },
-        selectedDateRange() {   console.log("COMPUTED de 'selectedDateRange'", this.$store.getters.selectedDateRange); //TEST
-            return this.$store.getters.selectedDateRange;
-        },
+        selectedDateRange() {   console.log("COMPUTED de 'selectedDateRange'", this.$store.getters.getSelectedDateRange); //TEST
+            return this.$store.getters.getSelectedDateRange;
+        }, 
         selectedCities() { 
-            return this.$store.getters.selectedCities;
-        },
+            return this.$store.getters.getSelectedCities;
+        }, 
         pastEvents() {
-            return this.$store.getters.pastEvents;
+            return this.$store.getters.getPastEvents;
         },
         mesFormations() {
-            return this.$store.getters.mesFormations;
+            return this.$store.getters.getMesFormations;
         },
-
         dateRangeText() {   //console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
             return this.$store.state.dateRangeText;
         },
         // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
         flagEventDeleted() {
             return this.$store.state.flagEventDeleted;
-        }
+        }*/
 
     },
 

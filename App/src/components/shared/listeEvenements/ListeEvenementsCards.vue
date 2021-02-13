@@ -62,6 +62,8 @@
 </template>
 
 <script>
+    import { mapState, mapGetters } from 'vuex';
+
     import BandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
     import cardButtonParticipant from '@/components/participants/ListeEvenementsCardButton';
     import cardButtonsAdmin from '@/components/administrateur/ListeEvenementsCardButtons';
@@ -102,13 +104,14 @@
         },
 
         computed: {
-            currentUser() {
-                return this.$store.getters.currentUser;
-            },
-            nbParticipantsMaxParFormation() {
-                return this.$store.state.nbParticipantsMaxParFormation;
-            },
-
+            ...mapState([
+                'nbParticipantsMaxParFormation',
+                'sortingParameters'
+            ]),
+            ...mapGetters({
+                currentUser: 'getCurrentUser',
+                rangeEvents: 'getRangeEvents'
+            }),
             buttonsCard() {
                 const role = this.currentUser.role;
                 let component = null;
@@ -122,14 +125,6 @@
                 return component;
                 //return (role == 'Participant' ? cardButtonParticipant : (role == 'Admin' ? cardButtonsAdmin : ''));
             },
-
-            sortingParameters() {
-                return this.$store.state.sortingParameters;
-            },
-            rangeEvents() {
-                return this.$store.getters.rangeEvents;
-            },
-
             // Filtres fait dans Firestore (dans le VUEX), mais classement et pagination du coté Front car impossibilité de classer par un champ si le filtrage (via clause '.where')
             // est fait à partir d'un autre champ, d'ou certains cas de figure impossibles à gérer intégralement avec Firestore : c'est la raison pour laquelle la partie 'sorting' puis pagination qui se fait à la fin, dont gérées dans le component et non via Firestore.
             events() {

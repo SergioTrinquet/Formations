@@ -22,18 +22,14 @@
             <v-col cols="2" class="pa-0 hidden-xs-only margeTriEtFiltres">
             
                 <!-- Marge filtres -->
-                <!-- <app-marginSortAndFilters  v-if="paramsFiltersLoaded && loadComponent"></app-marginSortAndFilters> -->
                 <app-marginSortAndFilters  v-if="paramsFiltersLoaded"></app-marginSortAndFilters>
-
 
             </v-col>
             <v-col class="pa-0">
                 <v-row class="ma-0">
 
                     <v-col class="col-12 offset-0 col-sm-10 offset-sm-1 col-lg-8 offset-lg-2"> 
-                        
-                        <!-- <div style="background-color: yellow; position: fixed; z-index: 10; top: 50%; left: 50%;">loadComponent: {{ loadComponent }}</div> -->
-                        
+                       
                         <!-- Encarts descriptifs des formations -->
                         <app-encartsFormations :eventsLoaded="eventsLoaded"></app-encartsFormations>
                 
@@ -47,6 +43,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 import header from '@/components/shared/listeEvenements/ListeEvenementsHeader';
 import encartsFormations from '@/components/shared/listeEvenements/ListeEvenementsCards';
 
@@ -56,13 +54,6 @@ const marginSortAndFilters = () => import(/* webpackChunkName: "marginSortAndFil
 const datePicker = () => import(/* webpackChunkName: "datePicker" */ '@/components/shared/listeEvenements/ListeEvenementsDatePicker')
 const listOfCities = () => import(/* webpackChunkName: "ListeEvenementsCities" */ '@/components/shared/listeEvenements/ListeEvenementsCities')
 const modifEvenement = () => import(/* webpackChunkName: "ListeEvenementModification" */ '@/components/administrateur/ListeEvenementModification')
-
-/* TEST */
-//import loaderComponent from '@/components/shared/base/TEST_loader'
-//const marginSortAndFilters = () => ({
-//    component: import(/* webpackChunkName: "marginSortAndFilters" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters'),
-//    loading: loaderComponent
-//})
 
 
 export default {
@@ -85,26 +76,12 @@ export default {
     },
 
     computed: {
-        eventToModify() {       console.warn(">>>>>> COMPUTED eventToModify", this.$store.state.eventToModify); //TEST
-            return this.$store.state.eventToModify;
-        },
-        displayModalDatePicker() {
-            return this.$store.state.displayModalDatePicker;
-        },
-        displayModalListOfCities() {
-            return this.$store.state.displayModalListOfCities;
-        },
-        // Ajouté le 04/01/2021
-        filtersSelection() {    console.warn(">>>>>> COMPUTED filtersSelection dans ''", this.$store.state.selectedFilters); //TEST
-            return this.$store.state.selectedFilters;
-        },
-
-        /* // Ajouté le 18/01/2021 : Pour loader ou non le composant 'marge des classement et filtres' en fonction de l taille de l'écran ///////////////////
-        loadComponent() {    //console.log("Je suis dans 'loadComponent'"); //TEST
-            let screenSize = this.$vuetify.breakpoint.name; // Pour connaitre dans quel catégorie de dimension se trouve le Viewport
-            return (screenSize !== 'xs') ? true : false;
-        }
-        ///////////////////// */
+        ...mapState({
+            eventToModify: 'eventToModify',
+            displayModalDatePicker: 'displayModalDatePicker',
+            displayModalListOfCities: 'displayModalListOfCities',
+            filtersSelection: 'selectedFilters'
+        })
     },
     watch: {
         eventToModify() {

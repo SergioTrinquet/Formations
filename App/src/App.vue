@@ -128,6 +128,7 @@
 
 <script>
 import capitalizeOnEveryWords from '@/filters/capitalizeOnEveryWords.js'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
   filters: { capitalizeOnEveryWords },
@@ -137,21 +138,17 @@ export default {
   }),
 
   computed: {
-    msgError() {
-      return this.$store.state.msgError;
-    },
-    loading() {
-      return this.$store.state.loading;
-    },
-    menu() {
-      return this.$store.getters.menu;
-    },
-    pageRedirection() {
-      return this.$store.getters.pageRedirection;
-    },
-    currentUser() {   console.warn("computed : currentUser => ", this.$store.getters.currentUser); //TEST
-      return this.$store.getters.currentUser;
-    },
+    ...mapState([
+        'msgError',
+        'loading',
+        'displayModalSignIn',
+        'displayModalSignUp'
+    ]),
+    ...mapGetters({
+        currentUser: 'getCurrentUser',
+        menu: 'getMenu',
+        pageRedirection : 'getPageRedirection'
+    }),
 
     // Affichage ou non menu hamburger avec navigation verticale
     displayMenu() {
@@ -166,13 +163,6 @@ export default {
         }
       }
       return display;
-    },
-
-    displayModalSignIn() {
-      return this.$store.state.displayModalSignIn;
-    },
-    displayModalSignUp() {
-      return this.$store.state.displayModalSignUp;
     },
     displayModalWelcome() {
       return this.displayModalSignIn || this.displayModalSignUp;
