@@ -121,7 +121,7 @@
         computed: {
             // Pas besoin !! Se trouve déjà dans la prop passée en params dans la route !!
             eventParticipants() {
-                return this.$store.getters.eventParticipants;
+                return this.$store.getters.getEventParticipants;
             },
             sentenceNbParticipants() {
                 const nbPart = this.eventParticipants.length;

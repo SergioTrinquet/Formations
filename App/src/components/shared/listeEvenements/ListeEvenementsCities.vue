@@ -34,7 +34,7 @@
                 return this.$store.state.paramsFiltersEvenements.villes.map(v => v.toUpperCase());
             },
             selectedCities() {
-                return this.$store.getters.selectedCities;
+                return this.$store.getters.getSelectedCities;
             },
         },
 

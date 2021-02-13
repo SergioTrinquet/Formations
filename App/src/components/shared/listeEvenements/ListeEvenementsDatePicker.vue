@@ -55,8 +55,8 @@
 
         computed: {
             // Recup. valeurs dates de filtrage de la var. ds le Vuex
-            selectedDateRange() {   //console.log("COMPOSANT datePicker : Je suis ds le COMPUTED de 'selectedDateRange'", this.$store.state.selectedFilters.dates); //TEST
-                return this.$store.getters.selectedDateRange;
+            selectedDateRange() {
+                return this.$store.getters.getSelectedDateRange;
             },
 
             // Récup. des paramètres d'initialisation du filtre 'dates'

@@ -37,7 +37,7 @@
 
         computed: {
             currentUser() {
-                return this.$store.getters.currentUser;
+                return this.$store.getters.getCurrentUser;
             },
             nbParticipantsMaxParFormation() {
                 return this.$store.state.nbParticipantsMaxParFormation;

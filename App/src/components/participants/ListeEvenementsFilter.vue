@@ -13,7 +13,7 @@
     export default {
         computed: {
             mesFormations() {
-                return this.$store.getters.mesFormations;
+                return this.$store.getters.getMesFormations;
             },
         },
 

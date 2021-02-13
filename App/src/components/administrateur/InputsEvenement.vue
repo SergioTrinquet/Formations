@@ -208,7 +208,7 @@ export default {
             return this.$store.state.inputRules;
         },
         listSelectAnimateurs() {
-            return this.$store.getters.selectAnimateurs;
+            return this.$store.getters.getSelectAnimateurs;
         },
         animateurs_rule() {
             const nbAnimateursMax = this.$store.state.nbAnimateursMax;

@@ -121,7 +121,7 @@ export default {
     },
     computed: {
         currentUser() {
-            return this.$store.getters.currentUser;
+            return this.$store.getters.getCurrentUser;
         },
         msgHint() {
             return this.inscription.password === "" ? "6 caractères minimum, sans espaces, contenant au moins un chiffre" : "";
