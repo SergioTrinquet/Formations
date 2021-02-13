@@ -13,9 +13,15 @@
             }
         },
 
+        computed: {
+            currentUser() {
+                return this.$store.getters.getCurrentUser;
+            }
+        },
+
         methods: {
             isRegistered() {
-                return this.idParticipants.includes(this.$store.getters.currentUser.id_user);
+                return this.idParticipants.includes(this.currentUser.id_user);
             }
         }
     }
