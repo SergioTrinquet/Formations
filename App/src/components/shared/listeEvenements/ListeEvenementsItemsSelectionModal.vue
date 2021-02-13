@@ -47,14 +47,36 @@
             deleteItemFromArray
         ],
 
-        props: [
+        /* props: [
             'cssClass',
             'defaultTextNoItems',
             'listItems',
             'nbMaxItems',
             'textError',
             'selectedItems'
-        ],
+        ], */
+        props: {
+            cssClass: {
+                type: String
+            },
+            defaultTextNoItems: {
+                type: String
+            },
+            listItems: {
+                type: Array,
+                required: true
+            },
+            nbMaxItems: {
+                type: Number,
+                required: true
+            },
+            textError: {
+                type: String
+            },
+            selectedItems: {
+                type: Array
+            }
+        },
         
         data() {
             return {
@@ -105,9 +127,9 @@
             closeModal() {
                 this.$emit('onCloseModal');
             }
-        }
+        },
 
-        , mounted() {
+        mounted() {
             this.selectedCheckboxes = this.selectedItems;
         }
 
