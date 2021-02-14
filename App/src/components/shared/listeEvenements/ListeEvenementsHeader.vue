@@ -2,9 +2,7 @@
     <div class="wrapSubHeader">
 
         <!-- Lignes boutons Classement et filtres qui ne doit apparaitre que qd écran est en xs -->
-        <app-smallScreenButtons  
-            class="hidden-sm-and-up" 
-        ></app-smallScreenButtons>
+        <SmallViewportButtons class="hidden-sm-and-up" />
                        
 
         <div class="d-flex subHeader">
@@ -36,7 +34,7 @@
 <script>
     import { mapState } from 'vuex';
 
-    const smallScreenButtons = () => import(/* webpackChunkName: "ListeEvenementsSortAndFilters_SmallViewport" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters_SmallViewport')
+    const SmallViewportButtons = () => import(/* webpackChunkName: "SmallViewportButtons" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters_SmallViewport')
 
     export default {
         data() {
@@ -46,7 +44,7 @@
         },
 
         components: { 
-            'app-smallScreenButtons': smallScreenButtons
+            SmallViewportButtons
         },
 
         computed: {

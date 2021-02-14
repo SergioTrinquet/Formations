@@ -54,14 +54,14 @@
                     <v-icon class="close" @click="displayModalTypeFilters = false">fas fa-times</v-icon>   
                     <div class="blocFilterButtons">
                         <div class="chbxOldTrainingsWrapper" v-if="currentUser.role == 'Admin'">
-                            <app-displayOldTrainings></app-displayOldTrainings>
+                            <OptionProfilAdmin/>
                         </div>
                         <div class="typeFilterButtons" v-if="currentUser.role == 'Participant'">
-                            <app-participantFilter>
+                            <FiltreProfilParticipant>
                                 <template v-slot:iconRight>
                                     <v-icon v-if="mesFormations">fas fa-times-circle</v-icon>
                                 </template>
-                            </app-participantFilter>
+                            </FiltreProfilParticipant>
                         </div>
                         <div v-for="(filtre, i) in listeFiltres" :key="i" class="typeFilterButtons">
                             <v-icon v-if="filtre.selected == true" @click="deleteFilter(filtre.libelle)">fas fa-times-circle</v-icon>
@@ -96,15 +96,15 @@
 </template>
 
 <script>
-    import participantFilter from '@/components/participants/ListeEvenementsFilter';
-    import displayOldTrainings from '@/components/administrateur/ListeEvenementsOption';
+    import FiltreProfilParticipant from '@/components/participants/ListeEvenementsFilter';
+    import OptionProfilAdmin from '@/components/administrateur/ListeEvenementsOption';
 
     import { mapState, mapGetters } from 'vuex';
 
     export default {
         components: {
-            'app-displayOldTrainings': displayOldTrainings,
-            'app-participantFilter': participantFilter
+            OptionProfilAdmin,
+            FiltreProfilParticipant
         },
 
         data() {
@@ -113,10 +113,8 @@
                 displayModalTypeFilters: false,
                 sortSelect: "",
                 sortDirection: "",
-                listeFiltres: []
-
-                // ESSAI AU 27/01/2021
-                , displayOverlayTypeClassements: false,
+                listeFiltres: [],
+                displayOverlayTypeClassements: false,
                 displayOverlayTypeFilters: false
             }
         },
@@ -165,7 +163,7 @@
                 this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
             },
 
-            // ESSAI AU 27/01/2021 : Pour transition CSS des modals
+            // Pour transition CSS des modals
             displayModalTypeClassements(val) {
                 if(val) { this.displayOverlayTypeClassements = true }
             },

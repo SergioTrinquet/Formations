@@ -17,10 +17,10 @@
             transition="scale"
         >
             <!-- Ici, v-if seulement utile pour différer chargement du fichier 'CreationAnimateur.js' que qd click pour faire apparaitre le modal (car ce composant est asynchrone), sinon pas utile -->
-            <app-creationAnimateur 
+            <CreationAnimateur 
               v-if="displayModalAddAnimateur" 
               @eventClose="displayModalAddAnimateur = !displayModalAddAnimateur"
-            ></app-creationAnimateur>
+            />
         </app-modal>
 
 
@@ -42,17 +42,17 @@
           >
               <v-toolbar flat dense color="primaireLight" dark>{{ titre }}</v-toolbar>
 
-              <app-formEvenement 
+              <FormEvenement 
                   :evenement="evenement" 
                   @eventResultValidation="resultValidation($event)"
               >
                   <div class="col-10 offset-1 my-6">
-                      <app-inputsEvenement
+                      <InputsEvenement
                           :evenement="evenement"
                           @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
-                      ></app-inputsEvenement>
+                      />
                   </div>
-              </app-formEvenement>
+              </FormEvenement>
 
           </v-card>
         </transition>
@@ -64,14 +64,14 @@
 
 <script>  
   import FormEvenement from '@/components/administrateur/FormEvenement';
-  import inputsEvenement from '@/components/administrateur/InputsEvenement';
-  const creationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
+  import InputsEvenement from '@/components/administrateur/InputsEvenement';
+  const CreationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
 
   export default {
     components: {
-      'app-formEvenement': FormEvenement,
-      'app-inputsEvenement': inputsEvenement,
-      'app-creationAnimateur': creationAnimateur
+      FormEvenement,
+      InputsEvenement,
+      CreationAnimateur
     },
 
     data() {

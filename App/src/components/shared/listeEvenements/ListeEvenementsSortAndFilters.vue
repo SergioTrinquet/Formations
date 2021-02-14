@@ -19,17 +19,17 @@
 
             
             <div class="bloc" v-if="currentUser.role == 'Admin'">
-                <app-displayOldTrainings></app-displayOldTrainings>
+                <OptionProfilAdmin/>
             </div>
 
             <div class="bloc" id="btFiltres">
                 <div class="marginLegend">Filtres</div>
 
-                <app-participantFilter v-if="currentUser.role == 'Participant'">
+                <FiltreProfilParticipant v-if="currentUser.role == 'Participant'">
                     <template v-slot:iconLeft>
                         <v-icon left v-show="mesFormations">fas fa-check</v-icon>
                     </template>
-                </app-participantFilter>
+                </FiltreProfilParticipant>
 
                 <button 
                     v-for="(filtre, i) in listeFiltres" :key="i"
@@ -75,8 +75,9 @@ import formatageDate from '@/mixins/formatageDate';
 import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
 import deleteItemFromArray from '@/mixins/deleteItemFromArray';
-import participantFilter from '@/components/participants/ListeEvenementsFilter';
-import displayOldTrainings from '@/components/administrateur/ListeEvenementsOption';
+
+import FiltreProfilParticipant from '@/components/participants/ListeEvenementsFilter';
+import OptionProfilAdmin from '@/components/administrateur/ListeEvenementsOption';
 
 export default {
     mixins: [
@@ -87,8 +88,8 @@ export default {
     ],
 
     components: {
-        'app-displayOldTrainings': displayOldTrainings,
-        'app-participantFilter': participantFilter
+        OptionProfilAdmin,
+        FiltreProfilParticipant
     },
 
     data() {
@@ -108,51 +109,13 @@ export default {
             dateRangeText: 'dateRangeText',
             flagEventDeleted: 'flagEventDeleted'    // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
         }),
-        
         ...mapGetters({
            currentUser: 'getCurrentUser',
            selectedDateRange: 'getSelectedDateRange',
            selectedCities: 'getSelectedCities',
            pastEvents: 'getPastEvents',
            mesFormations: 'getMesFormations'
-        }),
-
-        /* currentUser() {
-            return this.$store.getters.getCurrentUser;
-        }, 
-        sortItemsList() {
-            return this.$store.state.sortItemsList;
-        },
-        filtersList() {
-            return this.$store.state.filtersList;
-        },
-        // Récupération des valeurs de classement (ordre et type)
-        sortingParameters() {
-            return this.$store.state.sortingParameters;
-        },
-        filtersSelection() { console.warn(">>>>>> COMPUTED filtersSelection", this.$store.state.selectedFilters); //TEST
-            return this.$store.state.selectedFilters;
-        },
-        selectedDateRange() {   console.log("COMPUTED de 'selectedDateRange'", this.$store.getters.getSelectedDateRange); //TEST
-            return this.$store.getters.getSelectedDateRange;
-        }, 
-        selectedCities() { 
-            return this.$store.getters.getSelectedCities;
-        }, 
-        pastEvents() {
-            return this.$store.getters.getPastEvents;
-        },
-        mesFormations() {
-            return this.$store.getters.getMesFormations;
-        },
-        dateRangeText() {   //console.log("COMPUTED dateRangeText", this.$store.state.dateRangeText); //TEST
-            return this.$store.state.dateRangeText;
-        },
-        // Computed pour avertir quand un evenement est supprimé afin de recupérer les nvx paramètres des filtres
-        flagEventDeleted() {
-            return this.$store.state.flagEventDeleted;
-        }*/
-
+        })
     },
 
     watch: {
