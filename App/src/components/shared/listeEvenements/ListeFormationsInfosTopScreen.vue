@@ -34,7 +34,7 @@
 <script>
     import { mapState } from 'vuex';
 
-    const SmallViewportButtons = () => import(/* webpackChunkName: "SmallViewportButtons" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters_SmallViewport')
+    const SmallViewportButtons = () => import(/* webpackChunkName: "SmallViewportButtons" */ '@/components/shared/listeEvenements/ListeFormationsClassementsEtFiltres_SmallViewport')
 
     export default {
         data() {

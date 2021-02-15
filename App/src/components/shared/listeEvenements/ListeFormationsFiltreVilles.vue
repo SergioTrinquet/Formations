@@ -15,7 +15,7 @@
 </template>
 
 <script>
-    import ItemsSelectionModal from '@/components/shared/listeEvenements/ListeEvenementsItemsSelectionModal';
+    import ItemsSelectionModal from '@/components/shared/listeEvenements/ListeFormationsItemsSelectionModal';
 
     export default {
         components: { 
