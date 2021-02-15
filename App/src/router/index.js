@@ -2,11 +2,11 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import Accueil from '@/components/Accueil'
-import SharedListeEvenements from '@/components/shared/listeEvenements/ListeEvenements'
+import SharedListeFormations from '@/components/shared/listeFormations/ListeFormations'
 
 // Remplacement de la version synchrone classique par un chargement asynchrone lorsque l'utilisateur veut aller sur cette page :
 // Le composant asynchrone sera automatiquement scindé par webpack sous la forme d'un fichier .js distinct de 'app.js', et chargé en prefetch         
-const AdminCreationEvenement = () => import(/* webpackChunkName: "AdminCreationEvenement" */ '@/components/administrateur/CreationEvenement')
+const AdminCreationFormation = () => import(/* webpackChunkName: "AdminCreationFormation" */ '@/components/administrateur/CreationFormation')
 const AnimateurListeParticipants = () => import(/* webpackChunkName: "AnimateurListeParticipants" */ '@/components/animateurs/ListeParticipants')
 const Inscription = () => import(/* webpackChunkName: "Inscription" */ '@/components/user/Inscription')
 const Connection = () => import(/* webpackChunkName: "Connexion" */ '@/components/user/Login')
@@ -26,7 +26,7 @@ export default new VueRouter({
         {
             path: '/createEvent',
             name: 'create_event',
-            component: AdminCreationEvenement,
+            component: AdminCreationFormation,
             beforeEnter: (to, from, next) => {
                 Redirect('create_event', next);
             }
@@ -34,7 +34,7 @@ export default new VueRouter({
         {
             path: '/listEvents',
             name: 'events_list',
-            component: SharedListeEvenements,
+            component: SharedListeFormations,
             beforeEnter: (to, from, next) => {
                 Redirect('events_list', next);
             }
