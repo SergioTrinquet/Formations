@@ -74,7 +74,6 @@ import { mapState, mapGetters } from 'vuex';
 import formatageDate from '@/mixins/formatageDate';
 import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
-import deleteItemFromArray from '@/mixins/deleteItemFromArray';
 
 import FiltreProfilParticipant from '@/components/participants/ListeFormationsFiltre';
 import OptionProfilAdmin from '@/components/administrateur/ListeFormationsOption';
@@ -83,8 +82,7 @@ export default {
     mixins: [
         formatageDate,
         currentDate,
-        dateToInt,
-        deleteItemFromArray
+        dateToInt
     ],
 
     components: {
@@ -179,8 +177,8 @@ export default {
             this.$store.commit('SET_SELECTED_FILTERS', { 'dates': [] }); // Réinitialisation des dates saisies dans var. dans Vuex regroupant les valeurs des filtres
             this.$store.commit('SET_DATERANGE_TEXT', ""); // Retrait texte date
         },
-        deleteCityFromFilter(ville) {  console.log("COMPOSANT Sort And Filters : Je suis ds 'deleteCityFromFilter'"); //TEST
-            const newSelectionVilles = this.deleteItemFromArray(this.selectedCities, ville); // Suppression de la ville passée en paramètre du tableau 'this.selectedCities'
+        deleteCityFromFilter(ville) {
+            const newSelectionVilles = this.selectedCities.filter(v => v != ville); // Suppression de la ville passée en paramètre du tableau 'this.selectedCities'
             this.$store.commit('SET_SELECTED_FILTERS', { 'villes': newSelectionVilles }); // Envoi mise à jour de la liste des villes dans var. dans Vuex regroupant les valeurs des filtres
         },
         deleteMyTrainingsFilter() {

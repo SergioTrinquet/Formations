@@ -12,8 +12,13 @@
 
         <div class="selectedItemChips">
             <div v-if="itemChips.length == 0" class="defaultText">{{ defaultTextNoItems }}</div>
-            <v-chip v-for="(chip, i) in itemChips" :key="i" class="ma-1" color="primaireLight" small close
-            @click:close="deleteItem(chip)">
+            <v-chip v-for="(chip, i) in itemChips" :key="i" 
+                class="ma-1" 
+                color="primaireLight" 
+                small 
+                close
+                @click:close="deleteItem(chip)"
+            >
                 {{ chip }}
             </v-chip>
         </div>
@@ -40,12 +45,7 @@
 </template>
 
 <script>
-    import deleteItemFromArray from '@/mixins/deleteItemFromArray';
-
     export default {
-        mixins: [
-            deleteItemFromArray
-        ],
 
         /* props: [
             'cssClass',
@@ -111,7 +111,7 @@
 
         methods: {
             deleteItem(item) {
-                this.selectedCheckboxes = this.deleteItemFromArray(this.selectedCheckboxes, item);
+                this.selectedCheckboxes = this.selectedCheckboxes.filter(v => v != item);
             },
             closeThisModal() {
                 // Réinitialisations
