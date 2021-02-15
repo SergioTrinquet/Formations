@@ -12,7 +12,7 @@
         <FiltreDates v-if="paramsFiltersLoaded && displayModalDatePicker" />
 
         <!-- Modal Filtre villes -->
-        <VillesFiltre v-if="paramsFiltersLoaded && displayModalListOfCities" />
+        <FiltreVilles v-if="paramsFiltersLoaded && displayModalListOfCities" />
 
         <!-- Subheader -->
         <InfosTopScreen v-if="eventsLoaded" />
@@ -22,7 +22,7 @@
             <v-col cols="2" class="pa-0 hidden-xs-only margeTriEtFiltres">
             
                 <!-- Marge classements et filtres -->
-                <ClassementsEtFiltres  v-if="paramsFiltersLoaded" />
+                <ClassementsEtFiltres v-if="paramsFiltersLoaded" />
 
             </v-col>
             <v-col class="pa-0">
@@ -45,14 +45,14 @@
 <script>
 import { mapState } from 'vuex';
 
-import InfosTopScreen from '@/components/shared/listeEvenements/ListeEvenementsHeader';
-import DescriptifFormation from '@/components/shared/listeEvenements/ListeEvenementsCards';
+import InfosTopScreen from '@/components/shared/listeEvenements/ListeFormationsInfosTopScreen';
+import DescriptifFormation from '@/components/shared/listeEvenements/ListeFormationsDescriptif';
 
 // Le composants suivants ne seront pas chargés directement mais scindés de 'app.js' et chargés 
 // de manière asynchrone après coup en tache de fond (lazy loading + code splitting)
-const ClassementsEtFiltres = () => import(/* webpackChunkName: "ClassementsEtFiltres" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters')
-const FiltreDates = () => import(/* webpackChunkName: "FiltreDates" */ '@/components/shared/listeEvenements/ListeEvenementsDatePicker')
-const VillesFiltre = () => import(/* webpackChunkName: "VillesFiltre" */ '@/components/shared/listeEvenements/ListeEvenementsCities')
+const ClassementsEtFiltres = () => import(/* webpackChunkName: "ClassementsEtFiltres" */ '@/components/shared/listeEvenements/ListeFormationsClassementsEtFiltres')
+const FiltreDates = () => import(/* webpackChunkName: "FiltreDates" */ '@/components/shared/listeEvenements/ListeFormationsFiltreDates')
+const FiltreVilles = () => import(/* webpackChunkName: "FiltreVilles" */ '@/components/shared/listeEvenements/ListeFormationsFiltreVilles')
 const ModificationFormation = () => import(/* webpackChunkName: "ModificationFormation" */ '@/components/administrateur/ListeFormationsModification')
 
 
@@ -64,7 +64,7 @@ export default {
         ModificationFormation,
         DescriptifFormation,
         FiltreDates,
-        VillesFiltre
+        FiltreVilles
     },
 
     data() {
