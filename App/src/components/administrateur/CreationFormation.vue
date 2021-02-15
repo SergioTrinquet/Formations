@@ -42,17 +42,17 @@
           >
               <v-toolbar flat dense color="primaireLight" dark>{{ titre }}</v-toolbar>
 
-              <FormEvenement 
+              <FormulaireFormation 
                   :evenement="evenement" 
                   @eventResultValidation="resultValidation($event)"
               >
                   <div class="col-10 offset-1 my-6">
-                      <InputsEvenement
+                      <InputsFormation
                           :evenement="evenement"
                           @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
                       />
                   </div>
-              </FormEvenement>
+              </FormulaireFormation>
 
           </v-card>
         </transition>
@@ -63,14 +63,14 @@
 </template>
 
 <script>  
-  import FormEvenement from '@/components/administrateur/FormEvenement';
-  import InputsEvenement from '@/components/administrateur/InputsEvenement';
+  import FormulaireFormation from '@/components/administrateur/FormulaireFormation';
+  import InputsFormation from '@/components/administrateur/InputsFormation';
   const CreationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
 
   export default {
     components: {
-      FormEvenement,
-      InputsEvenement,
+      FormulaireFormation,
+      InputsFormation,
       CreationAnimateur
     },
 
