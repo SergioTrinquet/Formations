@@ -76,8 +76,8 @@ import currentDate from '@/mixins/currentDate';
 import dateToInt from '@/mixins/dateToInt';
 import deleteItemFromArray from '@/mixins/deleteItemFromArray';
 
-import FiltreProfilParticipant from '@/components/participants/ListeEvenementsFilter';
-import OptionProfilAdmin from '@/components/administrateur/ListeEvenementsOption';
+import FiltreProfilParticipant from '@/components/participants/ListeFormationsFiltre';
+import OptionProfilAdmin from '@/components/administrateur/ListeFormationsOption';
 
 export default {
     mixins: [

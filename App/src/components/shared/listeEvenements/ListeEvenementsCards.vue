@@ -64,10 +64,10 @@
 <script>
     import { mapState, mapGetters } from 'vuex';
 
-    import BandeauInscription from '@/components/participants/ListeEvenementsBandeauInscription';
-    import DescriptifFormationBoutonParticipant from '@/components/participants/ListeEvenementsCardButton';
-    import DescriptifFormationBoutonsAdmin from '@/components/administrateur/ListeEvenementsCardButtons';
-    import DescriptifFormationBoutonAnimateur from '@/components/animateurs/ListeEvenementsCardButton';
+    import BandeauInscription from '@/components/participants/ListeFormationsBandeauInscription';
+    import DescriptifFormationBoutonParticipant from '@/components/participants/ListeFormationsDescriptifBouton';
+    import DescriptifFormationBoutonsAdmin from '@/components/administrateur/ListeFormationsDescriptifBoutons';
+    import DescriptifFormationBoutonAnimateur from '@/components/animateurs/ListeFormationsDescriptifBouton';
 
     import formatageDate from '@/mixins/formatageDate';
     import currentDate from '@/mixins/currentDate';

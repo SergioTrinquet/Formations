@@ -40,7 +40,7 @@
 
 
         <!-- Contenu du modal : Formulaire de modif de l'évènement -->
-        <FormEvenement 
+        <FormulaireFormation 
             :evenement="theEvent" 
             @eventResultValidation="resultValidation($event)"
         >
@@ -55,20 +55,20 @@
                 </div> -->
                 <!---->
 
-                <InputsEvenement
+                <InputsFormation
                     :evenement="theEvent"
                     @eventDisplayModalAddAnimateur="displayModalAddAnimateur = true"
-                ></InputsEvenement>
+                />
             </div>
-        </FormEvenement>      
+        </FormulaireFormation>      
 
     </app-modal>
 </template>
 
 <script>
     const CreationAnimateur = () => import(/*webpackChunkName: "CreationAnimateur"*/ '@/components/administrateur/CreationAnimateur')
-    import FormEvenement from '@/components/administrateur/FormEvenement'; 
-    import InputsEvenement from '@/components/administrateur/InputsEvenement';
+    import FormulaireFormation from '@/components/administrateur/FormulaireFormation'; 
+    import InputsFormation from '@/components/administrateur/InputsFormation';
 
     export default {
         props: {
@@ -80,8 +80,8 @@
 
         components: {
             CreationAnimateur,
-            FormEvenement,
-            InputsEvenement
+            FormulaireFormation,
+            InputsFormation
         },
 
         data() {

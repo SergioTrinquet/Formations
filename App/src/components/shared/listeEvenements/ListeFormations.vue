@@ -53,7 +53,7 @@ import DescriptifFormation from '@/components/shared/listeEvenements/ListeEvenem
 const ClassementsEtFiltres = () => import(/* webpackChunkName: "ClassementsEtFiltres" */ '@/components/shared/listeEvenements/ListeEvenementsSortAndFilters')
 const FiltreDates = () => import(/* webpackChunkName: "FiltreDates" */ '@/components/shared/listeEvenements/ListeEvenementsDatePicker')
 const VillesFiltre = () => import(/* webpackChunkName: "VillesFiltre" */ '@/components/shared/listeEvenements/ListeEvenementsCities')
-const ModificationFormation = () => import(/* webpackChunkName: "ModificationFormation" */ '@/components/administrateur/ListeEvenementModification')
+const ModificationFormation = () => import(/* webpackChunkName: "ModificationFormation" */ '@/components/administrateur/ListeFormationsModification')
 
 
 export default {

@@ -96,8 +96,8 @@
 </template>
 
 <script>
-    import FiltreProfilParticipant from '@/components/participants/ListeEvenementsFilter';
-    import OptionProfilAdmin from '@/components/administrateur/ListeEvenementsOption';
+    import FiltreProfilParticipant from '@/components/participants/ListeFormationsFiltre';
+    import OptionProfilAdmin from '@/components/administrateur/ListeFormationsOption';
 
     import { mapState, mapGetters } from 'vuex';
 
