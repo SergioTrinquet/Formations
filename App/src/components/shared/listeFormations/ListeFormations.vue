@@ -45,14 +45,14 @@
 <script>
 import { mapState } from 'vuex';
 
-import InfosTopScreen from '@/components/shared/listeEvenements/ListeFormationsInfosTopScreen';
-import DescriptifFormation from '@/components/shared/listeEvenements/ListeFormationsDescriptif';
+import InfosTopScreen from '@/components/shared/listeFormations/ListeFormationsInfosTopScreen';
+import DescriptifFormation from '@/components/shared/listeFormations/ListeFormationsDescriptif';
 
 // Le composants suivants ne seront pas chargés directement mais scindés de 'app.js' et chargés 
 // de manière asynchrone après coup en tache de fond (lazy loading + code splitting)
-const ClassementsEtFiltres = () => import(/* webpackChunkName: "ClassementsEtFiltres" */ '@/components/shared/listeEvenements/ListeFormationsClassementsEtFiltres')
-const FiltreDates = () => import(/* webpackChunkName: "FiltreDates" */ '@/components/shared/listeEvenements/ListeFormationsFiltreDates')
-const FiltreVilles = () => import(/* webpackChunkName: "FiltreVilles" */ '@/components/shared/listeEvenements/ListeFormationsFiltreVilles')
+const ClassementsEtFiltres = () => import(/* webpackChunkName: "ClassementsEtFiltres" */ '@/components/shared/listeFormations/ListeFormationsClassementsEtFiltres')
+const FiltreDates = () => import(/* webpackChunkName: "FiltreDates" */ '@/components/shared/listeFormations/ListeFormationsFiltreDates')
+const FiltreVilles = () => import(/* webpackChunkName: "FiltreVilles" */ '@/components/shared/listeFormations/ListeFormationsFiltreVilles')
 const ModificationFormation = () => import(/* webpackChunkName: "ModificationFormation" */ '@/components/administrateur/ListeFormationsModification')
 
 
