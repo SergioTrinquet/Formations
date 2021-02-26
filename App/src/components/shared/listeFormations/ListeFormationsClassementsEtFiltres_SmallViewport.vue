@@ -2,7 +2,6 @@
     <div class="flex-wrapper justify-center">
 
 
-        <!-- <v-overlay :value="displayModalTypeClassements" opacity="0.75"> -->
         <v-overlay :value="displayOverlayTypeClassements" opacity="0.75">
 
             <transition 
@@ -96,45 +95,21 @@
 </template>
 
 <script>
-    import FiltreProfilParticipant from '@/components/participants/ListeFormationsFiltre';
-    import OptionProfilAdmin from '@/components/administrateur/ListeFormationsOption';
-
-    import { mapState, mapGetters } from 'vuex';
+    import classementsEtFiltres from '@/mixins/classementsEtFiltres';
 
     export default {
-        components: {
-            OptionProfilAdmin,
-            FiltreProfilParticipant
-        },
+        mixins: [  classementsEtFiltres ],
 
         data() {
             return {
                 displayModalTypeClassements: false,
                 displayModalTypeFilters: false,
-                sortSelect: "",
-                sortDirection: "",
-                listeFiltres: [],
                 displayOverlayTypeClassements: false,
                 displayOverlayTypeFilters: false
             }
         },
 
         computed: {
-            ...mapState([
-                'sortItemsList',
-                'filtersList',
-                'sortingParameters',
-                'dateRangeText'
-            ]),
-
-            ...mapGetters({
-                currentUser: 'getCurrentUser',
-                selectedDateRange: 'getSelectedDateRange',  // Récupération des dates sélectionnées dans le datepicker (s'il y en a)
-                selectedCities: 'getSelectedCities',    // Récupération des villes sélectionnées (s'il y en a)
-                pastEvents: 'getPastEvents',
-                mesFormations: 'getMesFormations'
-            }),
-
             // Pour afficher nb de filtres
             indicateurNbFiltres() {
                 let nbFiltresActifs = 0;
@@ -147,22 +122,6 @@
         },
 
         watch: {
-            // Affectation des variables de classement aux variables locales
-            sortingParameters(val) { console.warn("WATCH de sortingParameters", val); //TEST
-                this.sortSelect = val.type;
-                this.sortDirection = val.direction;
-            },
-            // Pour afficher icone de suppression du filtre 'dates' + pour comptage nb de filtres actifs
-            selectedDateRange(val) {
-                const idx = this.listeFiltres.findIndex(f => f.libelle == 'dates');
-                this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
-            },
-            // Pour afficher croix de suppression du filtre 'villes'
-            selectedCities(val) {
-                const idx = this.listeFiltres.findIndex(f => f.libelle == 'villes');
-                this.listeFiltres[idx].selected = (val.length > 0 ? true : false);
-            },
-
             // Pour transition CSS des modals
             displayModalTypeClassements(val) {
                 if(val) { this.displayOverlayTypeClassements = true }
@@ -173,16 +132,6 @@
         },
 
         methods: {
-            // Quand clic sur type de filtre : Pour ouverture modal du filtre 'dates' ou 'villes'
-            filterBy(idx) {
-                const button = this.listeFiltres[idx];
-                if(button.libelle == "dates") {
-                    this.$store.commit('SET_DISPLAY_MODAL_DATEPICKER', true);
-                } else {
-                    this.$store.commit('SET_DISPLAY_MODAL_LIST_OF_CITIES', true);
-                }
-            },
-
             // Affectation nvelles valeurs à la variable 'sortingParameters' dans le state du Vuex afin de partager ces données aux autres composants qui en ont besoin
             sortBy() {
                 this.$store.commit('SET_SORTING_PARAMETERS', { type: this.sortSelect, direction: this.sortDirection });
@@ -206,21 +155,16 @@
             }
         },
 
-        
-            
+        /*
         mounted() {    
-            // Affectation des variables locales avec valeurs venant du Vuex
-            this.listeFiltres = this.filtersList;
-            this.sortSelect = this.sortingParameters.type;
-            this.sortDirection = this.sortingParameters.direction;
-
-            /* // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
+            // Quand click en dehors du menu, le fait disparaitre ainsi que l'overlay
             window.addEventListener('click', (e) => {
                 if(e.target.classList.contains("overlay")) {
                     this.displayTypeFilters = false;
                 }
-            }) */
+            })
         }
+        */
     }
 </script>
 
