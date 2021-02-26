@@ -71,10 +71,11 @@
 
     import formatageDate from '@/mixins/formatageDate';
     import currentDate from '@/mixins/currentDate';
-    import map from '@/mixins/map';
     import dateToInt from '@/mixins/dateToInt';
     
     import uppercase from '@/filters/uppercase.js';
+
+    import creationMap from '@/services/CreationMap';
 
     export default {
        components: {
@@ -86,8 +87,7 @@
         mixins: [
             formatageDate, 
             currentDate, 
-            dateToInt, 
-            map
+            dateToInt
         ],
 
         props:{
@@ -196,7 +196,7 @@
                 maps.forEach(m => {
                     x = parseFloat(m.getAttribute("data-x"));
                     y = parseFloat(m.getAttribute("data-y"));
-                    this.createMap(m.id, x, y);
+                    creationMap(m.id, x, y);
                 })
             },
 
