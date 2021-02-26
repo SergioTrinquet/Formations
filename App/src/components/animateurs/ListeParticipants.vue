@@ -206,9 +206,9 @@
 
             // Pour rendre formulaire enable ou pas en fct° de la date du jour
             enableForm() {
-                //const today = new Date(); // Date du  jour au format complet
-                //const dateDuJour = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // date du jour sans les heure minutes sec....
-                /* POUR PHASE DE DEV. */ const dateDuJour = new Date(2021, 2, 15);
+                const today = new Date(); // Date du  jour au format complet
+                const dateDuJour = new Date(today.getFullYear(), today.getMonth(), today.getDate()); // date du jour sans les heure minutes sec....
+                /* POUR PHASE DE DEV. */ //const dateDuJour = new Date(2021, 2, 15);
 
                 const [year, month, day] = this.event.date.split('-');
                 const dateFormation = new Date(year, month - 1, day);
@@ -220,7 +220,6 @@
                 }
             },
             selectionParticipant(e) {
-                //console.log("clic !!!!", e.target); //TEST
                 const lgn = document.querySelector("[value='" + e.target.value + "']").closest("div");
                 lgn.classList.toggle("lgnSelected", e.target.checked);
 
