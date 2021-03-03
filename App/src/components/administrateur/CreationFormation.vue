@@ -24,10 +24,10 @@
         </app-modal>
 
 
-        <!-- Modal final avec redirection vers liste des évènements -->
+        <!-- Modal final avec redirection vers liste des formations -->
         <app-modal :display="displayModalRecordedEvent">
             <div class="wrapper">
-                <div>Nouvel évènement enregistré</div>
+                <div>nouvelle formation enregistré</div>
                 <v-btn @click="endCreationNewEvent" depressed>Fermer</v-btn>
             </div>
         </app-modal>
@@ -76,7 +76,7 @@
 
     data() {
       return {
-        titre: "Création d'évènement",
+        titre: "Nouvelle formation",
         displayModalAddAnimateur: false,
         evenement: {
           titre: '',

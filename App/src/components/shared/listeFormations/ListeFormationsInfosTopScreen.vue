@@ -7,7 +7,7 @@
 
         <div class="d-flex subHeader">
             <div class="align-self-center">
-                <div><span class="nbEvents primaire--text">{{ nbEventsDisplayed }}</span> {{ "évènement" + (nbEventsDisplayed > 1 ? "s" : "") }}</div>
+                <div><span class="nbEvents primaire--text">{{ nbEventsDisplayed }}</span> {{ "formation" + (nbEventsDisplayed > 1 ? "s" : "") }}</div>
                 <div>{{ textSortType }}</div>
             </div>
             <v-spacer></v-spacer>
@@ -75,7 +75,7 @@
                 if(type == 'date') {
                     text = (dir == 'asc' ? 'date' : 'date (antéchronologique)');
                 } else if(type == 'titre') {
-                    text = (dir == 'asc' ? 'intitulé de formation' : 'intitulé de formation (inversé)');
+                    text = (dir == 'asc' ? 'titre de formation' : 'titre de formation (inversé)');
                 } else if(type == 'NbParticipants') {
                     text = (dir == 'asc' ? 'nb de participants (croissant)' : 'nb de participants (décroissant)');
                 }

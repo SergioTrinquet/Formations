@@ -32,7 +32,7 @@
           <template v-slot:activator="{ on }">
             <v-text-field
               v-model="formatedDate"
-              label="Date de l'évènement"
+              label="Date de la formation"
               readonly
               v-on="on"
               class="inputLeft"
@@ -67,7 +67,7 @@
           <template v-slot:activator="{ on }">
             <v-text-field
               v-model="evenement.heure"
-              label="Heure de l'évènement"
+              label="Heure de la formation"
               readonly
               v-on="on"
               class="inputRight"
@@ -155,7 +155,7 @@
         </v-select>
 
         <div class="wrapSentenceCreateAnimateur">
-          Vous ne trouvez pas le bon animateur pour cet évènement ? <a @click="dialogAddAnimateur">Créez le</a> !
+          Vous ne trouvez pas le bon animateur pour cette formation ? <a @click="dialogAddAnimateur">Créez le</a> !
         </div>
 
     </div>

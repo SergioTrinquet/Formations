@@ -1,7 +1,7 @@
 <template>
     <v-container fluid class="pa-0">
 
-        <!-- Modal pour modification d'un évènement (exclusivement avec profil administrateur) -->
+        <!-- Modal pour modification d'une formation (exclusivement avec profil administrateur) -->
         <ModificationFormation 
             v-if="displayModalChangeEvent"
             @eventClose="displayModalChangeEvent = !displayModalChangeEvent"

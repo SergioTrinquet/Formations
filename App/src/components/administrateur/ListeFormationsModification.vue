@@ -26,7 +26,7 @@
         <!-- Modal qui apparait qd modif effectuée -->
         <app-modal :display="displayModalModifiedEvent">
             <div class="wrapperModalModifiedEvent">
-                <div>L'évènement a été modifié avec succès</div>
+                <div>La formation a été modifié avec succès</div>
                 <v-btn @click="endActionModifiedEvent" depressed>Fermer</v-btn>
             </div>
         </app-modal>
@@ -39,7 +39,7 @@
         >fas fa-times</v-icon>
 
 
-        <!-- Contenu du modal : Formulaire de modif de l'évènement -->
+        <!-- Contenu du modal : Formulaire de modif de la formation -->
         <FormulaireFormation 
             :evenement="theEvent" 
             @eventResultValidation="resultValidation($event)"

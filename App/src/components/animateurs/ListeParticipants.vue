@@ -1,6 +1,6 @@
 <template>
     <div>
-        <!-- Modal final avec redirection vers liste des évènements -->
+        <!-- Modal final avec redirection vers liste des formations -->
         <app-modal :display="recordPresenceParticipantsDone">
             <div class="wrapperContentModal">
                 <div>Les données de l'appel sont enregistrées</div>

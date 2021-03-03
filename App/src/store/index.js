@@ -18,8 +18,8 @@ export default new Vuex.Store({
             { roles: [null],  routeName: 'accueil', redirection: true },
             { roles: [null], routeName: 'sign_up', btMenu: { icon: 'account_circle', intitule: 'S\'inscrire' } },
             { roles: [null], routeName: 'sign_in', btMenu: { icon: 'lock_open', intitule: 'Se connecter' } },
-            { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer un évènement' } },
-            { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste de évènements' }, redirection: true },
+            { roles: ['Admin'],  routeName: 'create_event', btMenu: { icon: 'event_note', intitule: 'Créer une formation' } },
+            { roles: ['Admin'],  routeName: 'events_list', btMenu: { icon: 'view_stream', intitule: 'Liste des formations' }, redirection: true },
             { roles: ['Participant', 'Animateur'],  routeName: 'events_list', redirection: true },
             { roles: ['Animateur'],  routeName: 'participants_list' }
         ],
@@ -46,7 +46,7 @@ export default new Vuex.Store({
         },
         sortItemsList: [
             { libelle: 'date', sortType: 'date' },
-            { libelle: 'intitulé', sortType: 'titre' },
+            { libelle: 'titre', sortType: 'titre' },
             { libelle: 'nbr de participants', sortType: 'NbParticipants' }
         ],
         filtersList: [
@@ -272,7 +272,7 @@ export default new Vuex.Store({
             .where("id_auth", "==", payload)
             .get()
             .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {    console.log(doc.id); //TEST
+                querySnapshot.forEach((doc) => {    //console.log(doc.id); //TEST
                     commit('SET_DATA_CURRENT_USER', 
                     { 
                         data: doc.data(), 
@@ -624,14 +624,6 @@ export default new Vuex.Store({
                     docs = docs.filter(d => evenementsParticipantOuAnimateur.includes(d.id));
                 }
 
-                ///// Partie Pagination /////
-                /* var artPerPg = state.nbEventsPerPage;
-                var numPg = (payload !== null && "numPage" in payload ? payload.numPage : 1);
-                var from = artPerPg * (numPg - 1);
-                var lastVisible = docs[parseInt(from)]; //console.log("lastVisible", lastVisible.data()); //TEST
-                collectionEvenements.startAt(lastVisible).limit(artPerPg).get().then(querySnapshot => { */
-                ///// FIN Partie Pagination /////
-
                 let events = [];
                 docs.forEach(doc => {
 
@@ -675,11 +667,6 @@ export default new Vuex.Store({
                 });
                 
                 commit('SET_LOADED_EVENTS', events);
-
-                /////// ICI FAIRE LE orderBy et la pagination !! ///////
-                /* }); */
-                /////// FIN :  orderBy et la pagination !! ///////
-
             })
             .catch(err => { 
                 console.error("Erreur lors de la récupération des évènements", err);
@@ -834,11 +821,6 @@ export default new Vuex.Store({
                     if (!querySnapshot.exists) { throw "L'évènement à modifier n'existe pas ou plus."; }
 
                     let event = querySnapshot.data();
-
-                    // console.log("Action 'modifyEvenement'", 
-                    // "Données venant de la collection 'evenements'", event, 
-                    // "Données venant du formulaire de saisie", payload.data_event
-                    // ); //TEST
                     
                     // Modification (éventuelle) dans collection 'utilisateurs' :
                     // Comparaison du/des animateurs du payload (du formulaire de saisie de modif d'evenement)
@@ -915,7 +897,7 @@ export default new Vuex.Store({
             // Ici il faut :
             // - Retirer dans 'utilisateurs' l'id evenement du tableau 'evenements' quand il s'agit d'un Animateur: ou plusieurs Animateurs
             // - Retirer dans 'utilisateurs' l'id evenement du tableau 'evenements' quand il s'agit de participants
-            // - supprimer l'évènement
+            // - Supprimer l'évènement
             
             commit('SET_LOADING', true);
             commit('SET_MESSAGE_ERROR', null);

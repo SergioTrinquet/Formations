@@ -56,7 +56,7 @@
         </v-card>
     </div>
     <div v-else-if="events.length == 0 && eventsLoaded" class="msgNoEvents">
-        <v-icon>far fa-grimace</v-icon>Pas d'évènements, désolé !
+        <v-icon>far fa-grimace</v-icon>Pas de formations, désolé !
     </div>
 
 </template>
@@ -127,7 +127,7 @@
             // Filtres fait dans Firestore (dans le VUEX), mais classement et pagination du coté Front car impossibilité de classer par un champ si le filtrage (via clause '.where')
             // est fait à partir d'un autre champ, d'ou certains cas de figure impossibles à gérer intégralement avec Firestore : c'est la raison pour laquelle la partie 'sorting' puis pagination qui se fait à la fin, dont gérées dans le component et non via Firestore.
             events() {
-                if(!this.eventsLoaded) { // Si évènements pas encore chargés dans le hook 'mounted'... 
+                if(!this.eventsLoaded) { // Si formations pas encore chargés dans le hook 'mounted'... 
 
                     return []; 
 
