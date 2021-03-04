@@ -4,7 +4,7 @@
         @click="execFilterSelection"
     >
         <slot name="iconLeft"></slot>
-        Mes formations
+        mes formations
         <slot name="iconRight"></slot>
     </button>
 </template>

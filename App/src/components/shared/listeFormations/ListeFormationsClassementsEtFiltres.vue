@@ -55,7 +55,7 @@
                 {{ ville }} <v-icon @click="deleteCityFromFilter(ville)">fas fa-times-circle</v-icon>
             </span>
             <span v-if="mesFormations" class="primaireLight fakeChip">
-                Mes formations <v-icon @click="deleteMyTrainingsFilter">fas fa-times-circle</v-icon>
+                mes formations <v-icon @click="deleteMyTrainingsFilter">fas fa-times-circle</v-icon>
             </span>
             <a @click="deleteAllFilters" class="linkDeleteFilters">Supprimer tous mes filtres</a>
         </div>
@@ -158,18 +158,16 @@ export default {
         left: 0;
         margin-top: 50px;
     }
+    #myFilters {
+        text-align: center;
+        margin: -5px 12px 0 12px;
+        padding: 7px 5px;
+        width: 205px;
+    }
     #sortAndFiltersEvents {
         background-color: #ffffff;
         width: 210px;
-    }
-    #myFilters {
-        margin:-10px 10px 0 10px;
-        padding: 5px;
-        width: 200px;
-    }
-
-    #sortAndFiltersEvents {
-        margin: 10px 7px 0;
+        margin: 0 10px;
     }
     #sortAndFiltersEvents .bloc {
         border-bottom: dotted 1px #6d6d6d;
@@ -183,15 +181,16 @@ export default {
         font-size: 14px;
     }
     #btFiltres button { 
-        display: inline-block;
+        /* display: inline-block; */ display: block;
         margin: 0 8px 6px 0; 
         border-radius: 4px;
         padding: 2px 19px;
         cursor: pointer;
-        /* transition: all 0.2s ease-in-out; */
         transition: background-color 0.2s ease-in-out;
         color: #fff;
         font-size: 15px;
+
+        width: 100%;
     }
 
     #btFiltres button.selected {
@@ -257,6 +256,7 @@ export default {
         padding: 1px 5px 1px 10px;
         border-radius: 30px;
         letter-spacing: -0.01em;
+        margin-bottom: 2px;
     }
     #myFilters .fakeChip,
     #myFilters .fas {
