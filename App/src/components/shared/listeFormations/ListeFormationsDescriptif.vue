@@ -366,7 +366,11 @@
             border-radius: 0 !important;
         }
         .blocEvent {
+            margin: 50px 0 0 0;
             border-radius: 0 !important;
+        }
+        .blocEvent:first-child {
+            margin: 100px 0 0 0;
         }
     }
 </style>

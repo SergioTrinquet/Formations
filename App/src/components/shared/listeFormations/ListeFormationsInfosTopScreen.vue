@@ -7,8 +7,13 @@
 
         <div class="d-flex subHeader">
             <div class="align-self-center">
-                <div><span class="nbEvents primaire--text">{{ nbEventsDisplayed }}</span> {{ "formation" + (nbEventsDisplayed > 1 ? "s" : "") }}</div>
-                <div>{{ textSortType }}</div>
+                <div class="infosSubHeader">
+                    <div class="nbEvents primaire">{{ nbEventsDisplayed }}</div>
+                    <div class="text">
+                        {{ "formation" + (nbEventsDisplayed > 1 ? "s" : "") }} <br />
+                        {{ textSortType }}
+                    </div>
+                </div>
             </div>
             <v-spacer></v-spacer>
             <div id="pagination" class="d-flex align-stretch align-self-center">
@@ -115,7 +120,7 @@
 .wrapSubHeader {
     position: fixed; 
     z-index: 1; 
-    width: 100vw; 
+    /* width: 100vw; */ width: 100%;
 }
 .subHeader {
     background-color: #ffffff; 
@@ -124,10 +129,26 @@
     width: 100%;
     box-shadow: 0 3px 3px rgba(0,0,0,0.12);
 }
-
+.infosSubHeader {
+    display: table;
+}
 .nbEvents {
-    font-size: 20px;
+    display: table-cell; 
+    font-size: 18px;
     font-weight: bold;
+    color: #fff;
+    vertical-align: middle; 
+    height: 20px; 
+    border-radius: 5px; 
+    padding: 0 7px; 
+    margin: 0 10px 0 0;
+}
+.infosSubHeader .text {
+    display: table-cell; 
+    color: #535b7b; 
+    font-size: 15px; 
+    line-height: 14px; 
+    padding: 0 0 0 7px;
 }
 
 #pagination select {
