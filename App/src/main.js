@@ -3,6 +3,7 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import router from './router' // Même chose que 'router/index.js' car quand index, pas besoin de le mettre
 import store from './store' // Même chose que 'store/index.js' car quand index, pas besoin de le mettre
+
 import errorMsgComponent from './components/shared/base/AppError'
 import modalComponent from './components/shared/base/AppModal'
 import loadingComponent from './components/shared/base/AppLoader'
@@ -12,16 +13,8 @@ import './assets/css/global.css' // Import css maison
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 
-// Your web app's Firebase configuration
-var firebaseConfig = {
-  apiKey: "AIzaSyBeLqa3-gl7Z_FXePhGcmf1QZK589qnZg8",
-  authDomain: "formations-vue-vuetify.firebaseapp.com",
-  databaseURL: "https://formations-vue-vuetify.firebaseio.com",
-  projectId: "formations-vue-vuetify",
-  storageBucket: "formations-vue-vuetify.appspot.com",
-  messagingSenderId: "400310845056",
-  appId: "1:400310845056:web:f1a82411ab76945852f065"
-};
+import firebaseConfig from '../firebase.config.js'
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
