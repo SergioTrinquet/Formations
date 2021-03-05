@@ -13,7 +13,7 @@ import './assets/css/global.css' // Import css maison
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 
-import firebaseConfig from '../firebase.config.js'
+import firebaseConfig from './firebase.config.js'
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
