@@ -1,35 +1,4 @@
-# formations
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-
-### CORRECTIONS A APPORTER : Fait par Serge
-- Exporter dans un fichier séparé tout ce qui est appel à l'API Firebase (voir si interessant)
-- Voir pourquoi quand on arrive sur le site, on passe d'abord par redirect.js sans être authentifié dans le currentUser, puis ensuite identification. Ce décalage fait apparaitre l'alert signalant que l'on est pas identifié alors qu'ensuite si.
-
-
-Présentation
+Projet formations
 =
 
 ## Pourquoi cette appli ?
@@ -116,9 +85,7 @@ En production, il serait souhaitable de rendre la désinscription moins facile a
 
 Le participant peut filtrer les formations en n'affichant que celles auxquelles il s'est inscrit.  
 
-
-
-
+---
 
 ## Installer le projet
 - Récupérer ce projet et installez-le
@@ -142,18 +109,48 @@ Ce fichier est appelé dans "main.js" et permettra de se connecter à votre appl
 Pour finir, dans "/API/index.js", modifier en conséquence le chemin pour la variable 'serviceAccount', ainsi que la valeur de la propriété 'databaseURL' par celle présente dans la rubrique 'Compte de service' de votre projet  
 ([Toutes les explications ici](https://firebase.google.com/docs/admin/setup?authuser=0))
 - Pour créer l'administrateur de l'application, allez dans la console Firebase et dans le menu 'Authentication', ajoutez un utilisateur
-- Dans le menu 'Cloud Firestore' dans la console, créer 2 collections : 'evenements' et 'utilisateurs' (lien "+ Commencer une collection")
-- Dans la collection 'utilisateurs', ajoutez un document (lien "+ Ajouter un document")  
+- Dans le menu 'Cloud Firestore' dans la console, créer 2 collections : **'evenements'** et **'utilisateurs'** (lien "+ Commencer une collection")
+- Dans la collection **'utilisateurs'**, ajoutez un document (lien "+ Ajouter un document")  
 Dans ce document, ajoutez les champs 'email', 'firstName', 'id_auth', 'lastName', 'password' et 'role' qui sont tous de type String. Il s'agira de l'administrateur donc donnez comme valeur "Admin" au champ 'role' que vous venez de créer.  
 Pour les champs 'email' et 'id_auth', reprenez respectivement les valeurs des champs 'Identifiant' et 'ID utilisateur' de l'utilisateur que vous avez créé lors d'une étape précédente (menu 'Authentication').  
 Pour tous les autres champs 'firstName', 'lastName' et 'password', vous êtes libre de choisir.
 - C'est fini ! Maintenant connectez-vous en tant qu'administrateur dans l'application avec l'adresse mail et le mot de passe inscrits précédemment dans la collection 'utilisateurs', et créez des formations et des animateurs.  
 Vous pouvez aussi créer des participants en vous inscrivant.
 
+---
+
+
 ## RESTE A FAIRE
 - Voir droits sur projet Firebase
 - Essayer le Hosting
 - Ajouter gestion d'erreur comme pour projet villes
 - Corriger sur profil Admin qd selection dates et villes 'formations passées' puis plus formations passées
+- Voir pourquoi quand on arrive sur le site, on passe d'abord par redirect.js sans être authentifié dans le currentUser, puis ensuite identification. Ce décalage fait apparaitre l'alert signalant que l'on est pas identifié alors qu'ensuite si.
+
+
+## Project setup
+```
+npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
 
 
