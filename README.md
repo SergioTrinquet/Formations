@@ -120,14 +120,6 @@ Vous pouvez aussi créer des participants en vous inscrivant.
 ---
 
 
-## RESTE A FAIRE
-- Voir droits sur projet Firebase
-- Essayer le Hosting
-- Ajouter gestion d'erreur comme pour projet villes
-- Corriger sur profil Admin qd selection dates et villes 'formations passées' puis plus formations passées
-- Voir pourquoi quand on arrive sur le site, on passe d'abord par redirect.js sans être authentifié dans le currentUser, puis ensuite identification. Ce décalage fait apparaitre l'alert signalant que l'on est pas identifié alors qu'ensuite si.
-
-
 ## Project setup
 ```
 npm install
