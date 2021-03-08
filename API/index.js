@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 
 // Pour communiquer via firebase Admin SDK
 var admin = require("firebase-admin");
-var serviceAccount = require("./firebase_adminSDK_serviceAccountKey/firebase-adminsdk-serviceAccountKey.json"); // Fichier JSON généré dans la console firebase sur le projet en question
+var serviceAccount = require("./firebase-adminsdk-serviceAccountKey.json"); // Fichier JSON généré dans la console firebase sur le projet en question
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
